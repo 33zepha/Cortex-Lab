@@ -1,0 +1,161 @@
+/**
+ * Cortex design tokens — source unique pour Tailwind (tailwind.config.ts)
+ * et pour tout CSS écrit à la main. Ne pas dupliquer ces valeurs ailleurs.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700&display=swap");
+
+:root {
+  /* ---- Couleur : surfaces (light — canvas / surface / surface-subtle) ---- */
+  --color-background: #f6f7f9;
+  --color-surface-1: #ffffff;
+  --color-surface-2: #f1f4f8;
+  --color-surface-3: #e9edf3;
+  --color-surface-overlay: #ffffffe6;
+
+  /* ---- Couleur : texte ---- */
+  --color-text-primary: #333333;
+  --color-text-secondary: #777777;
+  --color-text-muted: #85898f;
+  --color-text-on-accent: #ffffff;
+
+  /* ---- Couleur : bordures ---- */
+  --color-border: #e5e8ee;
+  --color-border-strong: #d8dce4;
+  --color-border-focus: #0077e6;
+
+  /* ---- Couleur : accents (rares, fonctionnels) ---- */
+  --color-accent-indigo: #0077e6;
+  --color-accent-indigo-muted: #0077e61a;
+  --color-accent-electric: #519dfa;
+  --color-accent-violet: #7c6fe0;
+
+  /* ---- Couleur : graphiques ---- */
+  --chart-line: #519dfa;
+  --chart-bar: #0077e6;
+
+  /* ---- Couleur : sémantique ---- */
+  --color-success: #16a36a;
+  --color-success-muted: #16a36a1a;
+  --color-warning: #d99000;
+  --color-warning-muted: #d990001a;
+  --color-error: #d94a5a;
+  --color-error-muted: #d94a5a1a;
+  --color-info: #519dfa;
+  --color-info-muted: #519dfa1a;
+
+  /* ---- Typographie ---- */
+  --font-sans: "Rubik", system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --text-xs: 0.6875rem;   /* 11px */
+  --text-sm: 0.8125rem;   /* 13px */
+  --text-base: 0.875rem;  /* 14px */
+  --text-md: 0.9375rem;   /* 15px */
+  --text-lg: 1.0625rem;   /* 17px */
+  --text-xl: 1.25rem;     /* 20px */
+  --text-2xl: 1.5rem;     /* 24px */
+  --text-3xl: 1.875rem;   /* 30px */
+  --text-4xl: 2.375rem;   /* 38px */
+
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.5;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.02em;
+
+  /* ---- Espacement (échelle 4px) ---- */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ---- Rayons ---- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* ---- Ombres (légères, surface claire) ---- */
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 4px 12px -2px rgba(16, 24, 40, 0.08);
+  --shadow-lg: 0 12px 28px -8px rgba(16, 24, 40, 0.12);
+  --shadow-focus: 0 0 0 3px var(--color-accent-indigo-muted);
+
+  /* ---- Z-index ---- */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-panel: 20;
+  --z-overlay: 30;
+  --z-dialog: 40;
+  --z-command-palette: 50;
+  --z-tooltip: 60;
+
+  /* ---- Animation ---- */
+  --duration-fast: 120ms;
+  --duration-standard: 180ms;
+  --duration-slow: 220ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  /* ---- Conteneurs & breakpoints (référence, Tailwind gère l'application) ---- */
+  --container-desktop: 1440px;
+  --container-laptop: 1280px;
+  --container-tablet: 768px;
+  --container-mobile: 390px;
+
+  /* ---- États interactifs ---- */
+  --opacity-disabled: 0.45;
+  --opacity-hover-overlay: 0.04;
+  --opacity-active-overlay: 0.08;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-standard: 0ms;
+    --duration-slow: 0ms;
+  }
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "tnum" 1;
+}
+
+::selection {
+  background-color: var(--color-accent-indigo-muted);
+  color: var(--color-text-primary);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
