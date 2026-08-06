@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
-import { LayoutGrid, ListChecks, Activity, Search, Hexagon } from "lucide-react";
+import { LayoutGrid, ListChecks, Activity, Search } from "lucide-react";
+import { CortexMark } from "@/components/brand/CortexMark";
 import { cn } from "@/lib/cn";
 import { Tooltip } from "@/components/ui";
 
@@ -12,9 +13,13 @@ const navItems = [
 export function IconRail({ onOpenPalette }: { onOpenPalette: () => void }) {
   return (
     <aside className="hidden laptop:flex laptop:w-16 shrink-0 flex-col items-center border-r border-border bg-surface-1 py-3">
-      <div className="mb-3 flex size-9 items-center justify-center rounded-md bg-accent-indigo text-white">
-        <Hexagon className="size-4.5" fill="currentColor" />
-      </div>
+      <NavLink
+        to="/"
+        aria-label="CortexLab — Overview"
+        className="mb-3 flex size-10 items-center justify-center rounded-md text-text-primary transition-colors duration-fast ease-standard hover:bg-surface-2"
+      >
+        <CortexMark className="h-7 w-auto" />
+      </NavLink>
 
       <Tooltip content="Rechercher (⌘K)" side="right">
         <button
