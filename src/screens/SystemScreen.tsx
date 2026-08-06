@@ -115,7 +115,7 @@ export function SystemScreen() {
       </div>
 
       {/* Erreurs récentes — grande carte */}
-      <BentoCard id="errors" eyebrow="Erreurs récentes" className="scroll-mt-6">
+      <BentoCard id="errors" title="Erreurs récentes" className="scroll-mt-6">
         {health.recentErrors.length === 0 ? (
           <EmptyState icon={<AlertTriangle className="size-5" />} title="Aucune erreur" description="Le système n'a signalé aucune erreur récente." compact />
         ) : (
