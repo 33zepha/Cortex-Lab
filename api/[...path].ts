@@ -5,6 +5,8 @@ function configError(message: string) {
   return Response.json({ error: message }, { status: 503 });
 }
 
+export const config = { runtime: "edge" };
+
 export default async function handler(request: Request): Promise<Response> {
   if (!UPSTREAM_ORIGIN) {
     return configError("CORTEX_API_ORIGIN manquant côté Vercel");
@@ -30,6 +32,8 @@ export default async function handler(request: Request): Promise<Response> {
   const headers = new Headers();
   headers.set("Authorization", `Bearer ${API_TOKEN}`);
   headers.set("Accept", request.headers.get("accept") ?? "application/json");
+  headers.set("ngrok-skip-browser-warning", "true");
+  
   const contentType = request.headers.get("content-type");
   if (contentType) headers.set("Content-Type", contentType);
 
