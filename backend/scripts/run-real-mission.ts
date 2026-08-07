@@ -9,14 +9,14 @@ import { config } from "dotenv";
 import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { NdjsonEventStore } from "../packages/core/stores/event-store";
-import { FileMissionRepository } from "../packages/core/stores/mission-repository";
-import { FileEvidenceStore } from "../packages/core/stores/evidence-store";
-import { WorkspaceManager } from "../packages/core/workspace/workspace-manager";
-import { ClaudeCodeAdapter } from "../packages/core/adapters/claude-code-adapter";
-import { loadVpsConfigFromEnv } from "../packages/core/infra/vps-config";
-import { OpenAiPlanner } from "../packages/core/planner/openai-planner";
-import { runMission } from "../packages/core/runner/runner";
+import { NdjsonEventStore } from "../core/stores/event-store";
+import { FileMissionRepository } from "../core/stores/mission-repository";
+import { FileEvidenceStore } from "../core/stores/evidence-store";
+import { WorkspaceManager } from "../core/workspace/workspace-manager";
+import { ClaudeCodeAdapter } from "../core/adapters/claude-code-adapter";
+import { loadVpsConfigFromEnv } from "../core/infra/vps-config";
+import { OpenAiPlanner } from "../core/planner/openai-planner";
+import { runMission } from "../core/runner/runner";
 
 config();
 

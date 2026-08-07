@@ -1,6 +1,6 @@
-import type { MissionEntity } from "../../core/contracts/mission";
-import type { DomainEventEnvelope } from "../../core/contracts/events";
-import type { Evidence as DomainEvidence } from "../../core/contracts/stores";
+import type { MissionEntity } from "../core/contracts/mission";
+import type { DomainEventEnvelope } from "../core/contracts/events";
+import type { Evidence as DomainEvidence } from "../core/contracts/stores";
 
 /**
  * DTO exposé par l'API — forme volontairement identique à `Mission` (src/lib/types.ts) pour que

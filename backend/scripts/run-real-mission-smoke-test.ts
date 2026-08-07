@@ -10,9 +10,9 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { ulid } from "ulid";
-import { WorkspaceManager, gitDiff } from "../packages/core/workspace/workspace-manager";
-import { ClaudeCodeAdapter } from "../packages/core/adapters/claude-code-adapter";
-import { loadVpsConfigFromEnv } from "../packages/core/infra/vps-config";
+import { WorkspaceManager, gitDiff } from "../core/workspace/workspace-manager";
+import { ClaudeCodeAdapter } from "../core/adapters/claude-code-adapter";
+import { loadVpsConfigFromEnv } from "../core/infra/vps-config";
 
 config();
 

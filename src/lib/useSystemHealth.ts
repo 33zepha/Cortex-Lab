@@ -1,25 +1,18 @@
-import { useEffect, useState } from "react";
+import useSWR from "swr";
 import type { SystemHealth } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
 
-/** Santé système réelle depuis l'API Cortex — remplace les fixtures. */
+/** Santé système réelle depuis l'API Cortex avec polling SWR. */
 export function useSystemHealth() {
-  const [health, setHealth] = useState<SystemHealth | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { data, error, isLoading } = useSWR<SystemHealth>(
+    "/api/health",
+    apiFetch,
+    { refreshInterval: 5000, revalidateOnFocus: true }
+  );
 
-  useEffect(() => {
-    let cancelled = false;
-    apiFetch<SystemHealth>("/api/health")
-      .then((data) => {
-        if (!cancelled) setHealth(data);
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : String(err));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return { health, loading: health === null && !error, error };
+  return { 
+    health: data ?? null, 
+    loading: isLoading, 
+    error: error instanceof Error ? error.message : error ? String(error) : null 
+  };
 }

@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { DomainEventEnvelope } from "../../core/contracts/events";
-import type { MissionEntity } from "../../core/contracts/mission";
+import type { DomainEventEnvelope } from "../core/contracts/events";
+import type { MissionEntity } from "../core/contracts/mission";
 
 /** Miroir de `SystemHealth` (src/lib/types.ts) — même raisonnement que to-api-mission.ts. */
 export type ApiSystemHealth = {

@@ -8,12 +8,12 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --port 4173 --strictPort",
     "typecheck": "tsc -b --noEmit",
-    "screenshot": "tsx scripts/screenshot.ts",
+    "screenshot": "tsx backend/scripts/screenshot.ts",
     "test": "vitest run",
-    "vps:test": "tsx scripts/vps-test-connection.ts",
-    "mission:smoke-test": "tsx scripts/run-real-mission-smoke-test.ts",
-    "mission:run": "tsx scripts/run-real-mission.ts",
-    "api": "tsx packages/api/server.ts"
+    "vps:test": "tsx backend/scripts/vps-test-connection.ts",
+    "mission:smoke-test": "tsx backend/scripts/run-real-mission-smoke-test.ts",
+    "mission:run": "tsx backend/scripts/run-real-mission.ts",
+    "api": "tsx backend/server.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.3.0",
@@ -34,6 +34,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.1",
+    "swr": "^2.5.0",
     "ulid": "^3.0.2",
     "zod": "^4.4.3"
   },

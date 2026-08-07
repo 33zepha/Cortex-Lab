@@ -1,63 +1,33 @@
-import { useCallback, useEffect, useState } from "react";
+import useSWR from "swr";
 import type { Mission } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
 
-/** Missions réelles depuis l'API Cortex (packages/api). Même forme que les fixtures — aucun changement d'UI requis. */
+/** Missions réelles depuis l'API Cortex avec polling SWR pour synchronisation temps réel inter-appareils. */
 export function useMissions() {
-  const [missions, setMissions] = useState<Mission[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [reloadToken, setReloadToken] = useState(0);
+  const { data, error, isLoading, mutate } = useSWR<Mission[]>(
+    "/api/missions",
+    apiFetch,
+    { refreshInterval: 2000, revalidateOnFocus: true }
+  );
 
-  useEffect(() => {
-    let cancelled = false;
-    setError(null);
-    apiFetch<Mission[]>("/api/missions")
-      .then((data) => {
-        if (!cancelled) setMissions(data);
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : String(err));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [reloadToken]);
-
-  const refetch = useCallback(() => setReloadToken((t) => t + 1), []);
-
-  return { missions, loading: missions === null && !error, error, refetch };
+  return {
+    missions: data ?? null,
+    loading: isLoading,
+    error: error instanceof Error ? error.message : error ? String(error) : null,
+    refetch: mutate
+  };
 }
 
 export function useMission(id: string | undefined) {
-  const [mission, setMission] = useState<Mission | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, error, isLoading } = useSWR<Mission>(
+    id ? `/api/missions/${id}` : null,
+    apiFetch,
+    { refreshInterval: 2000, revalidateOnFocus: true }
+  );
 
-  useEffect(() => {
-    if (!id) {
-      setLoading(false);
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    apiFetch<Mission>(`/api/missions/${id}`)
-      .then((data) => {
-        if (!cancelled) {
-          setMission(data);
-          setLoading(false);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : String(err));
-          setLoading(false);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
-
-  return { mission, loading, error };
+  return {
+    mission: data ?? null,
+    loading: isLoading,
+    error: error instanceof Error ? error.message : error ? String(error) : null
+  };
 }

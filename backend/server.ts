@@ -5,17 +5,17 @@ import { config } from "dotenv";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import OpenAI from "openai";
-import { NdjsonEventStore, readEntireLedger } from "../core/stores/event-store";
-import { FileEvidenceStore } from "../core/stores/evidence-store";
-import { listMissions } from "../core/stores/list-missions";
-import { FileMissionRepository } from "../core/stores/mission-repository";
-import { ClaudeCodeAdapter } from "../core/adapters/claude-code-adapter";
-import { loadVpsConfigFromEnv } from "../core/infra/vps-config";
-import { WorkspaceManager } from "../core/workspace/workspace-manager";
-import { OpenAiPlanner } from "../core/planner/openai-planner";
-import { runMission } from "../core/runner/runner";
-import { toApiMission } from "./adapters/to-api-mission";
-import { buildApiHealth } from "./adapters/to-api-health";
+import { NdjsonEventStore, readEntireLedger } from "./core/stores/event-store";
+import { FileEvidenceStore } from "./core/stores/evidence-store";
+import { listMissions } from "./core/stores/list-missions";
+import { FileMissionRepository } from "./core/stores/mission-repository";
+import { ClaudeCodeAdapter } from "./core/adapters/claude-code-adapter";
+import { loadVpsConfigFromEnv } from "./core/infra/vps-config";
+import { WorkspaceManager } from "./core/workspace/workspace-manager";
+import { OpenAiPlanner } from "./core/planner/openai-planner";
+import { runMission } from "./core/runner/runner";
+import { toApiMission } from "./api-adapters/to-api-mission";
+import { buildApiHealth } from "./api-adapters/to-api-health";
 
 config();
 
