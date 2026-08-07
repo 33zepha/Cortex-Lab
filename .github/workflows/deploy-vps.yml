@@ -1,0 +1,63 @@
+name: Deploy VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: cortex-vps-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Cortex API
+    if: vars.CORTEX_VPS_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Connect runner to tailnet
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ secrets.TS_AUDIENCE }}
+          tags: tag:ci
+          ping: 100.85.93.10
+
+      - name: Prepare deploy SSH key
+        env:
+          DEPLOY_KEY: ${{ secrets.CORTEX_VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/cortex_deploy
+          chmod 600 ~/.ssh/cortex_deploy
+          ssh-keyscan -T 10 100.85.93.10 >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy with rollback guard
+        run: |
+          set -euo pipefail
+          ssh \
+            -i ~/.ssh/cortex_deploy \
+            -o BatchMode=yes \
+            -o ConnectTimeout=10 \
+            root@100.85.93.10 \
+            'cd /root/Cortex-Lab && git fetch origin main && git show origin/main:scripts/deploy-cortex-vps.sh > /tmp/deploy-cortex-vps.sh && chmod 700 /tmp/deploy-cortex-vps.sh && bash /tmp/deploy-cortex-vps.sh'
+
+      - name: Verify public API
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if curl -fsS --max-time 15 https://cortexlab.online/api/health >/dev/null; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'Public health check failed after deploy' >&2
+          exit 1
