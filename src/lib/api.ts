@@ -1,8 +1,8 @@
 const configuredApiBase = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "");
 
-// En local, le frontend parle directement à Fastify. En production/preview,
-// on reste same-origin : /api est relayé côté Vercel vers l'API Cortex centrale.
-const API_BASE_URL = configuredApiBase ?? (import.meta.env.DEV ? "http://localhost:4000" : "");
+// En local, le frontend parle directement à Fastify via l'IP actuelle (permet l'accès mobile sur le même WiFi).
+// En production/preview, on reste same-origin : /api est relayé vers l'API Cortex centrale.
+const API_BASE_URL = configuredApiBase ?? (import.meta.env.DEV ? `http://${window.location.hostname}:4000` : "");
 
 function apiUrl(path: string) {
   return `${API_BASE_URL}${path}`;
