@@ -18,6 +18,7 @@ export function AppShell() {
   const hasWingContent =
     location.pathname === ROUTES.home ||
     location.pathname.startsWith(ROUTES.missions) ||
+    location.pathname === ROUTES.console ||
     location.pathname === ROUTES.system ||
     Boolean(missionMatch);
 

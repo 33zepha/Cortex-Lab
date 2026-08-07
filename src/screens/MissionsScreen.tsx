@@ -73,7 +73,16 @@ export function MissionsScreen() {
   const source = demoState === "empty" ? emptyMissions : (missions ?? []);
 
   const filtered = useMemo(
-    () => source.filter((m) => m.objective.toLowerCase().includes(query.toLowerCase())),
+    () =>
+      source.filter((m) => {
+        const q = query.toLowerCase().trim();
+        if (!q) return true;
+        return (
+          (m.title && m.title.toLowerCase().includes(q)) ||
+          m.objective.toLowerCase().includes(q) ||
+          m.model.toLowerCase().includes(q)
+        );
+      }),
     [source, query],
   );
 

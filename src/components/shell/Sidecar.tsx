@@ -15,6 +15,7 @@ import {
   Radio,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { formatMissionTitle } from "@/lib/mission-naming";
 import { allMissions, missionActive, findMission } from "@/fixtures/missions";
 import type { MissionFilter } from "@/lib/types";
 
@@ -142,7 +143,7 @@ function MissionDetailSidecar({ id }: { id: string }) {
   const activeTab = searchParams.get("tab") ?? "timeline";
 
   return (
-    <SidecarShell title={mission ? mission.objective : "Mission"}>
+    <SidecarShell title={mission ? formatMissionTitle(mission.objective, { preset: "sidecar" }) : "Mission"}>
       <div className="space-y-0.5">
         {missionTabs.map((t) => (
           <SidecarLink key={t.value} to={`/missions/${id}?tab=${t.value}`} active={activeTab === t.value} icon={t.icon}>

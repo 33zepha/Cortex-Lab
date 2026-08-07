@@ -35,6 +35,7 @@ import {
 import { useMission } from "@/lib/useMissions";
 import { apiPost } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
+import { getMissionDisplay } from "@/lib/mission-naming";
 import { formatClock, formatDuration, missionStatusConfig } from "@/lib/status";
 import { EvidenceDetail } from "@/screens/mission-detail/EvidenceDetail";
 import { DiffView } from "@/screens/mission-detail/DiffView";
@@ -182,7 +183,19 @@ export function MissionDetailScreen() {
               <span className={cn("text-[10px] font-bold uppercase tracking-[0.11em]", statusTextClass[mission.status])}>{status.label}</span>
               <span className="font-mono text-[10px] font-semibold text-text-muted">{mission.model}</span>
             </div>
-            <h1 className="mt-3 max-w-4xl text-[26px] font-bold leading-[1.06] tracking-[-0.045em] text-text-primary laptop:text-[32px]">{mission.objective}</h1>
+            <h1 className="mt-3 max-w-4xl text-[26px] font-bold leading-[1.06] tracking-[-0.045em] text-text-primary laptop:text-[32px]">
+              {getMissionDisplay(mission, { preset: "hero" }).title}
+            </h1>
+            {getMissionDisplay(mission, { preset: "hero" }).isSummarized && (
+              <div className="mt-3 max-w-3xl rounded-xl border border-border/80 bg-surface-1/70 p-3.5 shadow-sm">
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted">
+                  Objectif complet
+                </p>
+                <p className="text-[12px] font-medium leading-relaxed text-text-primary">
+                  {getMissionDisplay(mission, { preset: "hero" }).fullObjective}
+                </p>
+              </div>
+            )}
             {mission.summary && mission.status === "completed" && (
               <p className="mt-4 max-w-3xl text-[12px] font-semibold leading-relaxed text-text-secondary laptop:text-[13px]">{mission.summary}</p>
             )}

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Clock, CheckCircle2, AlertCircle, XCircle, Loader2 } from "lucide-react";
 import type { Mission } from "@/lib/types";
 import { formatDuration } from "@/lib/status";
+import { getMissionDisplay } from "@/lib/mission-naming";
 import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/cn";
 import { TRANSITION_SPRING, LIQUID_GLASS_HOVER } from "@/lib/ui-classes";
@@ -21,6 +22,7 @@ const STATUS_LABELS: Record<Mission["status"], string> = {
 
 export function MissionKanbanCard({ mission }: MissionKanbanCardProps) {
   const navigate = useNavigate();
+  const display = getMissionDisplay(mission, { preset: "card" });
 
   const styles = {
     running: {
@@ -89,8 +91,13 @@ export function MissionKanbanCard({ mission }: MissionKanbanCardProps) {
       <div className="relative z-10 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h3 className="line-clamp-2 text-[15px] font-bold leading-snug tracking-[-0.02em] text-text-primary laptop:text-sm laptop:font-medium laptop:tracking-normal">
-            {mission.objective}
+            {display.title}
           </h3>
+          {display.subtitle && (
+            <p className="mt-0.5 line-clamp-1 text-[11px] font-medium text-text-muted">
+              {display.subtitle}
+            </p>
+          )}
           <p className={cn("mt-1 text-[10px] font-bold uppercase tracking-[0.09em] laptop:hidden", styles.status)}>
             {STATUS_LABELS[mission.status]}
           </p>

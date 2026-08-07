@@ -13,6 +13,7 @@ export const TestsSummary = z.object({
 /** Projection de l'état de mission — dérivée du ledger, jamais écrite directement (DECISIONS.md #3). */
 export const MissionEntity = z.object({
   id: z.string(), // ULID
+  title: z.string().optional(),
   objective: z.string(),
   constraints: z.string().optional(),
   status: MissionStatus,

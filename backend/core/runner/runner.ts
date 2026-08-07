@@ -16,6 +16,7 @@ import { MissionScheduler } from "../scheduler/mission-scheduler";
 
 export type RunMissionInput = {
   missionId?: string;
+  title?: string;
   objective: string;
   constraints?: string;
   model: string;
@@ -42,6 +43,7 @@ export async function runMission(input: RunMissionInput, deps: RunnerDeps): Prom
   const { eventStore, missionRepository, evidenceStore, modelAdapter, workspaceManager, planner, policy } = deps;
 
   await eventStore.append(makeEvent(missionId, "mission.created", {
+    title: input.title,
     objective: input.objective,
     constraints: input.constraints,
     model: input.model,

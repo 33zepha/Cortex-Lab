@@ -1,5 +1,11 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Squares2X2Icon, RocketLaunchIcon, ServerStackIcon, UserIcon } from "@heroicons/react/24/solid";
+import {
+  Squares2X2Icon,
+  RocketLaunchIcon,
+  CommandLineIcon,
+  ServerStackIcon,
+  UserIcon,
+} from "@heroicons/react/24/solid";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ROUTES } from "@/lib/routes";
@@ -8,6 +14,7 @@ import { TRANSITION_SPRING, LIQUID_GLASS_HOVER, LIQUID_GLASS_ACTIVE } from "@/li
 const navItems = [
   { to: ROUTES.home, label: "Accueil", icon: Squares2X2Icon, end: true },
   { to: ROUTES.missions, label: "Missions", icon: RocketLaunchIcon, end: false },
+  { to: ROUTES.console, label: "Console", icon: CommandLineIcon, end: false },
   { to: ROUTES.system, label: "System", icon: ServerStackIcon, end: false },
 ];
 

@@ -206,15 +206,19 @@ app.get<{ Querystring: { cursor?: string } }>("/api/stream", async (request, rep
   return reply;
 });
 
-app.post<{ Body: { objective?: string; constraints?: string; model?: string; effort?: string; sourceRoot?: string } }>(
+app.post<{ Body: { title?: string; objective?: string; constraints?: string; model?: string; effort?: string; sourceRoot?: string } }>(
   "/api/missions",
   async (request, reply) => {
-    const { objective, constraints, model, effort, sourceRoot } = request.body ?? {};
+    const { title, objective, constraints, model, effort, sourceRoot } = request.body ?? {};
     const cleanObjective = objective?.trim() ?? "";
 
     if (cleanObjective.length < 10 || cleanObjective.length > 10_000) {
       reply.code(400);
       return { error: "objective requis (10 à 10000 caractères)" };
+    }
+    if ((title?.length ?? 0) > 200) {
+      reply.code(400);
+      return { error: "title trop long (200 caractères maximum)" };
     }
     if ((constraints?.length ?? 0) > 20_000) {
       reply.code(400);
@@ -244,6 +248,7 @@ app.post<{ Body: { objective?: string; constraints?: string; model?: string; eff
       const mission = await runMission(
         {
           missionId,
+          title: title?.trim(),
           objective: cleanObjective,
           constraints: effortConstraint,
           model: selectedModel,

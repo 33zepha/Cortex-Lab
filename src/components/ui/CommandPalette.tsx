@@ -3,7 +3,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Command } from "cmdk";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Activity, LayoutGrid, ListChecks, X, UserRound, ArrowUpRight } from "lucide-react";
+import { Activity, LayoutGrid, ListChecks, X, UserRound, ArrowUpRight, Terminal } from "lucide-react";
 import {
   MagnifyingGlassIcon,
   RocketLaunchIcon,
@@ -13,6 +13,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { cn } from "@/lib/cn";
 import { ROUTES } from "@/lib/routes";
+import { getMissionDisplay } from "@/lib/mission-naming";
 import { useMissions } from "@/lib/useMissions";
 import type { Mission } from "@/lib/types";
 
@@ -144,6 +145,12 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                           <p className="mt-0.5 text-[11px] font-medium text-text-muted">Exécutions et historique</p>
                         </div>
                       </SearchItem>
+                      <SearchItem icon={<Terminal className="size-[19px]" />} onSelect={() => run(() => navigate(ROUTES.console))} value="console logs terminal runtime streaming cortex claude">
+                        <div>
+                          <p className="font-bold text-text-primary">Console</p>
+                          <p className="mt-0.5 text-[11px] font-medium text-text-muted">Flux temps réel et logs runtime</p>
+                        </div>
+                      </SearchItem>
                       <SearchItem icon={<ServerStackIcon className="size-[19px]" />} onSelect={() => run(() => navigate(ROUTES.system))} value="system système serveur santé vps">
                         <div>
                           <p className="font-bold text-text-primary">System</p>
@@ -163,21 +170,24 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                         heading="Missions"
                         className="mb-4 [&_[cmdk-group-heading]]:mb-2 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.13em] [&_[cmdk-group-heading]]:text-text-muted"
                       >
-                        {missions.slice(0, 8).map((mission) => (
-                          <SearchItem
-                            key={mission.id}
-                            icon={<ArrowUpRight className="size-[18px]" strokeWidth={3} />}
-                            onSelect={() => run(() => navigate(ROUTES.missionDetail(mission.id)))}
-                            value={`${mission.objective} ${mission.model} ${statusLabel[mission.status]}`}
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate font-bold text-text-primary">{mission.objective}</p>
-                              <p className="mt-0.5 truncate text-[11px] font-medium text-text-muted">
-                                {statusLabel[mission.status]} · {mission.model}
-                              </p>
-                            </div>
-                          </SearchItem>
-                        ))}
+                        {missions.slice(0, 8).map((mission) => {
+                          const display = getMissionDisplay(mission, { preset: "row" });
+                          return (
+                            <SearchItem
+                              key={mission.id}
+                              icon={<ArrowUpRight className="size-[18px]" strokeWidth={3} />}
+                              onSelect={() => run(() => navigate(ROUTES.missionDetail(mission.id)))}
+                              value={`${display.title} ${mission.objective} ${mission.model} ${statusLabel[mission.status]}`}
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate font-bold text-text-primary">{display.title}</p>
+                                <p className="mt-0.5 truncate text-[11px] font-medium text-text-muted">
+                                  {statusLabel[mission.status]} · {mission.model}
+                                </p>
+                              </div>
+                            </SearchItem>
+                          );
+                        })}
                       </Command.Group>
                     )}
 

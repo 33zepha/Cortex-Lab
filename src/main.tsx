@@ -6,6 +6,7 @@ import { AppShell } from "@/components/shell/AppShell";
 import { OverviewScreen } from "@/screens/OverviewScreen";
 import { MissionsScreen } from "@/screens/MissionsScreen";
 import { MissionDetailScreen } from "@/screens/MissionDetailScreen";
+import { ConsoleScreen } from "@/screens/ConsoleScreen";
 import { SystemScreen } from "@/screens/SystemScreen";
 import { ProfileScreen } from "@/screens/ProfileScreen";
 import "@/styles/global.css";
@@ -25,6 +26,7 @@ createRoot(root).render(
               <Route path="/" element={<OverviewScreen />} />
               <Route path="/missions" element={<MissionsScreen />} />
               <Route path="/missions/:id" element={<MissionDetailScreen />} />
+              <Route path="/console" element={<ConsoleScreen />} />
               <Route path="/system" element={<SystemScreen />} />
               <Route path="/profile" element={<ProfileScreen />} />
             </Route>

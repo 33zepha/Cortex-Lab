@@ -1,5 +1,6 @@
 import type { DomainEventEnvelope } from "./contracts/events";
 import type { MissionEntity } from "./contracts/mission";
+import { formatMissionTitle } from "./mission-naming";
 
 /** Reconstruit l'état d'une mission en rejouant son flux d'événements (DECISIONS.md #3). */
 export function projectMission(missionId: string, events: DomainEventEnvelope[]): MissionEntity | null {
@@ -9,6 +10,7 @@ export function projectMission(missionId: string, events: DomainEventEnvelope[])
 
   const entity: MissionEntity = {
     id: missionId,
+    title: created.payload.title ?? formatMissionTitle(created.payload.objective),
     objective: created.payload.objective,
     constraints: created.payload.constraints,
     status: "running",

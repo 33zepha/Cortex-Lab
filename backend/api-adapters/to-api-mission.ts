@@ -23,6 +23,7 @@ export type ApiTimelineEvent = {
 
 export type ApiMission = {
   id: string;
+  title?: string;
   objective: string;
   constraints?: string;
   status: MissionEntity["status"];
@@ -157,6 +158,7 @@ export function toApiMission(mission: MissionEntity, events: DomainEventEnvelope
 
   return {
     id: mission.id,
+    title: mission.title,
     objective: mission.objective,
     constraints: mission.constraints,
     status: mission.status,

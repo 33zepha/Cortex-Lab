@@ -37,6 +37,7 @@ export type TimelineEvent = {
 
 export type Mission = {
   id: string;
+  title?: string;
   objective: string;
   constraints?: string;
   status: MissionStatus;
