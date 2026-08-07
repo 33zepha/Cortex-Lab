@@ -4,10 +4,14 @@
  */
 export interface RunnerTask {
   missionId: string;
+  taskId?: string;
   step: string;
   objective: string;
   context: string;
   constraints: string;
+  acceptanceCriteria?: string[];
+  preferredCapabilities?: string[];
+  risk?: "low" | "medium" | "high";
   signal?: AbortSignal;
   workspace: {
     root: string;
