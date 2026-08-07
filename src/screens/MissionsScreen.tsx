@@ -10,6 +10,8 @@ import { MissionKanbanCard } from "./missions/MissionKanbanCard";
 import { NewMissionDialog } from "./missions/NewMissionDialog";
 import { EASE_SPRING_ARRAY } from "@/lib/animations";
 import { useMissions } from "@/lib/useMissions";
+import { cn } from "@/lib/cn";
+import { LIQUID_GLASS_ACTIVE, LIQUID_GLASS_HOVER, TRANSITION_SPRING } from "@/lib/ui-classes";
 import type { Mission, MissionStatus } from "@/lib/types";
 
 const KANBAN_COLUMNS: { id: MissionStatus; title: string; color: string }[] = [
@@ -20,10 +22,18 @@ const KANBAN_COLUMNS: { id: MissionStatus; title: string; color: string }[] = [
   { id: "cancelled", title: "Annulées", color: "text-text-muted" },
 ];
 
+type MobileFilter = "all" | MissionStatus;
+
+const MOBILE_FILTERS: { id: MobileFilter; title: string }[] = [
+  { id: "all", title: "Toutes" },
+  ...KANBAN_COLUMNS.map(({ id, title }) => ({ id, title })),
+];
+
 export function MissionsScreen() {
   const [searchParams] = useSearchParams();
   const demoState = searchParams.get("state");
   const [query, setQuery] = useState("");
+  const [mobileFilter, setMobileFilter] = useState<MobileFilter>("all");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,7 +41,7 @@ export function MissionsScreen() {
     if (!el) return;
 
     let scrollTimeout: NodeJS.Timeout;
-    
+
     const handleScroll = () => {
       el.classList.add("is-scrolling");
       clearTimeout(scrollTimeout);
@@ -43,14 +53,14 @@ export function MissionsScreen() {
     const onWheel = (e: WheelEvent) => {
       if (e.deltaY !== 0 && e.deltaX === 0) {
         e.preventDefault();
-        el.scrollLeft += e.deltaY; // Instant fluid scroll
+        el.scrollLeft += e.deltaY;
         handleScroll();
       }
     };
 
     el.addEventListener("wheel", onWheel, { passive: false });
     el.addEventListener("scroll", handleScroll, { passive: true });
-    
+
     return () => {
       el.removeEventListener("wheel", onWheel);
       el.removeEventListener("scroll", handleScroll);
@@ -73,11 +83,16 @@ export function MissionsScreen() {
       failed: [],
       cancelled: [],
     };
-    filtered.forEach(m => {
+    filtered.forEach((m) => {
       if (grouped[m.status]) grouped[m.status].push(m);
     });
     return grouped;
   }, [filtered]);
+
+  const mobileMissions = useMemo(
+    () => (mobileFilter === "all" ? filtered : missionsByStatus[mobileFilter]),
+    [filtered, mobileFilter, missionsByStatus],
+  );
 
   if (demoState === "loading" || (loading && demoState !== "empty")) {
     return (
@@ -88,8 +103,15 @@ export function MissionsScreen() {
         className="flex h-full flex-col"
       >
         <PageHeader title="Missions" icon={RocketLaunchIcon} />
-        <Skeleton className="mb-8 h-9 w-80" />
-        <div className="flex flex-1 gap-6 overflow-hidden">
+        <Skeleton className="mb-5 h-9 w-full tablet:mb-8 tablet:w-80" />
+
+        <div className="space-y-3 laptop:hidden">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-[112px] w-full rounded-[24px]" />
+          ))}
+        </div>
+
+        <div className="hidden flex-1 gap-6 overflow-hidden laptop:flex">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="flex h-full w-[320px] shrink-0 flex-col gap-4">
               <Skeleton className="h-6 w-32 rounded-md" />
@@ -131,7 +153,7 @@ export function MissionsScreen() {
     >
       <PageHeader
         title="Missions"
-        icon={RocketLaunchIcon} 
+        icon={RocketLaunchIcon}
         action={
           <div className="flex items-center gap-3">
             <SearchInput
@@ -139,15 +161,23 @@ export function MissionsScreen() {
               onChange={(e) => setQuery(e.target.value)}
               onClear={() => setQuery("")}
               placeholder="Filtrer par objectif…"
-              className="w-full tablet:w-64 rounded-[16px] bg-white/40 backdrop-blur-2xl border border-white/60 shadow-[0_4px_16px_rgba(0,0,0,0.04)]"
+              className="hidden w-64 rounded-[16px] border border-white/60 bg-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.04)] backdrop-blur-2xl tablet:block"
             />
             <NewMissionDialog onCreated={refetch} />
           </div>
         }
       />
 
+      <SearchInput
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onClear={() => setQuery("")}
+        placeholder="Filtrer par objectif…"
+        className="mb-4 w-full rounded-[16px] border border-white/60 bg-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.04)] backdrop-blur-2xl tablet:hidden"
+      />
+
       {filtered.length === 0 ? (
-        <div className="mt-4 overflow-hidden rounded-[32px] border border-white/60 bg-white/40 backdrop-blur-3xl shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
+        <div className="mt-1 overflow-hidden rounded-[28px] border border-white/60 bg-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] backdrop-blur-3xl tablet:mt-4 tablet:rounded-[32px]">
           <EmptyState
             icon={<Inbox className="size-6" />}
             title={source.length === 0 ? "Aucune mission" : "Aucun résultat"}
@@ -159,30 +189,64 @@ export function MissionsScreen() {
           />
         </div>
       ) : (
-        <div 
-          ref={scrollRef}
-          className="flex flex-1 gap-6 overflow-x-auto pb-6 kanban-scrollbar"
-        >
-          {KANBAN_COLUMNS.map((col) => (
-            <div key={col.id} className="flex h-full w-[320px] shrink-0 flex-col gap-4">
-              <div className="flex items-center justify-between px-2">
-                <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text-secondary">
-                  <span className={`size-1.5 rounded-full bg-current ${col.color} shadow-[0_0_8px_currentColor]`} />
-                  {col.title}
-                </h2>
-                <span className="rounded-[8px] bg-white/50 px-2 py-0.5 text-[11px] font-bold text-text-primary border border-white/60 shadow-sm">
-                  {missionsByStatus[col.id].length}
-                </span>
-              </div>
-              
-              <div className="flex flex-col gap-3 overflow-y-auto scrollbar-none pb-4">
-                {missionsByStatus[col.id].map((mission) => (
-                  <MissionKanbanCard key={mission.id} mission={mission} />
-                ))}
-              </div>
+        <>
+          <div className="flex min-h-0 flex-1 flex-col laptop:hidden">
+            <div className="scrollbar-none -mx-1 mb-4 flex shrink-0 gap-2 overflow-x-auto px-1 pb-1">
+              {MOBILE_FILTERS.map((filter) => {
+                const count = filter.id === "all" ? filtered.length : missionsByStatus[filter.id].length;
+                const active = mobileFilter === filter.id;
+
+                return (
+                  <button
+                    key={filter.id}
+                    type="button"
+                    onClick={() => setMobileFilter(filter.id)}
+                    className={cn(
+                      "flex shrink-0 items-center gap-2 rounded-[14px] border border-white/50 bg-white/20 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-text-secondary",
+                      TRANSITION_SPRING,
+                      LIQUID_GLASS_HOVER,
+                      "active:scale-[0.96]",
+                      active && LIQUID_GLASS_ACTIVE,
+                    )}
+                  >
+                    <span>{filter.title}</span>
+                    <span className="rounded-full bg-black/[0.05] px-1.5 py-0.5 text-[10px] leading-none text-text-muted">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-          ))}
-        </div>
+
+            <div className="flex flex-col gap-3 pb-2">
+              {mobileMissions.map((mission) => (
+                <MissionKanbanCard key={mission.id} mission={mission} />
+              ))}
+            </div>
+          </div>
+
+          <div ref={scrollRef} className="hidden flex-1 gap-6 overflow-x-auto pb-6 kanban-scrollbar laptop:flex">
+            {KANBAN_COLUMNS.map((col) => (
+              <div key={col.id} className="flex h-full w-[320px] shrink-0 flex-col gap-4">
+                <div className="flex items-center justify-between px-2">
+                  <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text-secondary">
+                    <span className={`size-1.5 rounded-full bg-current ${col.color} shadow-[0_0_8px_currentColor]`} />
+                    {col.title}
+                  </h2>
+                  <span className="rounded-[8px] border border-white/60 bg-white/50 px-2 py-0.5 text-[11px] font-bold text-text-primary shadow-sm">
+                    {missionsByStatus[col.id].length}
+                  </span>
+                </div>
+
+                <div className="scrollbar-none flex flex-col gap-3 overflow-y-auto pb-4">
+                  {missionsByStatus[col.id].map((mission) => (
+                    <MissionKanbanCard key={mission.id} mission={mission} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </motion.div>
   );
