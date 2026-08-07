@@ -1,21 +1,24 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import type { ReactNode } from "react";
 import { Server, ScrollText, HardDrive, Radio, AlertTriangle, Zap, Plus } from "lucide-react";
 import { ServerStackIcon, ExclamationTriangleIcon, PowerIcon, ServerIcon, SparklesIcon } from "@heroicons/react/24/solid";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { BentoCard, EmptyState, ErrorState, Button, Dialog, DialogTrigger, DialogContent, Input, Skeleton, HoverExpandButton, GlassActionGroup } from "@/components/ui";
+import {
+  BentoCard,
+  EmptyState,
+  ErrorState,
+  Button,
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  Input,
+  Skeleton,
+  HoverExpandButton,
+  GlassActionGroup,
+} from "@/components/ui";
 import { systemDisconnected } from "@/fixtures/system";
 import { formatRelativeTime } from "@/lib/status";
-import {
-  EASE_SPRING_ARRAY,
-  STAGGER_CONTAINER_VARIANTS,
-  STAGGER_ITEM_VARIANTS,
-  GLOW_DRIFT_A,
-  GLOW_DRIFT_A_TRANSITION,
-  GLOW_DRIFT_B,
-  GLOW_DRIFT_B_TRANSITION,
-} from "@/lib/animations";
+import { EASE_SPRING_ARRAY, STAGGER_ITEM_VARIANTS } from "@/lib/animations";
 import { useVps } from "@/lib/VpsContext";
 import { useSystemHealth } from "@/lib/useSystemHealth";
 import { ClaudeMark } from "@/components/brand/ClaudeMark";
@@ -48,48 +51,22 @@ function formatUptime(seconds: number): string {
   return hours > 0 ? `${days} j ${hours} h` : `${days} j`;
 }
 
-function MetricTile({
-  id,
-  icon,
-  label,
-  value,
-  sub,
-  className,
-  children,
-}: {
-  id?: string;
-  icon: ReactNode;
-  label: string;
-  value: string;
-  sub?: string;
-  className?: string;
-  children?: ReactNode;
-}) {
+function SectionTitle({ title, detail }: { title: string; detail: string }) {
   return (
-    <div
-      id={id}
-      className={cn(
-        "scroll-mt-6 rounded-[20px] border border-white/60 bg-white/60 px-4 py-3.5 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] backdrop-blur-xl laptop:rounded-[24px] laptop:px-5 laptop:py-4",
-        className,
-      )}
-    >
-      <div className="flex items-center gap-2 text-text-muted">
-        {icon}
-        <span className="text-[10px] font-bold uppercase tracking-[0.11em] laptop:text-xs laptop:tracking-widest">{label}</span>
-      </div>
-      <p className="mt-1.5 text-[26px] font-bold leading-none tracking-[-0.035em] text-text-primary laptop:mt-2 laptop:text-2xl laptop:font-semibold laptop:tracking-tight">
-        {value}
-      </p>
-      {sub && <p className="mt-1.5 text-[11px] font-medium text-text-muted laptop:mt-1">{sub}</p>}
-      {children}
+    <div className="mb-2.5 flex items-end justify-between gap-4 px-1 laptop:mb-3">
+      <h2 className="text-[11px] font-bold uppercase tracking-[0.13em] text-text-primary">{title}</h2>
+      <span className="text-[10px] font-semibold text-text-muted">{detail}</span>
     </div>
   );
+}
+
+function statusClass(status: "good" | "warning" | "bad") {
+  return status === "good" ? "text-success" : status === "warning" ? "text-warning" : "text-error";
 }
 
 export function SystemScreen() {
   const [simulateDisconnect, setSimulateDisconnect] = useState(false);
   const [vpsDialogOpen, setVpsDialogOpen] = useState(false);
-
   const { vps, connectVps } = useVps();
   const [vpsIp, setVpsIp] = useState("187.127.70.52");
   const [vpsSshId, setVpsSshId] = useState("root");
@@ -102,10 +79,10 @@ export function SystemScreen() {
     return (
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}>
         <PageHeader title="System" icon={ServerStackIcon} />
-        <div className="mb-4 grid grid-cols-1 gap-4 tablet:grid-cols-4 laptop:mb-6 laptop:grid-cols-12 laptop:gap-6">
-          {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-40 rounded-[20px] tablet:col-span-4 laptop:col-span-4 laptop:h-48 laptop:rounded-[24px]" />
-          ))}
+        <div className="space-y-4">
+          <Skeleton className="h-44 rounded-[22px] laptop:h-48 laptop:rounded-[28px]" />
+          <Skeleton className="h-56 rounded-[22px] laptop:rounded-[28px]" />
+          <Skeleton className="h-52 rounded-[22px] laptop:rounded-[28px]" />
         </div>
       </motion.div>
     );
@@ -121,7 +98,14 @@ export function SystemScreen() {
   }
 
   const ramPercent = Math.min(100, (health.cortexServer.memoryMb / 4096) * 100);
+  const storagePercent = health.storage.quotaMb > 0 ? Math.min(100, (health.storage.usedMb / health.storage.quotaMb) * 100) : 0;
   const storageDenominator = Math.max(health.storage.usedMb, 1);
+
+  const coreStatus = health.cortexServer.status === "running" ? "Opérationnel" : health.cortexServer.status === "degraded" ? "Dégradé" : "Arrêté";
+  const coreTone = health.cortexServer.status === "running" ? "good" : health.cortexServer.status === "degraded" ? "warning" : "bad";
+  const claudeStatus = health.claudeCode.status === "available" ? "Disponible" : health.claudeCode.status === "degraded" ? "Dégradé" : "Indisponible";
+  const claudeTone = health.claudeCode.status === "available" ? "good" : health.claudeCode.status === "degraded" ? "warning" : "bad";
+  const openaiStatus = health.openai.status === "available" ? "Disponible" : "Indisponible";
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}>
@@ -129,15 +113,14 @@ export function SystemScreen() {
         title="System"
         icon={ServerStackIcon}
         action={
-          <GlassActionGroup>
+          <GlassActionGroup className="p-0.5 laptop:p-1">
             {vps && (
               <HoverExpandButton
                 icon={PowerIcon}
-                label={simulateDisconnect ? "Rétablir la connexion" : "Déconnexion locale"}
+                label={simulateDisconnect ? "Rétablir" : "Déconnexion locale"}
                 onClick={() => setSimulateDisconnect((v) => !v)}
               />
             )}
-
             <Dialog open={vpsDialogOpen} onOpenChange={setVpsDialogOpen}>
               <DialogTrigger asChild>
                 <HoverExpandButton icon={ServerIcon} hoverIcon={ThickPlus} label="Associer un VPS" />
@@ -171,213 +154,195 @@ export function SystemScreen() {
                 </div>
               </DialogContent>
             </Dialog>
-
-            <HoverExpandButton icon={SparklesIcon} hoverIcon={ThickPlus} label="Intégration Claude IA" />
+            <HoverExpandButton icon={SparklesIcon} hoverIcon={ThickPlus} label="Intégration Claude" />
           </GlassActionGroup>
         }
       />
 
-      <motion.div variants={STAGGER_CONTAINER_VARIANTS} className="mb-4 grid grid-cols-1 gap-4 tablet:grid-cols-4 laptop:mb-6 laptop:grid-cols-12 laptop:gap-6">
-        <motion.div variants={STAGGER_ITEM_VARIANTS} className="tablet:col-span-4 laptop:col-span-4">
-          <BentoCard className="group relative h-full overflow-hidden">
-            <div className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:12px_12px] opacity-[0.03] laptop:block" />
-            <motion.div
-              animate={GLOW_DRIFT_A}
-              transition={GLOW_DRIFT_A_TRANSITION}
-              className={cn(
-                "pointer-events-none absolute -right-20 -top-20 size-64 rounded-full blur-[64px] opacity-[0.10] transition-[opacity,filter] duration-700 group-hover:opacity-[0.24] group-hover:brightness-125 laptop:opacity-[0.15]",
-                health.cortexServer.status === "running" && "bg-success",
-                health.cortexServer.status === "degraded" && "bg-warning",
-                health.cortexServer.status === "stopped" && "bg-error",
-              )}
-            />
-            <motion.div
-              animate={GLOW_DRIFT_B}
-              transition={GLOW_DRIFT_B_TRANSITION}
-              className={cn(
-                "pointer-events-none absolute -bottom-20 -left-20 size-56 rounded-full blur-[64px] opacity-[0.06] transition-[opacity,filter] duration-700 group-hover:opacity-[0.18] group-hover:brightness-125 laptop:opacity-10",
-                health.cortexServer.status === "running" && "bg-success",
-                health.cortexServer.status === "degraded" && "bg-warning",
-                health.cortexServer.status === "stopped" && "bg-error",
-              )}
-            />
+      <div className="space-y-5 laptop:space-y-7">
+        <section>
+          <SectionTitle title="Infrastructure" detail={vps ? `VPS ${vps.ip}` : "Core local"} />
+          <motion.div variants={STAGGER_ITEM_VARIANTS}>
+            <BentoCard className="group relative overflow-hidden border-white/70">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:14px_14px] opacity-[0.018]" />
+              <div className={cn(
+                "pointer-events-none absolute -right-16 -top-20 size-56 rounded-full blur-[70px] opacity-[0.11]",
+                health.cortexServer.status === "running" ? "bg-success" : health.cortexServer.status === "degraded" ? "bg-warning" : "bg-error",
+              )} />
 
-            <div className="relative z-10 flex h-full flex-col justify-between">
-              <div>
-                <div className="mb-4 flex items-center justify-between laptop:mb-6">
-                  <span className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.1em] text-text-primary laptop:text-xs laptop:tracking-widest">
-                    <Server className="size-4 stroke-[2.8]" />
-                    {vps ? `VPS • ${vps.ip}` : "Core"}
-                  </span>
-                  <span className={cn("text-[10px] font-bold uppercase tracking-[0.08em]", health.cortexServer.status === "running" ? "text-success" : health.cortexServer.status === "degraded" ? "text-warning" : "text-error")}>{health.cortexServer.status === "running" ? "Opérationnel" : health.cortexServer.status === "degraded" ? "Dégradé" : "Arrêté"}</span>
-                </div>
-
-                <div className="mt-3 grid grid-cols-2 gap-5 laptop:mt-8 laptop:gap-6">
-                  <div className="flex flex-col">
-                    <span className="mb-1 text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted laptop:mb-1.5 laptop:tracking-widest">Uptime</span>
-                    <span className="text-[30px] font-bold leading-none tracking-[-0.04em] text-text-primary laptop:text-3xl laptop:font-semibold laptop:tracking-tight">
-                      {formatUptime(health.cortexServer.uptimeSeconds)}
-                    </span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="mb-1 text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted laptop:mb-1.5 laptop:tracking-widest">Mémoire</span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-[30px] font-bold leading-none tracking-[-0.04em] text-text-primary laptop:text-3xl laptop:font-semibold laptop:tracking-tight">{health.cortexServer.memoryMb}</span>
-                      <span className="text-[11px] font-medium text-text-muted">Mo</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-5 laptop:mt-6">
-                <div className="mb-2 flex items-center justify-between text-[9px] font-bold uppercase tracking-wider">
-                  <span className="flex items-center gap-1.5 text-text-muted"><Zap className="size-3" strokeWidth={3} /> Charge RAM</span>
-                  <span className="font-semibold text-text-primary">{ramPercent.toFixed(0)}%</span>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/5">
-                  <motion.div className="h-full rounded-full bg-text-primary" initial={{ width: 0 }} animate={{ width: `${ramPercent}%` }} transition={{ duration: 1.5, ease: EASE_SPRING_ARRAY, delay: 0.2 }} />
-                </div>
-              </div>
-            </div>
-          </BentoCard>
-        </motion.div>
-
-        <motion.div variants={STAGGER_ITEM_VARIANTS} className="tablet:col-span-4 laptop:col-span-4">
-          <BentoCard className="group relative h-full overflow-hidden">
-            <div className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:12px_12px] opacity-[0.03] laptop:block" />
-            <motion.div animate={GLOW_DRIFT_A} transition={GLOW_DRIFT_A_TRANSITION} className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full bg-[#D97757]/10 blur-[64px] transition-[background-color,filter] duration-700 group-hover:bg-[#D97757]/20 group-hover:brightness-125" />
-            <motion.div animate={GLOW_DRIFT_B} transition={GLOW_DRIFT_B_TRANSITION} className="pointer-events-none absolute -bottom-20 -left-20 size-56 rounded-full bg-[#D97757]/7 blur-[64px] transition-[background-color,filter] duration-700 group-hover:bg-[#D97757]/15 group-hover:brightness-125" />
-
-            <div className="relative z-10 flex h-full flex-col justify-between">
-              <div>
-                <div className="mb-4 flex items-center justify-between laptop:mb-6">
+              <div className="relative z-10">
+                <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-[13px] bg-white/50 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_2px_8px_rgba(0,0,0,0.05)] laptop:rounded-[14px]">
-                      <ClaudeMark title="Claude" className="size-5 text-[#D97757]" />
+                    <div className="flex size-11 shrink-0 items-center justify-center rounded-[14px] border border-white/70 bg-white/52 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_4px_12px_-8px_rgba(0,0,0,0.25)]">
+                      <Server className="size-[21px]" strokeWidth={3} />
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-[12px] font-bold uppercase tracking-[0.1em] text-text-primary laptop:text-xs laptop:tracking-widest">Claude Code</span>
-                      <span className="text-[9px] font-semibold uppercase tracking-[0.11em] text-text-muted laptop:font-medium laptop:tracking-widest">Agent CLI</span>
+                    <div>
+                      <p className="text-[13px] font-bold tracking-[-0.015em] text-text-primary">Cortex Core</p>
+                      <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.11em] text-text-muted">Runtime central</p>
                     </div>
                   </div>
-                  <span className={cn("text-[10px] font-bold uppercase tracking-[0.08em]", health.claudeCode.status === "available" ? "text-success" : "text-warning")}>{health.claudeCode.status === "available" ? "Disponible" : "Indisponible"}</span>
+                  <span className={cn("pt-1 text-[10px] font-bold uppercase tracking-[0.09em]", statusClass(coreTone))}>{coreStatus}</span>
                 </div>
-                <div className="mt-3 grid grid-cols-2 gap-5 laptop:mt-8 laptop:gap-6">
-                  <div className="flex min-w-0 flex-col">
-                    <span className="mb-1 text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted laptop:mb-1.5 laptop:tracking-widest">Appel</span>
-                    <span className="line-clamp-1 text-[23px] font-bold leading-tight tracking-[-0.035em] text-text-primary laptop:mt-0.5 laptop:text-2xl laptop:font-semibold laptop:tracking-tight">
-                      {health.claudeCode.lastCallAt ? formatRelativeTime(health.claudeCode.lastCallAt, now) : "—"}
-                    </span>
+
+                <div className="mt-5 grid grid-cols-[1fr_1fr_auto] items-end gap-4 laptop:mt-7 laptop:max-w-2xl laptop:gap-10">
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Uptime</p>
+                    <p className="mt-1 text-[27px] font-bold leading-none tracking-[-0.045em] text-text-primary laptop:text-3xl">{formatUptime(health.cortexServer.uptimeSeconds)}</p>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="mb-1 text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted laptop:mb-1.5 laptop:tracking-widest">Ce jour</span>
-                    <div className="flex items-baseline gap-1 laptop:mt-0.5">
-                      <span className="text-[30px] font-bold leading-none tracking-[-0.04em] text-text-primary laptop:text-3xl laptop:font-semibold laptop:tracking-tight">{health.claudeCode.tokensUsedToday.toLocaleString("fr-FR")}</span>
-                      <span className="text-[11px] font-medium text-text-muted">tk</span>
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Mémoire</p>
+                    <p className="mt-1 text-[27px] font-bold leading-none tracking-[-0.045em] text-text-primary laptop:text-3xl">
+                      {health.cortexServer.memoryMb}<span className="ml-1 text-[11px] font-semibold tracking-normal text-text-muted">Mo</span>
+                    </p>
+                  </div>
+                  <div className="min-w-[62px] text-right">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">RAM</p>
+                    <p className="mt-1 text-[20px] font-bold leading-none tracking-[-0.03em] text-text-primary">{ramPercent.toFixed(0)}%</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-black/[0.05] laptop:max-w-2xl">
+                  <motion.div className="h-full rounded-full bg-text-primary" initial={{ width: 0 }} animate={{ width: `${ramPercent}%` }} transition={{ duration: 1, ease: EASE_SPRING_ARRAY }} />
+                </div>
+              </div>
+            </BentoCard>
+          </motion.div>
+        </section>
+
+        <section>
+          <SectionTitle title="Moteurs" detail="Exécution & planification" />
+          <BentoCard className="overflow-hidden" padding="none">
+            <div className="grid grid-cols-1 laptop:grid-cols-2">
+              <div className="relative p-4.5 laptop:p-6">
+                <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-[#D97757]/8 blur-[54px]" />
+                <div className="relative z-10">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-[13px] border border-white/70 bg-white/55 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_3px_10px_-7px_rgba(0,0,0,0.25)]">
+                        <ClaudeMark title="Claude" className="size-5 text-[#D97757]" />
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-bold tracking-[-0.015em] text-text-primary">Claude Code</p>
+                        <p className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-text-muted">Agent CLI</p>
+                      </div>
+                    </div>
+                    <span className={cn("pt-1 text-[10px] font-bold uppercase tracking-[0.09em]", statusClass(claudeTone))}>{claudeStatus}</span>
+                  </div>
+                  <div className="mt-5 grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Dernier appel</p>
+                      <p className="mt-1 text-[19px] font-bold tracking-[-0.03em] text-text-primary">{health.claudeCode.lastCallAt ? formatRelativeTime(health.claudeCode.lastCallAt, now) : "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Aujourd'hui</p>
+                      <p className="mt-1 text-[24px] font-bold leading-none tracking-[-0.04em] text-text-primary">
+                        {health.claudeCode.tokensUsedToday.toLocaleString("fr-FR")}<span className="ml-1 text-[10px] font-semibold tracking-normal text-text-muted">tk</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative border-t border-black/[0.045] p-4.5 laptop:border-l laptop:border-t-0 laptop:p-6">
+                <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-[#10A37F]/7 blur-[54px]" />
+                <div className="relative z-10">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-[13px] border border-white/70 bg-white/55 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_3px_10px_-7px_rgba(0,0,0,0.25)]">
+                        <OpenAiMark title="OpenAI" className="size-5 text-text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-bold tracking-[-0.015em] text-text-primary">OpenAI</p>
+                        <p className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-text-muted">Planner</p>
+                      </div>
+                    </div>
+                    <span className={cn("pt-1 text-[10px] font-bold uppercase tracking-[0.09em]", health.openai.status === "available" ? "text-success" : "text-error")}>{openaiStatus}</span>
+                  </div>
+                  <div className="mt-5 grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Dernier appel</p>
+                      <p className="mt-1 text-[19px] font-bold tracking-[-0.03em] text-text-primary">{health.openai.lastCallAt ? formatRelativeTime(health.openai.lastCallAt, now) : "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Aujourd'hui</p>
+                      <p className="mt-1 text-[24px] font-bold leading-none tracking-[-0.04em] text-text-primary">
+                        {health.openai.plansToday}<span className="ml-1 text-[10px] font-semibold tracking-normal text-text-muted">plans</span>
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </BentoCard>
-        </motion.div>
+        </section>
 
-        <motion.div variants={STAGGER_ITEM_VARIANTS} className="tablet:col-span-4 laptop:col-span-4">
-          <BentoCard className="group relative h-full overflow-hidden">
-            <div className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:12px_12px] opacity-[0.03] laptop:block" />
-            <motion.div animate={GLOW_DRIFT_A} transition={GLOW_DRIFT_A_TRANSITION} className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full bg-[#10A37F]/10 blur-[64px] transition-[background-color,filter] duration-700 group-hover:bg-[#10A37F]/20 group-hover:brightness-125" />
-            <motion.div animate={GLOW_DRIFT_B} transition={GLOW_DRIFT_B_TRANSITION} className="pointer-events-none absolute -bottom-20 -left-20 size-56 rounded-full bg-[#10A37F]/7 blur-[64px] transition-[background-color,filter] duration-700 group-hover:bg-[#10A37F]/15 group-hover:brightness-125" />
-
-            <div className="relative z-10 flex h-full flex-col justify-between">
-              <div>
-                <div className="mb-4 flex items-center justify-between laptop:mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-[13px] bg-white/50 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_2px_8px_rgba(0,0,0,0.05)] laptop:rounded-[14px]">
-                      <OpenAiMark title="OpenAI" className="size-5 text-text-primary" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[12px] font-bold uppercase tracking-[0.1em] text-text-primary laptop:text-xs laptop:tracking-widest">OpenAI</span>
-                      <span className="text-[9px] font-semibold uppercase tracking-[0.11em] text-text-muted laptop:font-medium laptop:tracking-widest">Planner</span>
-                    </div>
-                  </div>
-                  <span className={cn("text-[10px] font-bold uppercase tracking-[0.08em]", health.openai.status === "available" ? "text-success" : "text-warning")}>{health.openai.status === "available" ? "Disponible" : "Indisponible"}</span>
+        <section>
+          <SectionTitle title="Données & transport" detail="Persistence, stockage, temps réel" />
+          <BentoCard className="overflow-hidden" padding="none">
+            <div className="grid grid-cols-2 laptop:grid-cols-4">
+              <div className="border-b border-r border-black/[0.045] p-4 laptop:border-b-0 laptop:p-5">
+                <div className="flex items-center gap-2 text-text-muted">
+                  <ScrollText className="size-4" strokeWidth={2.8} />
+                  <span className="text-[9px] font-bold uppercase tracking-[0.12em]">Ledger</span>
                 </div>
-                <div className="mt-3 grid grid-cols-2 gap-5 laptop:mt-8 laptop:gap-6">
-                  <div className="flex min-w-0 flex-col">
-                    <span className="mb-1 text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted laptop:mb-1.5 laptop:tracking-widest">Appel</span>
-                    <span className="line-clamp-1 text-[23px] font-bold leading-tight tracking-[-0.035em] text-text-primary laptop:mt-0.5 laptop:text-2xl laptop:font-semibold laptop:tracking-tight">
-                      {health.openai.lastCallAt ? formatRelativeTime(health.openai.lastCallAt, now) : "—"}
-                    </span>
+                <p className="mt-2 text-[27px] font-bold leading-none tracking-[-0.04em] text-text-primary">{health.ledger.totalEvents.toLocaleString("fr-FR")}</p>
+                <p className="mt-1.5 text-[10px] font-semibold text-text-muted">{(health.ledger.sizeKb / 1024).toFixed(1)} Mo · {health.ledger.lastWriteAt ? formatRelativeTime(health.ledger.lastWriteAt, now) : "aucune écriture"}</p>
+              </div>
+
+              <div className="border-b border-black/[0.045] p-4 laptop:border-b-0 laptop:border-r laptop:p-5">
+                <div className="flex items-center gap-2 text-text-muted">
+                  <Radio className="size-4" strokeWidth={2.8} />
+                  <span className="text-[9px] font-bold uppercase tracking-[0.12em]">SSE</span>
+                </div>
+                <p className="mt-2 text-[20px] font-bold leading-none tracking-[-0.03em] text-text-primary">{sseLabelMap[health.sse.status]}</p>
+                <p className="mt-1.5 text-[10px] font-semibold text-text-muted">{health.sse.connectedClients} client(s){health.sse.avgLagMs > 0 ? ` · ${health.sse.avgLagMs} ms` : ""}</p>
+              </div>
+
+              <div className="col-span-2 p-4 laptop:p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-2 text-text-muted">
+                    <HardDrive className="size-4" strokeWidth={2.8} />
+                    <span className="text-[9px] font-bold uppercase tracking-[0.12em]">Stockage</span>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="mb-1 text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted laptop:mb-1.5 laptop:tracking-widest">Ce jour</span>
-                    <div className="flex items-baseline gap-1 laptop:mt-0.5">
-                      <span className="text-[30px] font-bold leading-none tracking-[-0.04em] text-text-primary laptop:text-3xl laptop:font-semibold laptop:tracking-tight">{health.openai.plansToday}</span>
-                      <span className="text-[11px] font-medium text-text-muted">plans</span>
-                    </div>
-                  </div>
+                  <span className="text-[10px] font-bold text-text-primary">{storagePercent.toFixed(0)}%</span>
+                </div>
+                <div className="mt-2 flex items-baseline gap-1.5">
+                  <span className="text-[27px] font-bold leading-none tracking-[-0.04em] text-text-primary">{health.storage.usedMb}</span>
+                  <span className="text-[10px] font-semibold text-text-muted">Mo / {(health.storage.quotaMb / 1000).toFixed(0)} Go</span>
+                </div>
+                <div className="mt-3 flex h-1.5 w-full overflow-hidden rounded-full bg-black/[0.05]">
+                  {health.storage.breakdown.length > 0 ? health.storage.breakdown.map((item, i) => (
+                    <div key={i} className={cn("h-full", item.colorClass)} style={{ width: `${(item.valueMb / storageDenominator) * Math.max(storagePercent, 0.8)}%` }} title={`${item.label}: ${item.valueMb} Mo`} />
+                  )) : <div className="h-full bg-text-muted/20" style={{ width: `${storagePercent}%` }} />}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                  {health.storage.breakdown.map((item, i) => (
+                    <span key={i} className="text-[9px] font-semibold text-text-muted">{item.label} {item.valueMb} Mo</span>
+                  ))}
                 </div>
               </div>
             </div>
           </BentoCard>
-        </motion.div>
-      </motion.div>
+        </section>
 
-      <div className="mb-4 grid grid-cols-2 gap-3 tablet:grid-cols-4 laptop:mb-6 laptop:gap-6">
-        <MetricTile
-          id="ledger"
-          icon={<ScrollText className="size-4 stroke-[2.7]" />}
-          label="Cortex Ledger"
-          value={health.ledger.totalEvents.toLocaleString("fr-FR")}
-          sub={`${(health.ledger.sizeKb / 1024).toFixed(1)} Mo • ${health.ledger.totalEvents > 0 ? "Sain" : "Vide"}`}
-        />
-        <MetricTile
-          id="storage"
-          className="col-span-2"
-          icon={<HardDrive className="size-4 stroke-[2.7]" />}
-          label="Stockage utilisé"
-          value={`${health.storage.usedMb} Mo`}
-          sub={`sur ${(health.storage.quotaMb / 1000).toFixed(0)} Go`}
-        >
-          <div className="mt-3 laptop:mt-4">
-            <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-black/5">
-              {health.storage.breakdown.map((item, i) => (
-                <div key={i} className={cn("h-full", item.colorClass)} style={{ width: `${(item.valueMb / storageDenominator) * 100}%` }} title={`${item.label} : ${item.valueMb} Mo`} />
-              ))}
-            </div>
-            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-              {health.storage.breakdown.map((item, i) => (
-                <div key={i} className="flex items-center gap-1.5">
-                  <div className={cn("size-1.5 rounded-sm", item.colorClass)} />
-                  <span className="text-[9px] font-semibold uppercase tracking-[0.07em] text-text-muted laptop:font-medium laptop:tracking-wider">{item.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </MetricTile>
-        <MetricTile
-          id="sse"
-          icon={<Radio className="size-4 stroke-[2.7]" />}
-          label="SSE"
-          value={sseLabelMap[health.sse.status]}
-          sub={health.sse.avgLagMs > 0 ? `${health.sse.connectedClients} client(s) · ${health.sse.avgLagMs} ms` : `${health.sse.connectedClients} client(s)`}
-        />
+        <section>
+          <SectionTitle title="Incidents" detail={health.recentErrors.length === 0 ? "Aucun signal récent" : `${health.recentErrors.length} récent(s)`} />
+          <BentoCard id="errors" icon={<ExclamationTriangleIcon className="size-[18px] text-error" />} className="scroll-mt-6">
+            {health.recentErrors.length === 0 ? (
+              <EmptyState icon={<AlertTriangle className="size-5" strokeWidth={2.8} />} title="Aucune erreur" description="Le système n'a signalé aucune erreur récente." compact />
+            ) : (
+              <ul className="space-y-2">
+                {health.recentErrors.map((e) => (
+                  <li key={e.id} className="rounded-[12px] border border-error/20 bg-error-muted/60 px-3 py-2.5 text-body-text text-text-secondary">
+                    {e.message}
+                    <span className="mt-1 block text-label font-semibold text-text-muted">{formatRelativeTime(e.ts, now)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </BentoCard>
+        </section>
       </div>
-
-      <BentoCard id="errors" icon={<ExclamationTriangleIcon className="size-[18px] text-error" />} className="scroll-mt-6">
-        {health.recentErrors.length === 0 ? (
-          <EmptyState icon={<AlertTriangle className="size-5" />} title="Aucune erreur" description="Le système n'a signalé aucune erreur récente." compact />
-        ) : (
-          <ul className="space-y-2">
-            {health.recentErrors.map((e) => (
-              <li key={e.id} className="rounded-md border border-error/30 bg-error-muted px-3 py-2.5 text-body-text text-text-secondary">
-                {e.message}
-                <span className="mt-1 block text-label text-text-muted">{formatRelativeTime(e.ts, now)}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </BentoCard>
     </motion.div>
   );
 }
