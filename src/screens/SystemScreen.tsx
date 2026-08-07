@@ -5,7 +5,6 @@ import {
   ScrollText,
   HardDrive,
   Radio,
-  AlertTriangle,
   Plus,
   Cpu,
   Activity,
@@ -14,7 +13,6 @@ import { ServerStackIcon, ExclamationTriangleIcon, ServerIcon } from "@heroicons
 import { PageHeader } from "@/components/shell/PageHeader";
 import {
   BentoCard,
-  EmptyState,
   ErrorState,
   Dialog,
   DialogTrigger,
@@ -174,11 +172,7 @@ export function SystemScreen() {
                 </label>
               </div>
               <div className="mt-6 grid grid-cols-[auto_1fr] gap-2.5 border-t border-black/[0.05] pt-4">
-                <button
-                  type="button"
-                  onClick={() => setVpsDialogOpen(false)}
-                  className="min-h-12 rounded-[14px] px-4 text-[12px] font-bold text-text-muted hover:bg-black/[0.035] hover:text-text-primary"
-                >
+                <button type="button" onClick={() => setVpsDialogOpen(false)} className="min-h-12 rounded-[14px] px-4 text-[12px] font-bold text-text-muted hover:bg-black/[0.035] hover:text-text-primary">
                   Annuler
                 </button>
                 <button
@@ -202,29 +196,9 @@ export function SystemScreen() {
           <SectionTitle index="00" title="Vue système" detail={vps ? `VPS ${vps.ip}` : "Runtime local"} />
           <BentoCard className="overflow-hidden" padding="none">
             <div className="grid grid-cols-1 tablet:grid-cols-3">
-              <SystemSignal
-                icon={<Server className="size-4" strokeWidth={2.9} />}
-                label="Runtime"
-                value={coreStatus}
-                detail={`${formatUptime(health.cortexServer.uptimeSeconds)} d'uptime · ${health.cortexServer.memoryMb} Mo`}
-                tone={coreTone}
-              />
-              <SystemSignal
-                icon={<Cpu className="size-4" strokeWidth={2.9} />}
-                label="Exécution"
-                value={claudeStatus}
-                detail={`Claude Code · ${health.claudeCode.tokensUsedToday.toLocaleString("fr-FR")} tk aujourd'hui`}
-                tone={claudeTone}
-                border
-              />
-              <SystemSignal
-                icon={<Radio className="size-4" strokeWidth={2.9} />}
-                label="Temps réel"
-                value={sseLabelMap[health.sse.status]}
-                detail={`${health.sse.connectedClients} client(s)${health.sse.avgLagMs > 0 ? ` · ${health.sse.avgLagMs} ms` : ""}`}
-                tone={realtimeTone}
-                border
-              />
+              <SystemSignal icon={<Server className="size-4" strokeWidth={2.9} />} label="Runtime" value={coreStatus} detail={`${formatUptime(health.cortexServer.uptimeSeconds)} d'uptime · ${health.cortexServer.memoryMb} Mo`} tone={coreTone} />
+              <SystemSignal icon={<Cpu className="size-4" strokeWidth={2.9} />} label="Exécution" value={claudeStatus} detail={`Claude Code · ${health.claudeCode.tokensUsedToday.toLocaleString("fr-FR")} tk aujourd'hui`} tone={claudeTone} border />
+              <SystemSignal icon={<Radio className="size-4" strokeWidth={2.9} />} label="Temps réel" value={sseLabelMap[health.sse.status]} detail={`${health.sse.connectedClients} client(s)${health.sse.avgLagMs > 0 ? ` · ${health.sse.avgLagMs} ms` : ""}`} tone={realtimeTone} border />
             </div>
           </BentoCard>
         </section>
@@ -233,11 +207,7 @@ export function SystemScreen() {
           <SectionTitle index="01" title="Infrastructure" detail="Cortex Core" />
           <BentoCard className="group relative overflow-hidden border-white/70">
             <ServerStackIcon className="pointer-events-none absolute -right-5 -top-8 size-[132px] -rotate-6 text-text-primary opacity-[0.025]" aria-hidden />
-            <div className={cn(
-              "pointer-events-none absolute -right-16 -top-20 size-56 rounded-full blur-[70px] opacity-[0.10]",
-              health.cortexServer.status === "running" ? "bg-success" : health.cortexServer.status === "degraded" ? "bg-warning" : "bg-error",
-            )} />
-
+            <div className={cn("pointer-events-none absolute -right-16 -top-20 size-56 rounded-full blur-[70px] opacity-[0.10]", health.cortexServer.status === "running" ? "bg-success" : health.cortexServer.status === "degraded" ? "bg-warning" : "bg-error")} />
             <div className="relative z-10">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
@@ -251,27 +221,12 @@ export function SystemScreen() {
                 </div>
                 <span className="font-mono text-[9px] font-semibold text-text-muted">runtime</span>
               </div>
-
               <div className="mt-5 grid grid-cols-[1fr_1fr_auto] items-end gap-4 laptop:mt-7 laptop:max-w-2xl laptop:gap-10">
-                <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Uptime</p>
-                  <p className="mt-1 text-[27px] font-bold leading-none tracking-[-0.045em] text-text-primary laptop:text-3xl">{formatUptime(health.cortexServer.uptimeSeconds)}</p>
-                </div>
-                <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Mémoire</p>
-                  <p className="mt-1 text-[27px] font-bold leading-none tracking-[-0.045em] text-text-primary laptop:text-3xl">
-                    {health.cortexServer.memoryMb}<span className="ml-1 text-[11px] font-semibold tracking-normal text-text-muted">Mo</span>
-                  </p>
-                </div>
-                <div className="min-w-[62px] text-right">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">RAM</p>
-                  <p className="mt-1 text-[20px] font-bold leading-none tracking-[-0.03em] text-text-primary">{ramPercent.toFixed(0)}%</p>
-                </div>
+                <div><p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Uptime</p><p className="mt-1 text-[27px] font-bold leading-none tracking-[-0.045em] text-text-primary laptop:text-3xl">{formatUptime(health.cortexServer.uptimeSeconds)}</p></div>
+                <div><p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Mémoire</p><p className="mt-1 text-[27px] font-bold leading-none tracking-[-0.045em] text-text-primary laptop:text-3xl">{health.cortexServer.memoryMb}<span className="ml-1 text-[11px] font-semibold tracking-normal text-text-muted">Mo</span></p></div>
+                <div className="min-w-[62px] text-right"><p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">RAM</p><p className="mt-1 text-[20px] font-bold leading-none tracking-[-0.03em] text-text-primary">{ramPercent.toFixed(0)}%</p></div>
               </div>
-
-              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-black/[0.05] laptop:max-w-2xl">
-                <motion.div className="h-full rounded-full bg-text-primary" initial={{ width: 0 }} animate={{ width: `${ramPercent}%` }} transition={{ duration: 0.8, ease: EASE_SPRING_ARRAY }} />
-              </div>
+              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-black/[0.05] laptop:max-w-2xl"><motion.div className="h-full rounded-full bg-text-primary" initial={{ width: 0 }} animate={{ width: `${ramPercent}%` }} transition={{ duration: 0.8, ease: EASE_SPRING_ARRAY }} /></div>
             </div>
           </BentoCard>
         </section>
@@ -283,56 +238,15 @@ export function SystemScreen() {
               <div className="relative p-4 laptop:p-6">
                 <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-[#D97757]/8 blur-[54px]" />
                 <div className="relative z-10">
-                  <div className="flex items-start gap-3">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-[13px] border border-white/70 bg-white/55 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_3px_10px_-7px_rgba(0,0,0,0.25)]">
-                      <ClaudeMark title="Claude" className="size-5 text-[#D97757]" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[13px] font-bold tracking-[-0.015em] text-text-primary">Claude Code</p>
-                      <p className={cn("mt-0.5 text-[10px] font-bold", statusClass(claudeTone))}>{claudeStatus}</p>
-                    </div>
-                    <span className="font-mono text-[9px] font-semibold text-text-muted">agent cli</span>
-                  </div>
-                  <div className="mt-5 grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Dernier appel</p>
-                      <p className="mt-1 text-[19px] font-bold tracking-[-0.03em] text-text-primary">{health.claudeCode.lastCallAt ? formatRelativeTime(health.claudeCode.lastCallAt, now) : "—"}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Aujourd'hui</p>
-                      <p className="mt-1 text-[24px] font-bold leading-none tracking-[-0.04em] text-text-primary">
-                        {health.claudeCode.tokensUsedToday.toLocaleString("fr-FR")}<span className="ml-1 text-[10px] font-semibold tracking-normal text-text-muted">tk</span>
-                      </p>
-                    </div>
-                  </div>
+                  <div className="flex items-start gap-3"><div className="flex size-10 shrink-0 items-center justify-center rounded-[13px] border border-white/70 bg-white/55 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_3px_10px_-7px_rgba(0,0,0,0.25)]"><ClaudeMark title="Claude" className="size-5 text-[#D97757]" /></div><div className="min-w-0 flex-1"><p className="text-[13px] font-bold tracking-[-0.015em] text-text-primary">Claude Code</p><p className={cn("mt-0.5 text-[10px] font-bold", statusClass(claudeTone))}>{claudeStatus}</p></div><span className="font-mono text-[9px] font-semibold text-text-muted">agent cli</span></div>
+                  <div className="mt-5 grid grid-cols-2 gap-4"><div><p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Dernier appel</p><p className="mt-1 text-[19px] font-bold tracking-[-0.03em] text-text-primary">{health.claudeCode.lastCallAt ? formatRelativeTime(health.claudeCode.lastCallAt, now) : "—"}</p></div><div><p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Aujourd'hui</p><p className="mt-1 text-[24px] font-bold leading-none tracking-[-0.04em] text-text-primary">{health.claudeCode.tokensUsedToday.toLocaleString("fr-FR")}<span className="ml-1 text-[10px] font-semibold tracking-normal text-text-muted">tk</span></p></div></div>
                 </div>
               </div>
-
               <div className="relative border-t border-black/[0.045] p-4 laptop:border-l laptop:border-t-0 laptop:p-6">
                 <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-[#10A37F]/7 blur-[54px]" />
                 <div className="relative z-10">
-                  <div className="flex items-start gap-3">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-[13px] border border-white/70 bg-white/55 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_3px_10px_-7px_rgba(0,0,0,0.25)]">
-                      <OpenAiMark title="OpenAI" className="size-5 text-text-primary" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[13px] font-bold tracking-[-0.015em] text-text-primary">OpenAI</p>
-                      <p className={cn("mt-0.5 text-[10px] font-bold", statusClass(openaiTone))}>{openaiStatus}</p>
-                    </div>
-                    <span className="font-mono text-[9px] font-semibold text-text-muted">planner</span>
-                  </div>
-                  <div className="mt-5 grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Dernier appel</p>
-                      <p className="mt-1 text-[19px] font-bold tracking-[-0.03em] text-text-primary">{health.openai.lastCallAt ? formatRelativeTime(health.openai.lastCallAt, now) : "—"}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Aujourd'hui</p>
-                      <p className="mt-1 text-[24px] font-bold leading-none tracking-[-0.04em] text-text-primary">
-                        {health.openai.plansToday}<span className="ml-1 text-[10px] font-semibold tracking-normal text-text-muted">plans</span>
-                      </p>
-                    </div>
-                  </div>
+                  <div className="flex items-start gap-3"><div className="flex size-10 shrink-0 items-center justify-center rounded-[13px] border border-white/70 bg-white/55 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_3px_10px_-7px_rgba(0,0,0,0.25)]"><OpenAiMark title="OpenAI" className="size-5 text-text-primary" /></div><div className="min-w-0 flex-1"><p className="text-[13px] font-bold tracking-[-0.015em] text-text-primary">OpenAI</p><p className={cn("mt-0.5 text-[10px] font-bold", statusClass(openaiTone))}>{openaiStatus}</p></div><span className="font-mono text-[9px] font-semibold text-text-muted">planner</span></div>
+                  <div className="mt-5 grid grid-cols-2 gap-4"><div><p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Dernier appel</p><p className="mt-1 text-[19px] font-bold tracking-[-0.03em] text-text-primary">{health.openai.lastCallAt ? formatRelativeTime(health.openai.lastCallAt, now) : "—"}</p></div><div><p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">Aujourd'hui</p><p className="mt-1 text-[24px] font-bold leading-none tracking-[-0.04em] text-text-primary">{health.openai.plansToday}<span className="ml-1 text-[10px] font-semibold tracking-normal text-text-muted">plans</span></p></div></div>
                 </div>
               </div>
             </div>
@@ -343,47 +257,9 @@ export function SystemScreen() {
           <SectionTitle index="03" title="Données & transport" detail="Persistance & temps réel" />
           <BentoCard className="overflow-hidden" padding="none">
             <div className="grid grid-cols-2 laptop:grid-cols-4">
-              <div className="border-b border-r border-black/[0.045] p-4 laptop:border-b-0 laptop:p-5">
-                <div className="flex items-center gap-2 text-text-muted">
-                  <ScrollText className="size-4" strokeWidth={2.8} />
-                  <span className="text-[9px] font-bold uppercase tracking-[0.12em]">Ledger</span>
-                </div>
-                <p className="mt-2 text-[27px] font-bold leading-none tracking-[-0.04em] text-text-primary">{health.ledger.totalEvents.toLocaleString("fr-FR")}</p>
-                <p className="mt-1.5 text-[10px] font-semibold text-text-muted">{(health.ledger.sizeKb / 1024).toFixed(1)} Mo · {health.ledger.lastWriteAt ? formatRelativeTime(health.ledger.lastWriteAt, now) : "aucune écriture"}</p>
-              </div>
-
-              <div className="border-b border-black/[0.045] p-4 laptop:border-b-0 laptop:border-r laptop:p-5">
-                <div className="flex items-center gap-2 text-text-muted">
-                  <Radio className="size-4" strokeWidth={2.8} />
-                  <span className="text-[9px] font-bold uppercase tracking-[0.12em]">SSE</span>
-                </div>
-                <p className={cn("mt-2 text-[20px] font-bold leading-none tracking-[-0.03em]", statusClass(realtimeTone))}>{sseLabelMap[health.sse.status]}</p>
-                <p className="mt-1.5 text-[10px] font-semibold text-text-muted">{health.sse.connectedClients} client(s){health.sse.avgLagMs > 0 ? ` · ${health.sse.avgLagMs} ms` : ""}</p>
-              </div>
-
-              <div className="col-span-2 p-4 laptop:p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-2 text-text-muted">
-                    <HardDrive className="size-4" strokeWidth={2.8} />
-                    <span className="text-[9px] font-bold uppercase tracking-[0.12em]">Stockage</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-text-primary">{storagePercent.toFixed(0)}%</span>
-                </div>
-                <div className="mt-2 flex items-baseline gap-1.5">
-                  <span className="text-[27px] font-bold leading-none tracking-[-0.04em] text-text-primary">{health.storage.usedMb}</span>
-                  <span className="text-[10px] font-semibold text-text-muted">Mo / {(health.storage.quotaMb / 1000).toFixed(0)} Go</span>
-                </div>
-                <div className="mt-3 flex h-1.5 w-full overflow-hidden rounded-full bg-black/[0.05]">
-                  {health.storage.breakdown.length > 0 ? health.storage.breakdown.map((item, index) => (
-                    <div key={index} className={cn("h-full", item.colorClass)} style={{ width: `${(item.valueMb / storageDenominator) * Math.max(storagePercent, 0.8)}%` }} title={`${item.label}: ${item.valueMb} Mo`} />
-                  )) : <div className="h-full bg-text-muted/20" style={{ width: `${storagePercent}%` }} />}
-                </div>
-                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-                  {health.storage.breakdown.map((item, index) => (
-                    <span key={index} className="text-[9px] font-semibold text-text-muted">{item.label} {item.valueMb} Mo</span>
-                  ))}
-                </div>
-              </div>
+              <div className="border-b border-r border-black/[0.045] p-4 laptop:border-b-0 laptop:p-5"><div className="flex items-center gap-2 text-text-muted"><ScrollText className="size-4" strokeWidth={2.8} /><span className="text-[9px] font-bold uppercase tracking-[0.12em]">Ledger</span></div><p className="mt-2 text-[27px] font-bold leading-none tracking-[-0.04em] text-text-primary">{health.ledger.totalEvents.toLocaleString("fr-FR")}</p><p className="mt-1.5 text-[10px] font-semibold text-text-muted">{(health.ledger.sizeKb / 1024).toFixed(1)} Mo · {health.ledger.lastWriteAt ? formatRelativeTime(health.ledger.lastWriteAt, now) : "aucune écriture"}</p></div>
+              <div className="border-b border-black/[0.045] p-4 laptop:border-b-0 laptop:border-r laptop:p-5"><div className="flex items-center gap-2 text-text-muted"><Radio className="size-4" strokeWidth={2.8} /><span className="text-[9px] font-bold uppercase tracking-[0.12em]">SSE</span></div><p className={cn("mt-2 text-[20px] font-bold leading-none tracking-[-0.03em]", statusClass(realtimeTone))}>{sseLabelMap[health.sse.status]}</p><p className="mt-1.5 text-[10px] font-semibold text-text-muted">{health.sse.connectedClients} client(s){health.sse.avgLagMs > 0 ? ` · ${health.sse.avgLagMs} ms` : ""}</p></div>
+              <div className="col-span-2 p-4 laptop:p-5"><div className="flex items-start justify-between gap-4"><div className="flex items-center gap-2 text-text-muted"><HardDrive className="size-4" strokeWidth={2.8} /><span className="text-[9px] font-bold uppercase tracking-[0.12em]">Stockage</span></div><span className="text-[10px] font-bold text-text-primary">{storagePercent.toFixed(0)}%</span></div><div className="mt-2 flex items-baseline gap-1.5"><span className="text-[27px] font-bold leading-none tracking-[-0.04em] text-text-primary">{health.storage.usedMb}</span><span className="text-[10px] font-semibold text-text-muted">Mo / {(health.storage.quotaMb / 1000).toFixed(0)} Go</span></div><div className="mt-3 flex h-1.5 w-full overflow-hidden rounded-full bg-black/[0.05]">{health.storage.breakdown.length > 0 ? health.storage.breakdown.map((item, index) => <div key={index} className={cn("h-full", item.colorClass)} style={{ width: `${(item.valueMb / storageDenominator) * Math.max(storagePercent, 0.8)}%` }} title={`${item.label}: ${item.valueMb} Mo`} />) : <div className="h-full bg-text-muted/20" style={{ width: `${storagePercent}%` }} />}</div><div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">{health.storage.breakdown.map((item, index) => <span key={index} className="text-[9px] font-semibold text-text-muted">{item.label} {item.valueMb} Mo</span>)}</div></div>
             </div>
           </BentoCard>
         </section>
@@ -392,30 +268,9 @@ export function SystemScreen() {
           <SectionTitle index="04" title="Incidents" detail={health.recentErrors.length === 0 ? "Aucun signal récent" : `${health.recentErrors.length} récent(s)`} />
           <BentoCard id="errors" className="scroll-mt-6" padding="none">
             {health.recentErrors.length === 0 ? (
-              <div className="flex items-center gap-3 p-4 laptop:p-5">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-[13px] border border-white/70 bg-white/55 text-success shadow-[inset_0_1px_1px_rgba(255,255,255,1)]">
-                  <Activity className="size-5" strokeWidth={2.8} />
-                </div>
-                <div>
-                  <p className="text-[13px] font-bold tracking-[-0.015em] text-text-primary">Aucune erreur récente</p>
-                  <p className="mt-0.5 text-[10px] font-semibold text-text-muted">Le runtime n'a remonté aucun incident.</p>
-                </div>
-              </div>
+              <div className="flex items-center gap-3 p-4 laptop:p-5"><div className="flex size-10 shrink-0 items-center justify-center rounded-[13px] border border-white/70 bg-white/55 text-success shadow-[inset_0_1px_1px_rgba(255,255,255,1)]"><Activity className="size-5" strokeWidth={2.8} /></div><div><p className="text-[13px] font-bold tracking-[-0.015em] text-text-primary">Aucune erreur récente</p><p className="mt-0.5 text-[10px] font-semibold text-text-muted">Le runtime n'a remonté aucun incident.</p></div></div>
             ) : (
-              <div className="p-3 laptop:p-4">
-                <div className="mb-3 flex items-center gap-2 text-error">
-                  <ExclamationTriangleIcon className="size-[18px]" />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.11em]">Signaux récents</span>
-                </div>
-                <ul className="space-y-2">
-                  {health.recentErrors.map((item) => (
-                    <li key={item.id} className="rounded-[13px] border border-error/18 bg-error-muted/45 px-3.5 py-3 text-[12px] font-semibold leading-relaxed text-text-secondary">
-                      {item.message}
-                      <span className="mt-1 block text-[10px] font-semibold text-text-muted">{formatRelativeTime(item.ts, now)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <div className="p-3 laptop:p-4"><div className="mb-3 flex items-center gap-2 text-error"><ExclamationTriangleIcon className="size-[18px]" /><span className="text-[10px] font-bold uppercase tracking-[0.11em]">Signaux récents</span></div><ul className="space-y-2">{health.recentErrors.map((item) => <li key={item.id} className="rounded-[13px] border border-error/18 bg-error-muted/45 px-3.5 py-3 text-[12px] font-semibold leading-relaxed text-text-secondary">{item.message}<span className="mt-1 block text-[10px] font-semibold text-text-muted">{formatRelativeTime(item.ts, now)}</span></li>)}</ul></div>
             )}
           </BentoCard>
         </section>
