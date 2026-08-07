@@ -1,0 +1,12 @@
+.auth-error {
+  margin: -2px 0 0;
+  color: #d9a99f;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.auth-primary:disabled {
+  cursor: wait;
+  opacity: .66;
+  transform: none;
+}
