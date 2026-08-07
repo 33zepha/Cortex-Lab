@@ -20,6 +20,11 @@ Cortex-Lab n'est plus un prototype statique. Le dépôt contient un frontend Rea
 - API prod : Vercel relaie `/api/:path*` vers le proxy en conservant explicitement le chemin demandé.
 - Sécurité prod : Fastify écoute `127.0.0.1` par défaut ; le proxy Vercel injecte `CORTEX_API_TOKEN` côté serveur.
 
+## Validation en cours
+
+- Le build Vercel du commit `5163eb7` est connu comme obsolète : il précédait l'injection de `policy` dans `backend/scripts/run-real-mission.ts`.
+- Le head courant doit être validé par un nouveau preview Vercel avant merge.
+
 ## Limites connues
 
 - Un seul ModelAdapter réel : Claude Code.
