@@ -1,4 +1,6 @@
 import path from "node:path";
+import { promises as fs } from "node:fs";
+import { createHash } from "node:crypto";
 import { ulid } from "ulid";
 import type { EventStore, MissionRepository, EvidenceStore } from "../contracts/stores";
 import type { ModelAdapter, ModelResult, RunnerTask } from "../contracts/model-adapter";
@@ -64,6 +66,7 @@ export async function runMission(input: RunMissionInput, deps: RunnerDeps): Prom
   const workspace = await workspaceManager.create(missionId, input.sourceRoot);
   let totalTokens = 0;
   const outputs: string[] = [];
+  const fileFingerprints = new Map<string, string>();
 
   try {
     const health = await modelAdapter.health();
@@ -115,13 +118,17 @@ export async function runMission(input: RunMissionInput, deps: RunnerDeps): Prom
         return finalize(missionId, eventStore, missionRepository);
       }
 
-      const unauthorized = unauthorizedFiles(result, workspace.root, policy, missionId);
+      const unauthorized = unauthorizedFiles(result.filesModified, workspace.root, policy, missionId);
       if (unauthorized.length > 0) {
         await closeFailed(missionId, eventStore, `Policy violation: modification interdite (${unauthorized.join(", ")})`, totalTokens);
         return finalize(missionId, eventStore, missionRepository);
       }
+      const stepModifiedFiles = await changedFilesForStep(result.filesModified, workspace.root, fileFingerprints);
 
-      for (const file of result.filesModified) {
+      for (const file of uniqueFiles(result.filesRead)) {
+        await eventStore.append(makeEvent(missionId, "file.read", { path: relativeFile(workspace.root, file), step }));
+      }
+      for (const file of stepModifiedFiles) {
         await eventStore.append(makeEvent(missionId, "file.modified", { path: relativeFile(workspace.root, file), step }));
       }
 
@@ -193,8 +200,34 @@ async function executeStep(
   }
 }
 
-function unauthorizedFiles(result: ModelResult, workspaceRoot: string, policy: Policy, missionId: string): string[] {
-  return result.filesModified
+async function changedFilesForStep(files: string[], workspaceRoot: string, fingerprints: Map<string, string>): Promise<string[]> {
+  const changed: string[] = [];
+  for (const file of uniqueFiles(files)) {
+    const relative = relativeFile(workspaceRoot, file);
+    const current = await fingerprintFile(workspaceRoot, file);
+    if (fingerprints.get(relative) !== current) changed.push(file);
+    fingerprints.set(relative, current);
+  }
+  return changed;
+}
+
+async function fingerprintFile(workspaceRoot: string, file: string): Promise<string> {
+  const absolute = path.isAbsolute(file) ? file : path.join(workspaceRoot, file);
+  try {
+    const content = await fs.readFile(absolute);
+    return createHash("sha256").update(content).digest("hex");
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") return "<deleted>";
+    throw err;
+  }
+}
+
+function uniqueFiles(files: string[]): string[] {
+  return [...new Set(files)];
+}
+
+function unauthorizedFiles(files: string[], workspaceRoot: string, policy: Policy, missionId: string): string[] {
+  return files
     .map((file) => relativeFile(workspaceRoot, file))
     .filter((target) => !policy.authorize({ actor: "mission", action: "write_file", target, missionId }));
 }
