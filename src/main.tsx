@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui";
+import { AuthGate } from "@/components/auth/AuthGate";
 import { AppShell } from "@/components/shell/AppShell";
 import { OverviewScreen } from "@/screens/OverviewScreen";
 import { MissionsScreen } from "@/screens/MissionsScreen";
@@ -25,13 +26,15 @@ createRoot(root).render(
           <Routes>
             <Route path="/login" element={<AuthScreen initialMode="login" />} />
             <Route path="/signup" element={<AuthScreen initialMode="signup" />} />
-            <Route element={<AppShell />}>
-              <Route path="/" element={<OverviewScreen />} />
-              <Route path="/missions" element={<MissionsScreen />} />
-              <Route path="/missions/:id" element={<MissionDetailScreen />} />
-              <Route path="/console" element={<ConsoleScreen />} />
-              <Route path="/system" element={<SystemScreen />} />
-              <Route path="/profile" element={<ProfileScreen />} />
+            <Route element={<AuthGate />}>
+              <Route element={<AppShell />}>
+                <Route path="/" element={<OverviewScreen />} />
+                <Route path="/missions" element={<MissionsScreen />} />
+                <Route path="/missions/:id" element={<MissionDetailScreen />} />
+                <Route path="/console" element={<ConsoleScreen />} />
+                <Route path="/system" element={<SystemScreen />} />
+                <Route path="/profile" element={<ProfileScreen />} />
+              </Route>
             </Route>
           </Routes>
         </BrowserRouter>
