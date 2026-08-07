@@ -68,6 +68,13 @@ function hasValidApiToken(authorization: string | undefined): boolean {
   return expected.length === received.length && timingSafeEqual(expected, received);
 }
 
+function parseCursor(value: string | string[] | undefined): number | null {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (raw === undefined || raw === "") return null;
+  const parsed = Number(raw);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : null;
+}
+
 app.addHook("onRequest", async (request, reply) => {
   if (hasValidApiToken(request.headers.authorization)) return;
   return reply.code(401).send({ error: "Cortex API: non autorisé" });
@@ -137,7 +144,10 @@ app.get<{ Querystring: { cursor?: string; limit?: string } }>("/api/events", asy
 });
 
 app.get<{ Querystring: { cursor?: string } }>("/api/stream", async (request, reply) => {
-  let cursor = Math.max(0, Number(request.query.cursor ?? 0) || 0);
+  const lastEventId = parseCursor(request.headers["last-event-id"]);
+  const queryCursor = parseCursor(request.query.cursor);
+  let cursor = lastEventId !== null ? lastEventId + 1 : (queryCursor ?? 0);
+
   reply.hijack();
   reply.raw.writeHead(200, {
     "Content-Type": "text/event-stream; charset=utf-8",
@@ -152,9 +162,11 @@ app.get<{ Querystring: { cursor?: string } }>("/api/stream", async (request, rep
   const flush = async () => {
     if (closed) return;
     const events = await readEntireLedger(ledgerPath);
+    if (cursor > events.length) cursor = events.length;
     while (cursor < events.length && !closed) {
-      const event = events[cursor];
-      reply.raw.write(`id: ${cursor}\n`);
+      const eventIndex = cursor;
+      const event = events[eventIndex];
+      reply.raw.write(`id: ${eventIndex}\n`);
       reply.raw.write(`event: ${event.type}\n`);
       reply.raw.write(`data: ${JSON.stringify(event)}\n\n`);
       cursor += 1;
