@@ -7,6 +7,7 @@ import { OverviewScreen } from "@/screens/OverviewScreen";
 import { MissionsScreen } from "@/screens/MissionsScreen";
 import { MissionDetailScreen } from "@/screens/MissionDetailScreen";
 import { SystemScreen } from "@/screens/SystemScreen";
+import { ProfileScreen } from "@/screens/ProfileScreen";
 import "@/styles/global.css";
 
 import { VpsProvider } from "@/lib/VpsContext";
@@ -25,6 +26,7 @@ createRoot(root).render(
               <Route path="/missions" element={<MissionsScreen />} />
               <Route path="/missions/:id" element={<MissionDetailScreen />} />
               <Route path="/system" element={<SystemScreen />} />
+              <Route path="/profile" element={<ProfileScreen />} />
             </Route>
           </Routes>
         </BrowserRouter>

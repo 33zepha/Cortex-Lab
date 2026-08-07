@@ -1,19 +1,30 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ReactNode } from "react";
-import { Server, Cpu, ScrollText, HardDrive, Radio, AlertTriangle, Zap, Plus } from "lucide-react";
+import { Server, ScrollText, HardDrive, Radio, AlertTriangle, Zap, Plus } from "lucide-react";
 import { ServerStackIcon, ExclamationTriangleIcon, PowerIcon, ServerIcon, SparklesIcon } from "@heroicons/react/24/solid";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { BentoCard, EmptyState, Button, Dialog, DialogTrigger, DialogContent, Input } from "@/components/ui";
-import { systemHealthy, systemDisconnected } from "@/fixtures/system";
+import { BentoCard, EmptyState, ErrorState, Button, Dialog, DialogTrigger, DialogContent, Input, Skeleton } from "@/components/ui";
+import { systemDisconnected } from "@/fixtures/system";
 import { formatRelativeTime } from "@/lib/status";
-import { EASE_SPRING_ARRAY, STAGGER_CONTAINER_VARIANTS, STAGGER_ITEM_VARIANTS } from "@/lib/animations";
+import {
+  EASE_SPRING_ARRAY,
+  STAGGER_CONTAINER_VARIANTS,
+  STAGGER_ITEM_VARIANTS,
+  GLOW_DRIFT_A,
+  GLOW_DRIFT_A_TRANSITION,
+  GLOW_DRIFT_B,
+  GLOW_DRIFT_B_TRANSITION,
+} from "@/lib/animations";
 import { useVps } from "@/lib/VpsContext";
+import { useSystemHealth } from "@/lib/useSystemHealth";
+import { ClaudeMark } from "@/components/brand/ClaudeMark";
+import { OpenAiMark } from "@/components/brand/OpenAiMark";
 import { cn } from "@/lib/cn";
 import type { SystemHealth } from "@/lib/types";
 import { LIQUID_GLASS_HOVER, TRANSITION_SPRING } from "@/lib/ui-classes";
 
-const now = Date.parse("2026-08-06T14:30:00Z");
+const now = Date.now();
 
 type SseStatus = SystemHealth["sse"]["status"];
 
@@ -136,7 +147,34 @@ export function SystemScreen() {
   const [vpsSshId, setVpsSshId] = useState("root");
   const [vpsSshKey, setVpsSshKey] = useState("");
 
-  const health = simulateDisconnect ? systemDisconnected : systemHealthy;
+  const { health: liveHealth, loading, error } = useSystemHealth();
+  const health = simulateDisconnect ? systemDisconnected : liveHealth;
+
+  if (loading) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}>
+        <PageHeader title="System" icon={ServerStackIcon} />
+        <div className="grid grid-cols-1 gap-6 tablet:grid-cols-4 laptop:grid-cols-12 mb-6">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="tablet:col-span-4 laptop:col-span-4 h-48 rounded-[24px]" />
+          ))}
+        </div>
+      </motion.div>
+    );
+  }
+
+  if (error || !health) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}>
+        <PageHeader title="System" icon={ServerStackIcon} />
+        <ErrorState
+          title="Impossible de joindre l'API Cortex"
+          description={error ?? "Réponse vide."}
+          onRetry={() => window.location.reload()}
+        />
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -207,18 +245,26 @@ export function SystemScreen() {
           <BentoCard className="relative h-full overflow-hidden group">
             {/* Background Effects */}
             <div className="absolute inset-0 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:12px_12px] opacity-[0.03] pointer-events-none" />
-            <div className={cn(
-              "absolute -right-20 -top-20 size-64 blur-[64px] rounded-full transition-all duration-1000 group-hover:scale-110 pointer-events-none opacity-[0.15] group-hover:opacity-[0.25]",
-              health.cortexServer.status === "running" && "bg-success",
-              health.cortexServer.status === "degraded" && "bg-warning",
-              health.cortexServer.status === "stopped" && "bg-error"
-            )} />
-            <div className={cn(
-              "absolute -left-20 -bottom-20 size-56 blur-[64px] rounded-full transition-all duration-[1500ms] group-hover:translate-x-8 group-hover:-translate-y-4 pointer-events-none opacity-10 group-hover:opacity-20",
-              health.cortexServer.status === "running" && "bg-success",
-              health.cortexServer.status === "degraded" && "bg-warning",
-              health.cortexServer.status === "stopped" && "bg-error"
-            )} />
+            <motion.div
+              animate={GLOW_DRIFT_A}
+              transition={GLOW_DRIFT_A_TRANSITION}
+              className={cn(
+                "absolute -right-20 -top-20 size-64 blur-[64px] rounded-full transition-[opacity,filter] duration-700 pointer-events-none opacity-[0.15] group-hover:opacity-[0.28] group-hover:brightness-125",
+                health.cortexServer.status === "running" && "bg-success",
+                health.cortexServer.status === "degraded" && "bg-warning",
+                health.cortexServer.status === "stopped" && "bg-error"
+              )}
+            />
+            <motion.div
+              animate={GLOW_DRIFT_B}
+              transition={GLOW_DRIFT_B_TRANSITION}
+              className={cn(
+                "absolute -left-20 -bottom-20 size-56 blur-[64px] rounded-full transition-[opacity,filter] duration-700 pointer-events-none opacity-10 group-hover:opacity-[0.22] group-hover:brightness-125",
+                health.cortexServer.status === "running" && "bg-success",
+                health.cortexServer.status === "degraded" && "bg-warning",
+                health.cortexServer.status === "stopped" && "bg-error"
+              )}
+            />
             
             <div className="relative flex flex-col h-full justify-between z-10">
               <div>
@@ -274,15 +320,23 @@ export function SystemScreen() {
           <BentoCard className="relative h-full overflow-hidden group">
             {/* Background Effects */}
             <div className="absolute inset-0 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:12px_12px] opacity-[0.03] pointer-events-none" />
-            <div className="absolute -right-20 -top-20 size-64 bg-accent-indigo/10 blur-[64px] rounded-full transition-all duration-1000 group-hover:bg-accent-indigo/20 group-hover:scale-110 pointer-events-none" />
-            <div className="absolute -left-20 -bottom-20 size-56 bg-purple-500/10 blur-[64px] rounded-full transition-all duration-[1500ms] group-hover:bg-purple-500/15 group-hover:translate-x-8 group-hover:-translate-y-4 pointer-events-none" />
+            <motion.div
+              animate={GLOW_DRIFT_A}
+              transition={GLOW_DRIFT_A_TRANSITION}
+              className="absolute -right-20 -top-20 size-64 bg-[#D97757]/10 blur-[64px] rounded-full transition-[background-color,filter] duration-700 group-hover:bg-[#D97757]/20 group-hover:brightness-125 pointer-events-none"
+            />
+            <motion.div
+              animate={GLOW_DRIFT_B}
+              transition={GLOW_DRIFT_B_TRANSITION}
+              className="absolute -left-20 -bottom-20 size-56 bg-[#D97757]/10 blur-[64px] rounded-full transition-[background-color,filter] duration-700 group-hover:bg-[#D97757]/15 group-hover:brightness-125 pointer-events-none"
+            />
 
             <div className="relative flex flex-col h-full justify-between z-10">
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-white/50 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_2px_8px_rgba(0,0,0,0.05)]">
-                      <span className="text-sm font-bold text-text-primary">CC</span>
+                      <ClaudeMark title="Claude" className="size-5 text-[#D97757]" />
                     </div>
                     <div className="flex flex-col">
                       <span className="text-xs font-bold uppercase tracking-widest text-text-primary">Claude Code</span>
@@ -316,25 +370,56 @@ export function SystemScreen() {
           </BentoCard>
         </motion.div>
 
-        {/* Bento Codex (Prochainement) */}
+        {/* Bento OpenAI (Planner) */}
         <motion.div variants={STAGGER_ITEM_VARIANTS} className="tablet:col-span-4 laptop:col-span-4">
-          <BentoCard className="relative h-full overflow-hidden group opacity-60">
+          <BentoCard className="relative h-full overflow-hidden group">
+            {/* Background Effects */}
             <div className="absolute inset-0 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:12px_12px] opacity-[0.03] pointer-events-none" />
-            <div className="relative flex flex-col h-full z-10">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-white/50 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_2px_8px_rgba(0,0,0,0.05)] opacity-50 grayscale">
-                    <span className="text-xs font-bold text-text-primary">CX</span>
+            <motion.div
+              animate={GLOW_DRIFT_A}
+              transition={GLOW_DRIFT_A_TRANSITION}
+              className="absolute -right-20 -top-20 size-64 bg-[#10A37F]/10 blur-[64px] rounded-full transition-[background-color,filter] duration-700 group-hover:bg-[#10A37F]/20 group-hover:brightness-125 pointer-events-none"
+            />
+            <motion.div
+              animate={GLOW_DRIFT_B}
+              transition={GLOW_DRIFT_B_TRANSITION}
+              className="absolute -left-20 -bottom-20 size-56 bg-[#10A37F]/10 blur-[64px] rounded-full transition-[background-color,filter] duration-700 group-hover:bg-[#10A37F]/15 group-hover:brightness-125 pointer-events-none"
+            />
+
+            <div className="relative flex flex-col h-full justify-between z-10">
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-white/50 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_2px_8px_rgba(0,0,0,0.05)]">
+                      <OpenAiMark title="OpenAI" className="size-5 text-text-primary" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold uppercase tracking-widest text-text-primary">OpenAI</span>
+                      <span className="text-[9px] font-medium text-text-muted uppercase tracking-widest">Planner</span>
+                    </div>
+                  </div>
+                  <div className={cn(
+                    "size-2 rounded-full",
+                    health.openai.status === "available" ? "bg-success" : "bg-warning"
+                  )} />
+                </div>
+                <div className="mt-8 grid grid-cols-2 gap-6">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">Appel</span>
+                    <span className="text-2xl font-semibold tracking-tight text-text-primary mt-0.5 line-clamp-1">
+                      {health.openai.lastCallAt ? formatRelativeTime(health.openai.lastCallAt, now) : "—"}
+                    </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold uppercase tracking-widest text-text-primary text-text-muted">Codex</span>
-                    <span className="text-[9px] font-medium text-text-muted uppercase tracking-widest">IA Editor</span>
+                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">Ce jour</span>
+                    <div className="flex items-baseline gap-0.5 mt-0.5">
+                      <span className="text-3xl font-semibold tracking-tight text-text-primary">
+                        {health.openai.plansToday}
+                      </span>
+                      <span className="text-[11px] font-medium text-text-muted">plans</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex-1 flex flex-col items-center justify-center py-6">
-                <Cpu className="size-8 text-text-muted/30 mb-2" />
-                <span className="text-xs font-medium text-text-muted">En attente d'intégration</span>
               </div>
             </div>
           </BentoCard>
@@ -349,7 +434,7 @@ export function SystemScreen() {
           icon={<ScrollText className="size-3.5" />} 
           label="Cortex Ledger" 
           value={health.ledger.totalEvents.toLocaleString("fr-FR")} 
-          sub={`${(health.ledger.sizeKb / 1024).toFixed(1)} Mo • Sain`} 
+          sub={`${(health.ledger.sizeKb / 1024).toFixed(1)} Mo • ${health.ledger.totalEvents > 0 ? "Sain" : "Vide"}`}
         />
         <MetricTile 
           id="storage" 

@@ -4,10 +4,12 @@ import { motion } from "framer-motion";
 import { RocketLaunchIcon } from "@heroicons/react/24/solid";
 import { Inbox } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { SearchInput, EmptyState, Skeleton } from "@/components/ui";
-import { allMissions, emptyMissions } from "@/fixtures/missions";
+import { SearchInput, EmptyState, ErrorState, Skeleton } from "@/components/ui";
+import { emptyMissions } from "@/fixtures/missions";
 import { MissionKanbanCard } from "./missions/MissionKanbanCard";
+import { NewMissionDialog } from "./missions/NewMissionDialog";
 import { EASE_SPRING_ARRAY } from "@/lib/animations";
+import { useMissions } from "@/lib/useMissions";
 import type { Mission, MissionStatus } from "@/lib/types";
 
 const KANBAN_COLUMNS: { id: MissionStatus; title: string; color: string }[] = [
@@ -56,7 +58,8 @@ export function MissionsScreen() {
     };
   }, []);
 
-  const source = demoState === "empty" ? emptyMissions : allMissions;
+  const { missions, loading, error, refetch } = useMissions();
+  const source = demoState === "empty" ? emptyMissions : (missions ?? []);
 
   const filtered = useMemo(() => {
     return source.filter((m) => m.objective.toLowerCase().includes(query.toLowerCase()));
@@ -76,7 +79,7 @@ export function MissionsScreen() {
     return grouped;
   }, [filtered]);
 
-  if (demoState === "loading") {
+  if (demoState === "loading" || (loading && demoState !== "empty")) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -102,6 +105,23 @@ export function MissionsScreen() {
     );
   }
 
+  if (error && demoState !== "empty") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}
+      >
+        <PageHeader title="Missions" icon={RocketLaunchIcon} />
+        <ErrorState
+          title="Impossible de joindre l'API Cortex"
+          description={error}
+          onRetry={() => window.location.reload()}
+        />
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -109,17 +129,20 @@ export function MissionsScreen() {
       transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}
       className="flex h-full flex-col"
     >
-      <PageHeader 
-        title="Missions" 
+      <PageHeader
+        title="Missions"
         icon={RocketLaunchIcon} 
         action={
-          <SearchInput
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onClear={() => setQuery("")}
-            placeholder="Filtrer par objectif…"
-            className="w-full tablet:w-64 rounded-[16px] bg-white/40 backdrop-blur-2xl border border-white/60 shadow-[0_4px_16px_rgba(0,0,0,0.04)]"
-          />
+          <div className="flex items-center gap-3">
+            <SearchInput
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onClear={() => setQuery("")}
+              placeholder="Filtrer par objectif…"
+              className="w-full tablet:w-64 rounded-[16px] bg-white/40 backdrop-blur-2xl border border-white/60 shadow-[0_4px_16px_rgba(0,0,0,0.04)]"
+            />
+            <NewMissionDialog onCreated={refetch} />
+          </div>
         }
       />
 

@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LayoutGrid, ListChecks, Activity, Search } from "lucide-react";
+import { LayoutGrid, ListChecks, Activity, Search, User } from "lucide-react";
 import { CortexMark } from "@/components/brand/CortexMark";
 import { cn } from "@/lib/cn";
 import { Tooltip } from "@/components/ui";
@@ -57,6 +57,24 @@ export function IconRail({ onOpenPalette }: { onOpenPalette: () => void }) {
           </Tooltip>
         ))}
       </nav>
+
+      <Tooltip content="Profil" side="right">
+        <NavLink
+          to="/profile"
+          aria-label="Profil"
+          className={({ isActive }) =>
+            cn(
+              "mb-2 flex size-10 items-center justify-center rounded-md",
+              "transition-colors duration-fast ease-standard",
+              isActive
+                ? "bg-accent-indigo-muted text-accent-indigo"
+                : "text-text-secondary hover:bg-surface-2 hover:text-text-primary",
+            )
+          }
+        >
+          <User className="size-4.5" aria-hidden />
+        </NavLink>
+      </Tooltip>
 
       <Tooltip content="Cortex opérationnel" side="right">
         <span className="flex size-10 items-center justify-center" aria-label="Cortex opérationnel">

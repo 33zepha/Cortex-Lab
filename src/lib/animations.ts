@@ -63,3 +63,23 @@ export const STAGGER_ITEM_VARIANTS: Variants = {
   hidden: { opacity: 0, y: 16, scale: 0.98 },
   show: { opacity: 1, y: 0, scale: 1, transition: SPRING_BOUNCY },
 };
+
+/**
+ * Dérive lente et continue des halos de fond des bentos (Core, Claude Code, OpenAI) — deux
+ * phases légèrement désynchronisées (A/B) pour que les deux halos d'une même carte ne bougent
+ * jamais en miroir parfait. Amplitude assez large pour se voir malgré le flou 64px, cycle assez
+ * court pour rester perceptible sans devenir agité.
+ */
+export const GLOW_DRIFT_A = {
+  x: [0, 26, -16, 0],
+  y: [0, -20, 14, 0],
+  scale: [1, 1.12, 0.93, 1],
+};
+export const GLOW_DRIFT_A_TRANSITION = { duration: 11, repeat: Infinity, ease: "easeInOut" } as const;
+
+export const GLOW_DRIFT_B = {
+  x: [0, -22, 16, 0],
+  y: [0, 16, -12, 0],
+  scale: [1, 0.92, 1.1, 1],
+};
+export const GLOW_DRIFT_B_TRANSITION = { duration: 13.5, repeat: Infinity, ease: "easeInOut" } as const;

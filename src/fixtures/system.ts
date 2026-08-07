@@ -6,6 +6,7 @@ const min = 60_000;
 export const systemHealthy: SystemHealth = {
   cortexServer: { status: "running", uptimeSeconds: 3 * 24 * 3600 + 14 * 3600, memoryMb: 184 },
   claudeCode: { status: "available", lastCallAt: now - 3 * min, tokensUsedToday: 428_500 },
+  openai: { status: "available", lastCallAt: now - 5 * min, plansToday: 4 },
   ledger: { totalEvents: 12_842, sizeKb: 3_120, lastWriteAt: now - 3 * min },
   storage: { 
     activeMissions: 1, 

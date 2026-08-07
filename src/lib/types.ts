@@ -84,6 +84,11 @@ export type SystemHealth = {
     lastCallAt: number | null;
     tokensUsedToday: number;
   };
+  openai: {
+    status: "available" | "unavailable";
+    lastCallAt: number | null;
+    plansToday: number;
+  };
   ledger: {
     totalEvents: number;
     sizeKb: number;

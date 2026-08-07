@@ -27,8 +27,9 @@ import {
   Button,
   Drawer,
   DrawerContent,
+  Skeleton,
 } from "@/components/ui";
-import { findMission } from "@/fixtures/missions";
+import { useMission } from "@/lib/useMissions";
 import { ROUTES } from "@/lib/routes";
 import { missionStatusConfig, formatDuration, formatClock } from "@/lib/status";
 import { EvidenceDetail } from "@/screens/mission-detail/EvidenceDetail";
@@ -39,7 +40,7 @@ export function MissionDetailScreen() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const mission = id ? findMission(id) : undefined;
+  const { mission, loading, error } = useMission(id);
   const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
   const activeTab = searchParams.get("tab") ?? "timeline";
 
@@ -86,7 +87,28 @@ export function MissionDetailScreen() {
     setSearchParams(params, { replace: true });
   }
 
-  if (!mission) {
+  // Map construite une fois par mission plutôt qu'un .find() par fichier dans la liste (O(n²) -> O(n)).
+  // Doit rester avant tout retour anticipé : les Hooks ne peuvent pas être conditionnels (Rules of Hooks).
+  const evidenceIdByFile = useMemo(
+    () => new Map((mission?.evidence ?? []).map((e) => [e.title, e.id])),
+    [mission],
+  );
+
+  if (loading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}
+      >
+        <Skeleton className="mb-4 h-4 w-24" />
+        <Skeleton className="mb-6 h-24 w-full rounded-lg" />
+        <Skeleton className="h-64 w-full rounded-lg" />
+      </motion.div>
+    );
+  }
+
+  if (error || !mission) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -94,8 +116,8 @@ export function MissionDetailScreen() {
         transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}
       >
         <ErrorState
-          title="Mission introuvable"
-          description="Cette mission n'existe pas ou a été supprimée."
+          title={error ? "Impossible de joindre l'API Cortex" : "Mission introuvable"}
+          description={error ?? "Cette mission n'existe pas ou a été supprimée."}
           onRetry={() => navigate(ROUTES.missions)}
         />
       </motion.div>
@@ -104,12 +126,6 @@ export function MissionDetailScreen() {
 
   const s = missionStatusConfig[mission.status];
   const selectedEvidence = mission.evidence.find((e) => e.id === selectedEvidenceId) ?? null;
-
-  // Map construite une fois par mission plutôt qu'un .find() par fichier dans la liste (O(n²) -> O(n)).
-  const evidenceIdByFile = useMemo(
-    () => new Map(mission.evidence.map((e) => [e.title, e.id])),
-    [mission.evidence],
-  );
 
   return (
     <motion.div
