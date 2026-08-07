@@ -38,6 +38,7 @@ async function proxy(request: Request): Promise<Response> {
 
   const method = request.method.toUpperCase();
   const body = method === "GET" || method === "HEAD" ? undefined : await request.arrayBuffer();
+  const timeoutMs = method === "GET" || method === "HEAD" ? 8_000 : 280_000;
 
   try {
     const upstream = await fetch(upstreamUrl, {
@@ -46,6 +47,7 @@ async function proxy(request: Request): Promise<Response> {
       body,
       redirect: "manual",
       cache: "no-store",
+      signal: AbortSignal.timeout(timeoutMs),
     });
 
     const responseHeaders = new Headers();
