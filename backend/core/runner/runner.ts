@@ -87,27 +87,31 @@ export async function runMission(input: RunMissionInput, deps: RunnerDeps): Prom
         objective: input.objective,
         context: outputs.join("\n\n"),
         constraints: input.constraints ?? "",
-        signal: input.signal,
         workspace: { root: workspace.root, readOnly: [] },
       };
 
-      const estimated = modelAdapter.estimateTokens(task);
       const tokenBudget = policy.tokenBudgetFor(missionId);
+      const estimated = modelAdapter.estimateTokens(task);
       if (totalTokens + estimated > tokenBudget) {
         await closeFailed(missionId, eventStore, `Budget tokens dépassé avant l'étape ${index + 1}/${steps.length}`, totalTokens);
         return finalize(missionId, eventStore, missionRepository);
       }
 
-      const result = await withTimeout(
-        modelAdapter.execute(task),
+      const result = await executeStep(
+        modelAdapter,
+        task,
         policy.timeoutSecondsFor(missionId) * 1000,
-        `Timeout sur l'étape ${index + 1}/${steps.length}`,
         input.signal,
+        `Timeout sur l'étape ${index + 1}/${steps.length}`,
       );
       totalTokens += result.metadata.tokensUsed;
 
-      if (input.signal?.aborted || result.error === "Mission annulée") {
+      if (input.signal?.aborted) {
         await eventStore.append(makeEvent(missionId, "mission.cancelled", { reason: "Annulée pendant l'exécution" }));
+        return finalize(missionId, eventStore, missionRepository);
+      }
+      if (totalTokens > tokenBudget) {
+        await closeFailed(missionId, eventStore, `Budget tokens dépassé après l'étape ${index + 1}/${steps.length}`, totalTokens);
         return finalize(missionId, eventStore, missionRepository);
       }
 
@@ -156,6 +160,39 @@ export async function runMission(input: RunMissionInput, deps: RunnerDeps): Prom
   return finalize(missionId, eventStore, missionRepository);
 }
 
+async function executeStep(
+  adapter: ModelAdapter,
+  task: RunnerTask,
+  timeoutMs: number,
+  missionSignal: AbortSignal | undefined,
+  timeoutMessage: string,
+): Promise<ModelResult> {
+  const controller = new AbortController();
+  let timedOut = false;
+  const onMissionAbort = () => controller.abort("mission-cancelled");
+  if (missionSignal?.aborted) onMissionAbort();
+  else missionSignal?.addEventListener("abort", onMissionAbort, { once: true });
+
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort("step-timeout");
+  }, timeoutMs);
+
+  try {
+    const result = await adapter.execute({ ...task, signal: controller.signal });
+    if (timedOut) throw new Error(timeoutMessage);
+    if (missionSignal?.aborted) {
+      const error = new Error("Mission annulée");
+      error.name = "AbortError";
+      throw error;
+    }
+    return result;
+  } finally {
+    clearTimeout(timer);
+    missionSignal?.removeEventListener("abort", onMissionAbort);
+  }
+}
+
 function unauthorizedFiles(result: ModelResult, workspaceRoot: string, policy: Policy, missionId: string): string[] {
   return result.filesModified
     .map((file) => relativeFile(workspaceRoot, file))
@@ -197,27 +234,4 @@ function isAbort(err: unknown, signal?: AbortSignal): boolean {
 
 function messageOf(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
-}
-
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string, signal?: AbortSignal): Promise<T> {
-  let timer: NodeJS.Timeout | undefined;
-  let onAbort: (() => void) | undefined;
-  const timeout = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(message)), timeoutMs); });
-  const aborted = new Promise<never>((_, reject) => {
-    if (!signal) return;
-    onAbort = () => {
-      const error = new Error("Mission annulée");
-      error.name = "AbortError";
-      reject(error);
-    };
-    if (signal.aborted) onAbort();
-    else signal.addEventListener("abort", onAbort, { once: true });
-  });
-
-  try {
-    return await Promise.race([promise, timeout, aborted]);
-  } finally {
-    if (timer) clearTimeout(timer);
-    if (signal && onAbort) signal.removeEventListener("abort", onAbort);
-  }
 }
