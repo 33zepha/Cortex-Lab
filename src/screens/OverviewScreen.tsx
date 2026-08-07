@@ -35,9 +35,9 @@ const EMPTY_HEALTH = {
 export function OverviewScreen() {
   const [hoveredPoint, setHoveredPoint] = useState<TokenPoint | null>(null);
   const { vps } = useVps();
-  const { missions } = useMissions();
-  const { health } = useSystemHealth();
-  const { data: weeklyTokenUsage } = useTokenUsage();
+  const { missions, error: missionsError } = useMissions();
+  const { health, error: healthError } = useSystemHealth();
+  const { data: weeklyTokenUsage, error: tokensError } = useTokenUsage();
   const activeMissions = missions ?? [];
   const liveHealth = health ?? EMPTY_HEALTH;
 
@@ -65,6 +65,18 @@ export function OverviewScreen() {
       transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}
     >
       <PageHeader title="Overview" icon={Squares2X2Icon} />
+
+      {(healthError || missionsError || tokensError) && (
+        <div className="mb-6 p-4 rounded-xl bg-error/10 border border-error/20 flex flex-col gap-1">
+          <span className="text-sm font-bold text-error">Erreur de connexion API</span>
+          <span className="text-xs text-text-primary/70">
+            {healthError || missionsError || tokensError}
+          </span>
+          <span className="text-xs text-text-primary/70 mt-2">
+            Sur Vercel, assurez-vous que les variables d'environnement <code>CORTEX_API_ORIGIN</code> et <code>CORTEX_API_TOKEN</code> sont bien configurées vers un backend public.
+          </span>
+        </div>
+      )}
 
       <div className="mb-10">
         <KpiRow missions={activeMissions} />
