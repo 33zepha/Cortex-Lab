@@ -28,8 +28,9 @@ export class ClaudeCodeAdapter implements ModelAdapter {
   }
 
   estimateTokens(task: RunnerTask): number {
-    // Approximation volontairement conservative : ~4 caractères par token pour le pré-check.
-    const chars = task.objective.length + task.step.length + task.context.length + task.constraints.length;
+    const criteria = task.acceptanceCriteria?.join("\n") ?? "";
+    const capabilities = task.preferredCapabilities?.join(",") ?? "";
+    const chars = task.objective.length + task.step.length + task.context.length + task.constraints.length + criteria.length + capabilities.length;
     return Math.max(1, Math.ceil(chars / 4));
   }
 
@@ -45,9 +46,13 @@ export class ClaudeCodeAdapter implements ModelAdapter {
 
       const prompt = [
         `Objectif global: ${task.objective}`,
+        task.taskId && `Task ID: ${task.taskId}`,
         `Étape courante: ${task.step}`,
+        task.acceptanceCriteria?.length && `Critères d'acceptation:\n- ${task.acceptanceCriteria.join("\n- ")}`,
+        task.preferredCapabilities?.length && `Capacités attendues: ${task.preferredCapabilities.join(", ")}`,
+        task.risk && `Niveau de risque: ${task.risk}`,
         task.constraints && `Contraintes: ${task.constraints}`,
-        task.context && `Contexte des étapes précédentes:\n${task.context}`,
+        task.context && `Contexte des dépendances terminées:\n${task.context}`,
       ]
         .filter(Boolean)
         .join("\n\n");
@@ -82,8 +87,6 @@ export class ClaudeCodeAdapter implements ModelAdapter {
         filesRead: [],
         error: parsed.is_error ? (parsed.result ?? "Claude Code a retourné une erreur") : undefined,
         metadata: {
-          // Le budget mission protège le travail actif. Les caches fournisseur restent observables
-          // séparément : les compter à 100 % faisait échouer une étape triviale à 165k+ tokens.
           tokensUsed: tokenUsage.activeTokens,
           duration: parsed.duration_ms ?? Date.now() - startedAt,
           tokenUsage,
@@ -130,11 +133,6 @@ export type ClaudeCliUsage = {
   cache_read_input_tokens?: number;
 };
 
-/**
- * Normalise l'usage Claude sans confondre cache fournisseur et travail actif.
- * Le runtime garde un budget sur input+output ; le volume cache reste disponible
- * pour la télémétrie et un futur budget coût pondéré.
- */
 export function summarizeClaudeUsage(usage?: ClaudeCliUsage): ModelTokenUsage {
   const inputTokens = positiveInt(usage?.input_tokens);
   const outputTokens = positiveInt(usage?.output_tokens);
