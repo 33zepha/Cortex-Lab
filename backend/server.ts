@@ -5,6 +5,7 @@ import { config } from "dotenv";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import OpenAI from "openai";
+import { ulid } from "ulid";
 import { NdjsonEventStore, readEntireLedger } from "./core/stores/event-store";
 import { FileEvidenceStore } from "./core/stores/evidence-store";
 import { listMissions } from "./core/stores/list-missions";
@@ -57,15 +58,11 @@ await fs.access(playgroundReadme).catch(async () => {
 });
 
 const app = Fastify({ logger: true });
-
-await app.register(cors, {
-  origin: allowedOrigins.length > 0 ? allowedOrigins : true,
-});
+await app.register(cors, { origin: allowedOrigins.length > 0 ? allowedOrigins : true });
 
 function hasValidApiToken(authorization: string | undefined): boolean {
   if (!apiToken) return true;
   if (!authorization) return false;
-
   const expected = Buffer.from(`Bearer ${apiToken}`);
   const received = Buffer.from(authorization);
   return expected.length === received.length && timingSafeEqual(expected, received);
@@ -76,15 +73,11 @@ app.addHook("onRequest", async (request, reply) => {
   return reply.code(401).send({ error: "Cortex API: non autorisé" });
 });
 
-if (!apiToken) {
-  app.log.warn("CORTEX_API_TOKEN absent — API non authentifiée (acceptable uniquement en développement local)");
-}
+if (!apiToken) app.log.warn("CORTEX_API_TOKEN absent — API non authentifiée (acceptable uniquement en développement local)");
 
 let claudeHealthCache: { available: boolean; checkedAt: number } | null = null;
 async function getClaudeAvailability(): Promise<boolean> {
-  if (claudeHealthCache && Date.now() - claudeHealthCache.checkedAt < 30_000) {
-    return claudeHealthCache.available;
-  }
+  if (claudeHealthCache && Date.now() - claudeHealthCache.checkedAt < 30_000) return claudeHealthCache.available;
   const health = await modelAdapter.health().catch(() => ({ available: false }));
   claudeHealthCache = { available: health.available, checkedAt: Date.now() };
   return health.available;
@@ -93,13 +86,8 @@ async function getClaudeAvailability(): Promise<boolean> {
 let openaiHealthCache: { available: boolean; checkedAt: number } | null = null;
 async function getOpenAiAvailability(): Promise<boolean> {
   if (!openaiClient) return false;
-  if (openaiHealthCache && Date.now() - openaiHealthCache.checkedAt < 30_000) {
-    return openaiHealthCache.available;
-  }
-  const available = await openaiClient.models
-    .list()
-    .then(() => true)
-    .catch(() => false);
+  if (openaiHealthCache && Date.now() - openaiHealthCache.checkedAt < 30_000) return openaiHealthCache.available;
+  const available = await openaiClient.models.list().then(() => true).catch(() => false);
   openaiHealthCache = { available, checkedAt: Date.now() };
   return available;
 }
@@ -116,14 +104,11 @@ app.get("/api/health", async () => {
 
 app.get("/api/missions", async () => {
   const missions = await listMissions(missionsDir);
-  const results = await Promise.all(
-    missions.map(async (mission) => {
-      const events = await eventStore.readAll(mission.id);
-      const evidence = await evidenceStore.list(mission.id);
-      return toApiMission(mission, events, evidence);
-    }),
-  );
-  return results;
+  return Promise.all(missions.map(async (mission) => {
+    const events = await eventStore.readAll(mission.id);
+    const evidence = await evidenceStore.list(mission.id);
+    return toApiMission(mission, events, evidence);
+  }));
 });
 
 app.get("/api/tokens/weekly", async () => {
@@ -131,20 +116,16 @@ app.get("/api/tokens/weekly", async () => {
   const dayFormatter = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" });
   const days: { day: string; tokens: number }[] = [];
   const now = new Date();
-
   for (let i = 6; i >= 0; i--) {
     const date = new Date(now);
     date.setDate(now.getDate() - i);
     const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
     const dayEnd = dayStart + 24 * 3600 * 1000;
-
     const tokens = missions
       .filter((m) => m.closedAt !== null && m.closedAt >= dayStart && m.closedAt < dayEnd)
       .reduce((sum, m) => sum + (m.tokensUsed ?? 0), 0);
-
     days.push({ day: dayFormatter.format(date), tokens });
   }
-
   return days;
 });
 
@@ -152,17 +133,11 @@ app.get<{ Querystring: { cursor?: string; limit?: string } }>("/api/events", asy
   const events = await readEntireLedger(ledgerPath);
   const cursor = Math.max(0, Number(request.query.cursor ?? 0) || 0);
   const limit = Math.min(500, Math.max(1, Number(request.query.limit ?? 200) || 200));
-  return {
-    cursor,
-    nextCursor: Math.min(events.length, cursor + limit),
-    total: events.length,
-    events: events.slice(cursor, cursor + limit),
-  };
+  return { cursor, nextCursor: Math.min(events.length, cursor + limit), total: events.length, events: events.slice(cursor, cursor + limit) };
 });
 
 app.get<{ Querystring: { cursor?: string } }>("/api/stream", async (request, reply) => {
   let cursor = Math.max(0, Number(request.query.cursor ?? 0) || 0);
-
   reply.hijack();
   reply.raw.writeHead(200, {
     "Content-Type": "text/event-stream; charset=utf-8",
@@ -170,7 +145,7 @@ app.get<{ Querystring: { cursor?: string } }>("/api/stream", async (request, rep
     Connection: "keep-alive",
     "X-Accel-Buffering": "no",
   });
-  reply.raw.write(`retry: 2000\n\n`);
+  reply.raw.write("retry: 2000\n\n");
   connectedSseClients += 1;
 
   let closed = false;
@@ -188,10 +163,7 @@ app.get<{ Querystring: { cursor?: string } }>("/api/stream", async (request, rep
 
   await flush().catch((error) => app.log.error(error));
   const poll = setInterval(() => void flush().catch((error) => app.log.error(error)), 750);
-  const heartbeat = setInterval(() => {
-    if (!closed) reply.raw.write(`: heartbeat ${Date.now()}\n\n`);
-  }, 15_000);
-
+  const heartbeat = setInterval(() => { if (!closed) reply.raw.write(`: heartbeat ${Date.now()}\n\n`); }, 15_000);
   request.raw.on("close", () => {
     if (closed) return;
     closed = true;
@@ -199,7 +171,6 @@ app.get<{ Querystring: { cursor?: string } }>("/api/stream", async (request, rep
     clearInterval(heartbeat);
     connectedSseClients = Math.max(0, connectedSseClients - 1);
   });
-
   return reply;
 });
 
@@ -214,42 +185,22 @@ app.post<{ Body: { objective?: string; constraints?: string; model?: string; eff
 
     const selectedModel = model?.trim() || process.env.OPENAI_MODEL || "gpt-5.6";
     const effortConstraint = effort ? `[Effort : ${effort}] ${constraints ?? ""}`.trim() : constraints;
-    const customPlanner: Planner = process.env.OPENAI_API_KEY
-      ? new OpenAiPlanner(process.env.OPENAI_API_KEY, selectedModel)
-      : defaultPlanner;
+    const customPlanner: Planner = process.env.OPENAI_API_KEY ? new OpenAiPlanner(process.env.OPENAI_API_KEY, selectedModel) : defaultPlanner;
+    const missionId = ulid();
     const controller = new AbortController();
-
-    const missionPromise = runMission(
-      {
-        objective,
-        constraints: effortConstraint,
-        model: selectedModel,
-        sourceRoot: sourceRoot || playgroundDir,
-        signal: controller.signal,
-      },
-      { eventStore, missionRepository, evidenceStore, modelAdapter, workspaceManager, planner: customPlanner, policy },
-    );
-
-    let missionId: string | null = null;
-    const startedAt = Date.now();
-    while (!missionId && Date.now() - startedAt < 2_000) {
-      const missions = await listMissions(missionsDir);
-      const candidate = missions
-        .filter((item) => item.status === "running" && item.objective === objective)
-        .sort((a, b) => b.createdAt - a.createdAt)[0];
-      missionId = candidate?.id ?? null;
-      if (!missionId) await new Promise((resolve) => setTimeout(resolve, 20));
-    }
-    if (missionId) activeMissionControllers.set(missionId, controller);
+    activeMissionControllers.set(missionId, controller);
 
     try {
-      const mission = await missionPromise;
+      const mission = await runMission(
+        { missionId, objective, constraints: effortConstraint, model: selectedModel, sourceRoot: sourceRoot || playgroundDir, signal: controller.signal },
+        { eventStore, missionRepository, evidenceStore, modelAdapter, workspaceManager, planner: customPlanner, policy },
+      );
       const events = await eventStore.readAll(mission.id);
       const evidence = await evidenceStore.list(mission.id);
       reply.code(201);
       return toApiMission(mission, events, evidence);
     } finally {
-      if (missionId) activeMissionControllers.delete(missionId);
+      activeMissionControllers.delete(missionId);
     }
   },
 );
@@ -265,42 +216,20 @@ app.get<{ Params: { id: string } }>("/api/missions/:id", async (request, reply) 
   return toApiMission(mission, events, evidence);
 });
 
-app.post<{ Params: { id: string }; Body: { reason?: string } }>(
-  "/api/missions/:id/cancel",
-  async (request, reply) => {
-    const mission = await missionRepository.findById(request.params.id);
-    const controller = activeMissionControllers.get(request.params.id);
-    if (!mission && !controller) {
-      reply.code(404);
-      return { error: "Mission introuvable" };
-    }
-
-    const reason = request.body?.reason ?? "Annulée par l'utilisateur";
-    controller?.abort(reason);
-
-    if (mission && mission.status !== "cancelled" && mission.status !== "completed" && mission.status !== "failed") {
-      const existingEvents = await eventStore.readAll(request.params.id);
-      const alreadyCancelled = existingEvents.some((event) => event.type === "mission.cancelled");
-      if (!alreadyCancelled) {
-        await eventStore.append({
-          id: `evt_${Date.now()}`,
-          seq: 0,
-          missionId: request.params.id,
-          ts: Date.now(),
-          actor: "api",
-          type: "mission.cancelled",
-          v: "1.0.0",
-          payload: { reason },
-        });
-      }
-    }
-
-    const updatedMission = await missionRepository.findById(request.params.id);
-    const events = await eventStore.readAll(request.params.id);
-    const evidenceList = await evidenceStore.list(request.params.id);
-    return updatedMission ? toApiMission(updatedMission, events, evidenceList) : { id: request.params.id, status: "cancelling" };
-  },
-);
+app.post<{ Params: { id: string }; Body: { reason?: string } }>("/api/missions/:id/cancel", async (request, reply) => {
+  const mission = await missionRepository.findById(request.params.id);
+  const controller = activeMissionControllers.get(request.params.id);
+  if (!mission && !controller) {
+    reply.code(404);
+    return { error: "Mission introuvable" };
+  }
+  if (!controller) {
+    reply.code(409);
+    return { error: "Mission déjà terminée ou non annulable" };
+  }
+  controller.abort(request.body?.reason ?? "Annulée par l'utilisateur");
+  return { id: request.params.id, status: "cancelling" };
+});
 
 app.post<{ Params: { id: string }; Body: { decision?: "approve" | "reject"; detail?: string } }>(
   "/api/missions/:id/decision",
@@ -331,8 +260,7 @@ app.post<{ Params: { id: string }; Body: { decision?: "approve" | "reject"; deta
 
 const port = Number(process.env.API_PORT ?? 4000);
 const host = process.env.API_HOST ?? "127.0.0.1";
-app
-  .listen({ port, host })
+app.listen({ port, host })
   .then(() => console.log(`Cortex API sur http://${host}:${port}`))
   .catch((err) => {
     app.log.error(err);
