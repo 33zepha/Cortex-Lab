@@ -65,7 +65,7 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
   return (
     <main className="auth-entry">
       <section className="auth-art" aria-label="Cortex — distributed intelligence">
-        <img className="auth-art__image" src="/cortex-auth-hero.jpg" alt="Monument sculptural représentant plusieurs intelligences coordonnées dans un même environnement." />
+        <img className="auth-art__image" src="/cortex-auth-hero.webp" alt="Monument sculptural représentant plusieurs intelligences coordonnées dans un même environnement." />
         <div className="auth-art__veil" />
         <div className="auth-art__brand"><CortexMark className="auth-art__mark" /><span>CORTEX</span></div>
         <div className="auth-art__caption"><span className="auth-art__eyebrow">Operational intelligence</span><p>One environment. Multiple intelligences. Precisely coordinated.</p></div>
