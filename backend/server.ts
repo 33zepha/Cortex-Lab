@@ -18,10 +18,24 @@ import { HeuristicPlanner } from "./core/planner/heuristic-planner";
 import { SimplePolicy } from "./core/policy/policy";
 import type { Planner } from "./core/contracts/planner";
 import { runMission } from "./core/runner/runner";
+import { assertPublicApiSecured, resolveCorsOrigin } from "./core/security/runtime-security";
 import { toApiMission } from "./api-adapters/to-api-mission";
 import { buildApiHealth } from "./api-adapters/to-api-health";
 
 config();
+
+const port = Number(process.env.API_PORT ?? 4000);
+const host = process.env.API_HOST ?? "127.0.0.1";
+const apiToken = process.env.CORTEX_API_TOKEN?.trim() || null;
+const allowUnauthenticatedPublic = process.env.CORTEX_ALLOW_UNAUTHENTICATED_PUBLIC === "1";
+const allowSourceRootOverride = process.env.CORTEX_ALLOW_SOURCE_ROOT_OVERRIDE === "1";
+const maxActiveMissions = Math.max(1, Math.min(8, Number(process.env.CORTEX_MAX_ACTIVE_MISSIONS ?? 2) || 2));
+const allowedOrigins = (process.env.CORTEX_ALLOWED_ORIGINS ?? "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+assertPublicApiSecured({ host, apiToken, allowUnauthenticatedPublic });
 
 const dataDir = path.join(process.cwd(), "data");
 const ledgerPath = path.join(dataDir, "ledger", "events.ndjson");
@@ -43,11 +57,6 @@ const policy = new SimplePolicy({
   allowedPathPrefixes: [""],
   allowedCommands: [],
 });
-const apiToken = process.env.CORTEX_API_TOKEN?.trim() || null;
-const allowedOrigins = (process.env.CORTEX_ALLOWED_ORIGINS ?? "")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
 const activeMissionControllers = new Map<string, AbortController>();
 let connectedSseClients = 0;
 
@@ -57,8 +66,8 @@ await fs.access(playgroundReadme).catch(async () => {
   await fs.writeFile(playgroundReadme, "# Playground\n\nProjet de test pour les missions Cortex lancées depuis l'UI.\n", "utf8");
 });
 
-const app = Fastify({ logger: true });
-await app.register(cors, { origin: allowedOrigins.length > 0 ? allowedOrigins : true });
+const app = Fastify({ logger: true, bodyLimit: 256 * 1024 });
+await app.register(cors, { origin: resolveCorsOrigin(host, allowedOrigins) });
 
 function hasValidApiToken(authorization: string | undefined): boolean {
   if (!apiToken) return true;
@@ -80,7 +89,17 @@ app.addHook("onRequest", async (request, reply) => {
   return reply.code(401).send({ error: "Cortex API: non autorisé" });
 });
 
-if (!apiToken) app.log.warn("CORTEX_API_TOKEN absent — API non authentifiée (acceptable uniquement en développement local)");
+app.addHook("onSend", async (_request, reply, payload) => {
+  reply.header("X-Content-Type-Options", "nosniff");
+  if (!reply.hasHeader("Cache-Control")) reply.header("Cache-Control", "no-store");
+  return payload;
+});
+
+if (apiToken) {
+  app.log.info("CORTEX_API_TOKEN actif — API authentifiée");
+} else {
+  app.log.warn("CORTEX_API_TOKEN absent — mode non authentifié explicitement autorisé");
+}
 
 let claudeHealthCache: { available: boolean; checkedAt: number } | null = null;
 async function getClaudeAvailability(): Promise<boolean> {
@@ -154,6 +173,7 @@ app.get<{ Querystring: { cursor?: string } }>("/api/stream", async (request, rep
     "Cache-Control": "no-cache, no-transform",
     Connection: "keep-alive",
     "X-Accel-Buffering": "no",
+    "X-Content-Type-Options": "nosniff",
   });
   reply.raw.write("retry: 2000\n\n");
   connectedSseClients += 1;
@@ -190,9 +210,27 @@ app.post<{ Body: { objective?: string; constraints?: string; model?: string; eff
   "/api/missions",
   async (request, reply) => {
     const { objective, constraints, model, effort, sourceRoot } = request.body ?? {};
-    if (!objective || objective.trim().length < 10) {
+    const cleanObjective = objective?.trim() ?? "";
+
+    if (cleanObjective.length < 10 || cleanObjective.length > 10_000) {
       reply.code(400);
-      return { error: "objective requis (10 caractères minimum)" };
+      return { error: "objective requis (10 à 10000 caractères)" };
+    }
+    if ((constraints?.length ?? 0) > 20_000) {
+      reply.code(400);
+      return { error: "constraints trop longues (20000 caractères maximum)" };
+    }
+    if ((model?.length ?? 0) > 120 || (effort?.length ?? 0) > 120) {
+      reply.code(400);
+      return { error: "model/effort invalide" };
+    }
+    if (sourceRoot && !allowSourceRootOverride) {
+      reply.code(400);
+      return { error: "sourceRoot n'est pas configurable via l'API publique" };
+    }
+    if (activeMissionControllers.size >= maxActiveMissions) {
+      reply.code(429);
+      return { error: `Limite de missions actives atteinte (${maxActiveMissions})` };
     }
 
     const selectedModel = model?.trim() || process.env.OPENAI_MODEL || "gpt-5.6";
@@ -204,7 +242,14 @@ app.post<{ Body: { objective?: string; constraints?: string; model?: string; eff
 
     try {
       const mission = await runMission(
-        { missionId, objective, constraints: effortConstraint, model: selectedModel, sourceRoot: sourceRoot || playgroundDir, signal: controller.signal },
+        {
+          missionId,
+          objective: cleanObjective,
+          constraints: effortConstraint,
+          model: selectedModel,
+          sourceRoot: sourceRoot && allowSourceRootOverride ? sourceRoot : playgroundDir,
+          signal: controller.signal,
+        },
         { eventStore, missionRepository, evidenceStore, modelAdapter, workspaceManager, planner: customPlanner, policy },
       );
       const events = await eventStore.readAll(mission.id);
@@ -270,8 +315,6 @@ app.post<{ Params: { id: string }; Body: { decision?: "approve" | "reject"; deta
   },
 );
 
-const port = Number(process.env.API_PORT ?? 4000);
-const host = process.env.API_HOST ?? "127.0.0.1";
 app.listen({ port, host })
   .then(() => console.log(`Cortex API sur http://${host}:${port}`))
   .catch((err) => {
