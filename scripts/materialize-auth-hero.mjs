@@ -4,11 +4,16 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const sourcePath = path.join(repoRoot, "assets", "auth", "cortex-auth-hero.b64");
+const sourceDir = path.join(repoRoot, "assets", "auth", "hero");
 const outputDir = path.join(repoRoot, "public");
 const outputPath = path.join(outputDir, "cortex-auth-hero.webp");
 
-const encoded = (await readFile(sourcePath, "utf8")).trim();
+const parts = await Promise.all(
+  Array.from({ length: 8 }, (_, index) =>
+    readFile(path.join(sourceDir, `${String(index).padStart(2, "0")}.txt`), "utf8"),
+  ),
+);
+const encoded = parts.map((part) => part.trim()).join("");
 const bytes = Buffer.from(encoded, "base64");
 if (bytes.length < 10_000 || bytes.subarray(0, 4).toString("ascii") !== "RIFF" || bytes.subarray(8, 12).toString("ascii") !== "WEBP") {
   throw new Error("Invalid Cortex auth hero asset header");
