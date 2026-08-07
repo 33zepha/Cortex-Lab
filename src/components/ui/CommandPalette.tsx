@@ -48,17 +48,17 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.22 }}
+                transition={{ duration: 0.18 }}
                 className="fixed inset-0 z-palette bg-slate-950/14 backdrop-blur-[10px]"
               />
             </RadixDialog.Overlay>
 
             <RadixDialog.Content asChild forceMount>
               <motion.div
-                initial={{ opacity: 0, y: 12, scale: 0.99 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 8, scale: 0.99 }}
-                transition={{ type: "spring", stiffness: 420, damping: 34, mass: 0.55 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
                 className={cn(
                   "fixed inset-0 z-palette flex min-h-0 w-screen flex-col overflow-hidden bg-background outline-none",
                   "tablet:inset-x-0 tablet:bottom-auto tablet:top-[14vh] tablet:mx-auto tablet:h-auto tablet:w-[calc(100%-40px)] tablet:max-w-[620px] tablet:rounded-[26px] tablet:border tablet:border-white/70 tablet:bg-white/78 tablet:shadow-[0_24px_90px_-28px_rgba(0,0,0,0.3)] tablet:backdrop-blur-3xl",
@@ -92,7 +92,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                         <button
                           type="button"
                           aria-label="Fermer la recherche"
-                          className="flex size-11 items-center justify-center rounded-[14px] border border-white/75 bg-white/58 text-text-primary shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_5px_18px_-10px_rgba(0,0,0,0.28)] backdrop-blur-2xl transition-transform active:scale-[0.94] tablet:size-10"
+                          className="flex size-11 items-center justify-center rounded-[14px] border border-white/75 bg-white/58 text-text-primary shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_5px_18px_-10px_rgba(0,0,0,0.28)] backdrop-blur-2xl active:opacity-75 tablet:size-10"
                         >
                           <X className="size-5" strokeWidth={3.2} />
                         </button>
@@ -103,8 +103,12 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                       <MagnifyingGlassIcon className="size-[20px] shrink-0 text-text-primary/65" aria-hidden />
                       <Command.Input
                         autoFocus
+                        autoComplete="off"
+                        inputMode="search"
+                        enterKeyHint="search"
+                        spellCheck={false}
                         placeholder="Missions, écrans, actions…"
-                        className="h-13 min-w-0 flex-1 bg-transparent text-[15px] font-semibold tracking-[-0.015em] text-text-primary placeholder:font-medium placeholder:text-text-muted/55 outline-none"
+                        className="h-13 min-w-0 flex-1 bg-transparent text-[16px] font-semibold tracking-[-0.015em] text-text-primary placeholder:font-medium placeholder:text-text-muted/55 outline-none tablet:text-[15px]"
                       />
                       <kbd className="hidden rounded-[8px] border border-black/[0.07] bg-black/[0.035] px-2 py-1 font-mono text-[9px] font-semibold text-text-muted tablet:block">
                         ESC
@@ -113,7 +117,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                   </div>
 
                   <Command.List
-                    className="min-h-0 flex-1 overflow-y-auto pt-4 scrollbar-none tablet:max-h-[430px] tablet:px-3 tablet:pb-3"
+                    className="min-h-0 flex-1 overscroll-contain overflow-y-auto pt-4 scrollbar-none tablet:max-h-[430px] tablet:px-3 tablet:pb-3"
                     style={{
                       paddingLeft: "var(--mobile-gutter)",
                       paddingRight: "var(--mobile-gutter)",
@@ -223,7 +227,7 @@ function SearchItem({
       className={cn(
         "group mb-1 flex min-h-[58px] cursor-pointer items-center gap-3 rounded-[16px] border border-transparent px-3 py-2.5 text-[14px] font-semibold tracking-[-0.01em] text-text-secondary outline-none",
         "data-[selected=true]:border-white/70 data-[selected=true]:bg-white/64 data-[selected=true]:shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_5px_18px_-13px_rgba(0,0,0,0.28)]",
-        "active:scale-[0.985] tablet:min-h-[52px] tablet:rounded-[13px] tablet:px-3",
+        "active:opacity-75 tablet:min-h-[52px] tablet:rounded-[13px] tablet:px-3",
       )}
     >
       <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] border border-white/65 bg-white/52 text-text-primary shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_3px_10px_-8px_rgba(0,0,0,0.28)] [&_svg]:stroke-[2.8]">
