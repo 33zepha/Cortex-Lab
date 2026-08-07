@@ -3,7 +3,6 @@ import path from "node:path";
 import type { DomainEventEnvelope } from "../core/contracts/events";
 import type { MissionEntity } from "../core/contracts/mission";
 
-/** Miroir de `SystemHealth` (src/lib/types.ts) — même raisonnement que to-api-mission.ts. */
 export type ApiSystemHealth = {
   cortexServer: { status: "running" | "degraded" | "stopped"; uptimeSeconds: number; memoryMb: number };
   claudeCode: { status: "available" | "degraded" | "unavailable"; lastCallAt: number | null; tokensUsedToday: number };
@@ -42,6 +41,7 @@ export async function buildApiHealth(
   allEvents: DomainEventEnvelope[],
   claudeAvailable: boolean,
   openaiAvailable: boolean,
+  connectedSseClients = 0,
 ): Promise<ApiSystemHealth> {
   const ledgerPath = path.join(dataDir, "ledger", "events.ndjson");
   let ledgerSizeKb = 0;
@@ -53,7 +53,7 @@ export async function buildApiHealth(
     const raw = await fs.readFile(ledgerPath, "utf8");
     totalEvents = raw.split("\n").filter((l) => l.trim()).length;
   } catch {
-    // pas encore de ledger : valeurs à zéro, honnête plutôt que simulé
+    // Pas encore de ledger : valeurs à zéro, jamais de données simulées.
   }
 
   const lastEvent = [...allEvents].sort((a, b) => b.ts - a.ts)[0];
@@ -62,7 +62,6 @@ export async function buildApiHealth(
   const lastClaudeCall = [...allEvents]
     .filter((e) => e.type === "step.started" || e.type === "file.modified")
     .sort((a, b) => b.ts - a.ts)[0];
-
   const lastPlanCall = [...allEvents].filter((e) => e.type === "plan.ready").sort((a, b) => b.ts - a.ts)[0];
 
   const todayStart = new Date();
@@ -106,7 +105,7 @@ export async function buildApiHealth(
     storage: {
       activeMissions: missions.filter((m) => m.status === "running").length,
       usedMb: Math.round(usedMb),
-      quotaMb: 5_000, // limite configurée, pas une mesure — documenté ici
+      quotaMb: 5_000,
       breakdown: [
         { label: "Workspaces", valueMb: Math.round(workspacesKb / 1024), colorClass: "bg-accent-indigo" },
         { label: "Ledger", valueMb: Math.round(ledgerKb / 1024), colorClass: "bg-success" },
@@ -114,7 +113,11 @@ export async function buildApiHealth(
         { label: "Missions", valueMb: Math.round(missionsKb / 1024), colorClass: "bg-neutral-300" },
       ],
     },
-    sse: { connectedClients: 0, status: "disconnected", avgLagMs: 0 }, // SSE non implémenté (Phase 4, NEXT.md)
+    sse: {
+      connectedClients: connectedSseClients,
+      status: connectedSseClients > 0 ? "connected" : "disconnected",
+      avgLagMs: 0,
+    },
     recentErrors,
   };
 }
