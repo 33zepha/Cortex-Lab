@@ -49,34 +49,34 @@ export function AppShell() {
   }, []);
 
   return (
-    <div className="relative isolate flex h-screen w-screen overflow-hidden bg-slate-50">
+    <div className="relative isolate flex h-[100dvh] min-h-0 w-screen overflow-hidden bg-slate-50">
       {/* Fond neutre, plat */}
       <div className="app-ambient-bg absolute inset-0 z-0" />
 
-      <div className="relative z-10 flex h-full w-full items-center p-4 laptop:p-6">
-        <div className="hidden laptop:block fixed left-4 top-1/2 -translate-y-1/2 z-sticky">
-          <motion.div 
+      <div className="relative z-10 flex h-full min-h-0 w-full items-stretch p-0 laptop:items-center laptop:p-6">
+        <div className="fixed left-4 top-1/2 z-sticky hidden -translate-y-1/2 laptop:block">
+          <motion.div
             ref={containerRef}
             layout
             className="relative flex items-start"
             transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
           >
-            <div className="relative z-20 rounded-[24px] bg-white/60 backdrop-blur-3xl border border-white/60 shadow-[4px_0_24px_rgba(0,0,0,0.08)]">
-              <Nexus 
+            <div className="relative z-20 rounded-[24px] border border-white/60 bg-white/60 shadow-[4px_0_24px_rgba(0,0,0,0.08)] backdrop-blur-3xl">
+              <Nexus
                 onOpenPalette={() => setPaletteOpen(true)}
                 wingOpen={wingOpen}
                 setWingOpen={setWingOpen}
               />
             </div>
-            
+
             <AnimatePresence>
               {showWing && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, width: 0, x: -40, marginLeft: 0 }}
                   animate={{ opacity: 1, width: 160, x: 0, marginLeft: 12 }}
                   exit={{ opacity: 0, width: 0, x: -40, marginLeft: 0 }}
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                  className="relative z-10 overflow-hidden rounded-[24px] bg-white/60 backdrop-blur-3xl border border-white/60 shadow-[4px_0_24px_rgba(0,0,0,0.08)]"
+                  className="relative z-10 overflow-hidden rounded-[24px] border border-white/60 bg-white/60 shadow-[4px_0_24px_rgba(0,0,0,0.08)] backdrop-blur-3xl"
                 >
                   <Orbit isOpen={true} />
                 </motion.div>
@@ -84,28 +84,30 @@ export function AppShell() {
             </AnimatePresence>
           </motion.div>
         </div>
-        
-        <div 
+
+        <div
           className={cn(
-            "flex h-full w-full items-center justify-center transition-all duration-[500ms] ease-[cubic-bezier(0.2,0.8,0.2,1)]",
-            "laptop:pl-[96px]"
+            "flex h-full min-h-0 w-full items-stretch justify-center transition-all duration-[500ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] laptop:items-center",
+            "laptop:pl-[96px]",
           )}
         >
           <motion.main
             layout="position"
             transition={{ type: "spring", bounce: 0, duration: 0.35 }}
             className={cn(
-              "relative flex w-full max-w-[1400px] flex-col overflow-hidden will-change-transform",
-              "rounded-[32px] border border-white/40 bg-white/20 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.04)]",
-              "max-h-[calc(100vh-32px)] laptop:max-h-[calc(100vh-48px)] h-fit"
+              "relative flex h-full min-h-0 w-full max-w-[1400px] flex-col overflow-hidden will-change-transform",
+              "rounded-none border-0 bg-transparent shadow-none",
+              "laptop:h-fit laptop:max-h-[calc(100vh-48px)] laptop:rounded-[32px] laptop:border laptop:border-white/40 laptop:bg-white/20 laptop:shadow-[0_8px_32px_rgba(0,0,0,0.04)] laptop:backdrop-blur-2xl",
             )}
           >
-            <div className="w-full overflow-y-auto scrollbar-thin p-6 laptop:p-10">
+            <div
+              className="mobile-content-scroll w-full flex-1 overflow-y-auto px-4 pt-[calc(20px+env(safe-area-inset-top))] pb-[calc(104px+env(safe-area-inset-bottom))] laptop:p-10 laptop:scrollbar-thin"
+            >
               <Outlet />
             </div>
           </motion.main>
         </div>
-        
+
         <MobileNav onOpenPalette={() => setPaletteOpen(true)} />
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
       </div>
