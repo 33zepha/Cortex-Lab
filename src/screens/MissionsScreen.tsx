@@ -1,179 +1,166 @@
-import { useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Inbox } from "lucide-react";
+import { useMemo, useState, useRef, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import { RocketLaunchIcon } from "@heroicons/react/24/solid";
+import { Inbox } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { Badge, EmptyState, SearchInput, Skeleton } from "@/components/ui";
-import { cn } from "@/lib/cn";
-import { ROUTES } from "@/lib/routes";
+import { SearchInput, EmptyState, Skeleton } from "@/components/ui";
 import { allMissions, emptyMissions } from "@/fixtures/missions";
-import type { Mission, MissionFilter } from "@/lib/types";
-import { missionStatusConfig, formatDuration } from "@/lib/status";
+import { MissionKanbanCard } from "./missions/MissionKanbanCard";
+import { EASE_SPRING_ARRAY } from "@/lib/animations";
+import type { Mission, MissionStatus } from "@/lib/types";
 
-const filters: { value: MissionFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "active", label: "Active" },
-  { value: "needs_review", label: "Needs review" },
-  { value: "completed", label: "Completed" },
-  { value: "failed", label: "Failed" },
+const KANBAN_COLUMNS: { id: MissionStatus; title: string; color: string }[] = [
+  { id: "running", title: "En cours", color: "text-info" },
+  { id: "needs_review", title: "Action requise", color: "text-warning" },
+  { id: "completed", title: "Complétées", color: "text-success" },
+  { id: "failed", title: "Échouées", color: "text-error" },
+  { id: "cancelled", title: "Annulées", color: "text-text-muted" },
 ];
 
-function matchesFilter(m: Mission, filter: MissionFilter): boolean {
-  switch (filter) {
-    case "all":
-      return true;
-    case "active":
-      return m.status === "running";
-    case "needs_review":
-      return m.status === "needs_review";
-    case "completed":
-      return m.status === "completed";
-    case "failed":
-      return m.status === "failed";
-  }
-}
-
-const columns = "tablet:grid-cols-[1fr_112px_96px_84px_84px]";
-
-/**
- * ?state=empty|loading force un état de démo pour la capture visuelle.
- * Purement un outil de prototype — n'existera plus une fois l'API branchée.
- */
 export function MissionsScreen() {
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const demoState = searchParams.get("state");
-  const filter = (searchParams.get("filter") as MissionFilter | null) ?? "all";
   const [query, setQuery] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  function setFilter(next: MissionFilter) {
-    const params = new URLSearchParams(searchParams);
-    if (next === "all") params.delete("filter");
-    else params.set("filter", next);
-    setSearchParams(params, { replace: true });
-  }
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    let scrollTimeout: NodeJS.Timeout;
+    
+    const handleScroll = () => {
+      el.classList.add("is-scrolling");
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        el.classList.remove("is-scrolling");
+      }, 600);
+    };
+
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY !== 0 && e.deltaX === 0) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY; // Instant fluid scroll
+        handleScroll();
+      }
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("scroll", handleScroll);
+      clearTimeout(scrollTimeout);
+    };
+  }, []);
 
   const source = demoState === "empty" ? emptyMissions : allMissions;
 
   const filtered = useMemo(() => {
-    return source
-      .filter((m) => matchesFilter(m, filter))
-      .filter((m) => m.objective.toLowerCase().includes(query.toLowerCase()));
-  }, [source, filter, query]);
+    return source.filter((m) => m.objective.toLowerCase().includes(query.toLowerCase()));
+  }, [source, query]);
+
+  const missionsByStatus = useMemo(() => {
+    const grouped: Record<MissionStatus, Mission[]> = {
+      running: [],
+      needs_review: [],
+      completed: [],
+      failed: [],
+      cancelled: [],
+    };
+    filtered.forEach(m => {
+      if (grouped[m.status]) grouped[m.status].push(m);
+    });
+    return grouped;
+  }, [filtered]);
 
   if (demoState === "loading") {
     return (
-      <div>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}
+        className="flex h-full flex-col"
+      >
         <PageHeader title="Missions" icon={RocketLaunchIcon} />
-        <Skeleton className="mb-4 h-9 w-80" />
-        <div className="space-y-px overflow-hidden rounded-lg border border-border bg-surface-1 p-1">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3 px-3 py-3">
-              <Skeleton className="h-6 w-24 shrink-0 rounded-full" />
-              <Skeleton className="h-4 flex-1" />
-              <Skeleton className="hidden h-4 w-16 shrink-0 tablet:block" />
-              <Skeleton className="hidden h-4 w-16 shrink-0 tablet:block" />
+        <Skeleton className="mb-8 h-9 w-80" />
+        <div className="flex flex-1 gap-6 overflow-hidden">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex h-full w-[320px] shrink-0 flex-col gap-4">
+              <Skeleton className="h-6 w-32 rounded-md" />
+              <div className="flex flex-col gap-3">
+                {Array.from({ length: 3 }).map((_, j) => (
+                  <Skeleton key={j} className="h-[120px] w-full rounded-2xl" />
+                ))}
+              </div>
             </div>
           ))}
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div>
-      <PageHeader title="Missions" icon={RocketLaunchIcon} />
-
-      <div className="mb-4 flex flex-col gap-3 tablet:flex-row tablet:items-center tablet:justify-between">
-        <div className="flex flex-wrap items-center gap-1.5">
-          {filters.map((f) => (
-            <button
-              key={f.value}
-              type="button"
-              onClick={() => setFilter(f.value)}
-              className={cn(
-                "h-7 rounded-sm px-3 text-filter transition-colors duration-fast ease-standard",
-                filter === f.value
-                  ? "bg-accent-indigo-muted text-accent-indigo"
-                  : "text-text-secondary hover:bg-surface-2 hover:text-text-primary",
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-        <SearchInput
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onClear={() => setQuery("")}
-          placeholder="Filtrer par objectif…"
-          className="tablet:w-64"
-        />
-      </div>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}
+      className="flex h-full flex-col"
+    >
+      <PageHeader 
+        title="Missions" 
+        icon={RocketLaunchIcon} 
+        action={
+          <SearchInput
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onClear={() => setQuery("")}
+            placeholder="Filtrer par objectif…"
+            className="w-full tablet:w-64 rounded-[16px] bg-white/40 backdrop-blur-2xl border border-white/60 shadow-[0_4px_16px_rgba(0,0,0,0.04)]"
+          />
+        }
+      />
 
       {filtered.length === 0 ? (
-        <div className="rounded-lg border border-border bg-surface-1">
+        <div className="mt-4 overflow-hidden rounded-[32px] border border-white/60 bg-white/40 backdrop-blur-3xl shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
           <EmptyState
-            icon={<Inbox className="size-5" />}
+            icon={<Inbox className="size-6" />}
             title={source.length === 0 ? "Aucune mission" : "Aucun résultat"}
             description={
               source.length === 0
                 ? "Hermes n'a encore lancé aucune mission. Elles apparaîtront ici dès leur création."
-                : "Aucune mission ne correspond à ce filtre ou cette recherche."
+                : "Aucune mission ne correspond à cette recherche."
             }
           />
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border bg-surface-1">
-          {/* En-tête de colonnes — tablet+ uniquement */}
-          <div
-            className={cn(
-              "hidden items-center gap-3 border-b border-border px-4 py-2 text-xs font-medium text-text-muted tablet:grid",
-              columns,
-            )}
-          >
-            <span>Objectif</span>
-            <span>Statut</span>
-            <span className="text-right">Tests</span>
-            <span className="text-right">Fichiers</span>
-            <span className="text-right">Durée</span>
-          </div>
-
-          {filtered.map((m) => {
-            const s = missionStatusConfig[m.status];
-            return (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => navigate(ROUTES.missionDetail(m.id))}
-                className={cn(
-                  "flex w-full flex-col gap-2 border-b border-border px-4 py-3 text-left last:border-b-0",
-                  "transition-colors duration-fast ease-standard hover:bg-surface-2",
-                  "tablet:grid tablet:h-[52px] tablet:items-center tablet:gap-3 tablet:py-0",
-                  columns,
-                )}
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-body-text font-medium text-text-primary">{m.objective}</p>
-                  <p className="truncate text-label text-text-muted tablet:hidden">
-                    {m.step} · <span className="font-mono">{m.model}</span>
-                  </p>
-                </div>
-                <Badge tone={s.tone} dot pulse={s.pulse} className="w-fit tablet:w-[100px] tablet:justify-center">
-                  {s.label}
-                </Badge>
-                <span className="text-body-text text-text-secondary tablet:text-right">
-                  {m.tests.total > 0 ? `${m.tests.passed}/${m.tests.total}` : "—"}
+        <div 
+          ref={scrollRef}
+          className="flex flex-1 gap-6 overflow-x-auto pb-6 kanban-scrollbar"
+        >
+          {KANBAN_COLUMNS.map((col) => (
+            <div key={col.id} className="flex h-full w-[320px] shrink-0 flex-col gap-4">
+              <div className="flex items-center justify-between px-2">
+                <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text-secondary">
+                  <span className={`size-1.5 rounded-full bg-current ${col.color} shadow-[0_0_8px_currentColor]`} />
+                  {col.title}
+                </h2>
+                <span className="rounded-[8px] bg-white/50 px-2 py-0.5 text-[11px] font-bold text-text-primary border border-white/60 shadow-sm">
+                  {missionsByStatus[col.id].length}
                 </span>
-                <span className="text-body-text text-text-secondary tablet:text-right">{m.filesModified.length}</span>
-                <span className="font-mono text-label text-text-secondary tablet:text-right">
-                  {formatDuration(m.durationMs)}
-                </span>
-              </button>
-            );
-          })}
+              </div>
+              
+              <div className="flex flex-col gap-3 overflow-y-auto scrollbar-none pb-4">
+                {missionsByStatus[col.id].map((mission) => (
+                  <MissionKanbanCard key={mission.id} mission={mission} />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

@@ -13,19 +13,20 @@ export function Tooltip({
   side?: "top" | "bottom" | "left" | "right";
 }) {
   return (
-    <RadixTooltip.Root delayDuration={300}>
+    <RadixTooltip.Root delayDuration={200}>
       <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>
       <RadixTooltip.Portal>
         <RadixTooltip.Content
           side={side}
-          sideOffset={6}
+          sideOffset={10}
           className={cn(
-            "z-tooltip rounded-md border border-border-strong bg-surface-3 px-2.5 py-1.5 text-xs text-text-primary shadow-md",
-            "animate-fade-in",
+            "z-tooltip flex items-center justify-center rounded-full bg-white/70 backdrop-blur-2xl border border-white/60 px-3.5 py-1.5 text-[11px] font-semibold tracking-wide text-text-primary shadow-[0_12px_24px_-8px_rgba(0,0,0,0.15)]",
+            "data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in data-[state=delayed-open]:zoom-in-[0.97] data-[state=delayed-open]:slide-in-from-bottom-2",
+            "data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-[0.97] data-[state=closed]:slide-out-to-bottom-1",
+            "duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
           )}
         >
           {content}
-          <RadixTooltip.Arrow className="fill-surface-3" />
         </RadixTooltip.Content>
       </RadixTooltip.Portal>
     </RadixTooltip.Root>

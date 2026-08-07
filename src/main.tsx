@@ -9,22 +9,26 @@ import { MissionDetailScreen } from "@/screens/MissionDetailScreen";
 import { SystemScreen } from "@/screens/SystemScreen";
 import "@/styles/global.css";
 
+import { VpsProvider } from "@/lib/VpsContext";
+
 const root = document.getElementById("root");
 if (!root) throw new Error("Root element not found");
 
 createRoot(root).render(
   <StrictMode>
-    <TooltipProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<AppShell />}>
-            <Route path="/" element={<OverviewScreen />} />
-            <Route path="/missions" element={<MissionsScreen />} />
-            <Route path="/missions/:id" element={<MissionDetailScreen />} />
-            <Route path="/system" element={<SystemScreen />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <VpsProvider>
+      <TooltipProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<AppShell />}>
+              <Route path="/" element={<OverviewScreen />} />
+              <Route path="/missions" element={<MissionsScreen />} />
+              <Route path="/missions/:id" element={<MissionDetailScreen />} />
+              <Route path="/system" element={<SystemScreen />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </VpsProvider>
   </StrictMode>,
 );

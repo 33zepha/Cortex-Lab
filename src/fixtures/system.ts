@@ -7,7 +7,17 @@ export const systemHealthy: SystemHealth = {
   cortexServer: { status: "running", uptimeSeconds: 3 * 24 * 3600 + 14 * 3600, memoryMb: 184 },
   claudeCode: { status: "available", lastCallAt: now - 3 * min, tokensUsedToday: 428_500 },
   ledger: { totalEvents: 12_842, sizeKb: 3_120, lastWriteAt: now - 3 * min },
-  storage: { activeMissions: 1, usedMb: 214, quotaMb: 5_000 },
+  storage: { 
+    activeMissions: 1, 
+    usedMb: 214, 
+    quotaMb: 5_000,
+    breakdown: [
+      { label: "Modèles", valueMb: 124, colorClass: "bg-accent-indigo" },
+      { label: "Ledger", valueMb: 52, colorClass: "bg-success" },
+      { label: "Cache", valueMb: 28, colorClass: "bg-warning" },
+      { label: "Divers", valueMb: 10, colorClass: "bg-neutral-300" }
+    ]
+  },
   sse: { connectedClients: 2, status: "connected", avgLagMs: 84 },
   recentErrors: [],
 };

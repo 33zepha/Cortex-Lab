@@ -1,73 +1,114 @@
-const WIDTH = 600;
-const HEIGHT = 220;
-const PAD_LEFT = 40;
-const PAD_BOTTOM = 24;
-const PAD_TOP = 16;
-const BAR_GAP = 16;
+import { useState } from "react";
 
-export function TokenUsageChart({ data }: { data: { day: string; tokens: number }[] }) {
-  const max = Math.max(...data.map((d) => d.tokens));
-  const plotW = WIDTH - PAD_LEFT;
-  const plotH = HEIGHT - PAD_TOP - PAD_BOTTOM;
-  const barWidth = (plotW - BAR_GAP * (data.length - 1)) / data.length;
+export interface TokenPoint {
+  day: string;
+  tokens: number;
+}
 
-  const points = data.map((d, i) => {
-    const x = PAD_LEFT + i * (barWidth + BAR_GAP) + barWidth / 2;
-    const y = PAD_TOP + plotH - (d.tokens / max) * plotH;
-    return { x, y, d };
-  });
+interface TokenUsageChartProps {
+  data: TokenPoint[];
+  onHoverPoint?: (point: TokenPoint | null) => void;
+}
 
-  const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
-  const gridLines = [0, 0.5, 1];
+export function TokenUsageChart({ data, onHoverPoint }: TokenUsageChartProps) {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  if (!data || data.length < 2) {
+    return (
+      <div className="flex h-20 items-center justify-center rounded-xl border border-dashed border-border bg-black/[0.01] text-xs text-text-muted">
+        Pas de données de consommation
+      </div>
+    );
+  }
+
+  const maxTokens = Math.max(...data.map((u) => u.tokens), 1);
 
   return (
-    <div>
-      <svg
-        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-        preserveAspectRatio="xMidYMid meet"
-        className="h-64 w-full"
-        role="img"
-        aria-label="Tokens Claude Code consommés par jour sur les 7 derniers jours"
-      >
-        {/* Grille horizontale */}
-        {gridLines.map((f) => {
-          const y = PAD_TOP + plotH * f;
-          return (
-            <g key={f}>
-              <line x1={PAD_LEFT} y1={y} x2={WIDTH} y2={y} className="stroke-border" strokeWidth={1} />
-              <text x={0} y={y + 4} className="fill-text-muted text-[10px]">
-                {Math.round((max * (1 - f)) / 1000)}k
-              </text>
-            </g>
-          );
-        })}
+    <div className="w-full">
+      <div className="relative h-[56px] w-full">
+        {/* SVG arrière-plan : Courbe et zone de remplissage dégradée */}
+        <svg
+          viewBox="0 0 100 100"
+          className="absolute inset-0 w-full h-full overflow-visible"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <linearGradient id="token-area-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--color-warning, #f59e0b)" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="var(--color-warning, #f59e0b)" stopOpacity="0.00" />
+            </linearGradient>
+          </defs>
 
-        {/* Barres */}
-        {points.map(({ x, y, d }, i) => {
-          const isLast = i === points.length - 1;
-          return (
-            <rect
-              key={d.day}
-              x={x - barWidth / 2}
-              y={y}
-              width={barWidth}
-              height={PAD_TOP + plotH - y}
-              rx={4}
-              className={isLast ? "fill-chart-bar" : "fill-surface-3"}
+          {/* Remplissage dégradé sous la courbe (Y maxé à 90% pour garder de l'espace en haut) */}
+          <path
+            d={`M 0 100 ${data.map((d, i) => `L ${(i / (data.length - 1)) * 100} ${100 - (d.tokens / maxTokens) * 85}`).join(" ")} L 100 100 Z`}
+            fill="url(#token-area-grad)"
+          />
+
+          {/* Courbe principale avec épaisseur de trait constante */}
+          <path
+            d={data.map((d, i) => `${i === 0 ? "M" : "L"} ${(i / (data.length - 1)) * 100} ${100 - (d.tokens / maxTokens) * 85}`).join(" ")}
+            fill="none"
+            className="stroke-warning"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+
+        {/* Couche HTML : Ligne de suivi et points parfaits (insensibles à la déformation d'aspect ratio) */}
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Ligne témoin verticale */}
+          {activeIndex !== null && (
+            <div
+              className="absolute top-0 bottom-0 w-[1.5px] border-l border-dashed border-warning/40 -translate-x-1/2"
+              style={{ left: `${(activeIndex / (data.length - 1)) * 100}%` }}
             />
-          );
-        })}
+          )}
 
-        {/* Ligne de tendance */}
-        <path d={linePath} fill="none" className="stroke-chart-line" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-        {points.map(({ x, y, d }) => (
-          <circle key={d.day} cx={x} cy={y} r={3} className="fill-surface-1 stroke-chart-line" strokeWidth={2} />
-        ))}
-      </svg>
-      <div className="mt-1 flex justify-between pl-10 text-label text-text-muted">
-        {data.map((d) => (
-          <span key={d.day}>{d.day}</span>
-        ))}
+          {/* Cercles parfaits dessinés en HTML pur */}
+          {data.map((d, i) => {
+            const leftPct = (i / (data.length - 1)) * 100;
+            const topPct = 100 - (d.tokens / maxTokens) * 85;
+
+            return (
+              <div
+                key={i}
+                className={`absolute size-2.5 rounded-full bg-white border-2 border-warning -translate-x-1/2 -translate-y-1/2 transition-all duration-150 ${
+                  activeIndex === i
+                    ? "scale-125 border-[3px] shadow-[0_0_8px_rgba(245,158,11,0.6)] z-10"
+                    : "scale-100 z-0"
+                }`}
+                style={{
+                  left: `${leftPct}%`,
+                  top: `${topPct}%`,
+                }}
+              >
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Grille invisible pour capturer précisément le survol de la souris */}
+        <div
+          className="absolute inset-0 flex"
+          onMouseLeave={() => {
+            setActiveIndex(null);
+            if (onHoverPoint) onHoverPoint(null);
+          }}
+        >
+          {data.map((d, i) => (
+            <div
+              key={i}
+              className="flex-1 h-full cursor-crosshair"
+              onMouseEnter={() => {
+                setActiveIndex(i);
+                if (onHoverPoint) onHoverPoint(d);
+              }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

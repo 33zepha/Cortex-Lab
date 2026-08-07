@@ -50,7 +50,7 @@ function OrbitShell({ title, children, hideTitle, direction, type }: { title: st
       <div className="flex-1 overflow-y-auto scrollbar-none p-3 space-y-3">
         {!hideTitle && (
           <motion.div variants={FADE_UP_VARIANTS} className="px-2">
-            <h2 className="text-xs font-medium text-text-muted">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-text-muted">
               {title}
             </h2>
           </motion.div>

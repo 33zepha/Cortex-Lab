@@ -93,6 +93,7 @@ export type SystemHealth = {
     activeMissions: number;
     usedMb: number;
     quotaMb: number;
+    breakdown: { label: string; valueMb: number; colorClass: string }[];
   };
   sse: {
     connectedClients: number;

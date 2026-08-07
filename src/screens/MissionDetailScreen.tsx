@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   ChevronLeft,
   FileText,
@@ -32,6 +33,7 @@ import { ROUTES } from "@/lib/routes";
 import { missionStatusConfig, formatDuration, formatClock } from "@/lib/status";
 import { EvidenceDetail } from "@/screens/mission-detail/EvidenceDetail";
 import { DiffView } from "@/screens/mission-detail/DiffView";
+import { EASE_SPRING_ARRAY } from "@/lib/animations";
 
 export function MissionDetailScreen() {
   const { id } = useParams<{ id: string }>();
@@ -86,11 +88,17 @@ export function MissionDetailScreen() {
 
   if (!mission) {
     return (
-      <ErrorState
-        title="Mission introuvable"
-        description="Cette mission n'existe pas ou a été supprimée."
-        onRetry={() => navigate(ROUTES.missions)}
-      />
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}
+      >
+        <ErrorState
+          title="Mission introuvable"
+          description="Cette mission n'existe pas ou a été supprimée."
+          onRetry={() => navigate(ROUTES.missions)}
+        />
+      </motion.div>
     );
   }
 
@@ -104,7 +112,11 @@ export function MissionDetailScreen() {
   );
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}
+    >
       <Link
         to={ROUTES.missions}
         className="mb-4 inline-flex items-center gap-1 text-sm text-text-muted hover:text-text-secondary"
@@ -392,6 +404,6 @@ export function MissionDetailScreen() {
         Créée à {formatClock(mission.createdAt)}
         {mission.closedAt ? ` · Clôturée à ${formatClock(mission.closedAt)}` : ""}
       </p>
-    </div>
+    </motion.div>
   );
 }

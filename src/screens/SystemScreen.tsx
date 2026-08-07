@@ -1,13 +1,18 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { ReactNode } from "react";
-import { Server, Cpu, ScrollText, HardDrive, Radio, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { ServerStackIcon } from "@heroicons/react/24/solid";
+import { Server, Cpu, ScrollText, HardDrive, Radio, AlertTriangle, CheckCircle2, Zap, Plug, Bot, Unplug, Plus } from "lucide-react";
+import { ServerStackIcon, ExclamationTriangleIcon, PowerIcon, ServerIcon, SparklesIcon } from "@heroicons/react/24/solid";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { BentoCard, StatusIndicator, EmptyState, Button } from "@/components/ui";
+import { BentoCard, StatusIndicator, EmptyState, Button, Dialog, DialogTrigger, DialogContent, Input, Tooltip, TooltipProvider } from "@/components/ui";
 import { systemHealthy, systemDisconnected, weeklyTokenUsage } from "@/fixtures/system";
 import { formatRelativeTime } from "@/lib/status";
+import { EASE_SPRING_ARRAY, STAGGER_CONTAINER_VARIANTS, STAGGER_ITEM_VARIANTS } from "@/lib/animations";
+import { useVps } from "@/lib/VpsContext";
+import { cn } from "@/lib/cn";
 import type { Tone } from "@/lib/status";
 import type { SystemHealth } from "@/lib/types";
+import { LIQUID_GLASS_HOVER, TRANSITION_SPRING } from "@/lib/ui-classes";
 
 const now = Date.parse("2026-08-06T14:30:00Z");
 
@@ -19,12 +24,91 @@ const sseToneMap: Record<SseStatus, Tone> = { connected: "success", reconnecting
 const claudeLabelMap: Record<ClaudeStatus, string> = { available: "Disponible", degraded: "Dégradé", unavailable: "Indisponible" };
 const sseLabelMap: Record<SseStatus, string> = { connected: "Connecté", reconnecting: "Reconnexion…", disconnected: "Déconnecté" };
 
+const ThickPlus = (props: any) => <Plus strokeWidth={3.5} {...props} />;
+
+function HoverExpandButton({
+  icon: Icon,
+  hoverIcon: HoverIcon,
+  label,
+  onClick,
+  className,
+}: {
+  icon: any;
+  hoverIcon?: any;
+  label: string;
+  onClick?: () => void;
+  className?: string;
+}) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <motion.button
+      type="button"
+      layout
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={onClick}
+      className={cn(
+        "flex h-[36px] items-center overflow-hidden rounded-[12px] text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-indigo",
+        TRANSITION_SPRING,
+        "hover:text-text-primary",
+        LIQUID_GLASS_HOVER,
+        "active:scale-[0.94] active:duration-150 active:ease-out",
+        className
+      )}
+      style={{ paddingLeft: 8, paddingRight: isHovered ? 12 : 8 }}
+    >
+      <motion.div layout className="relative flex size-[24px] shrink-0 items-center justify-center">
+        <AnimatePresence mode="popLayout">
+          {isHovered && HoverIcon ? (
+            <motion.div
+              key="hover"
+              initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
+              animate={{ opacity: 1, rotate: 0, scale: 1 }}
+              exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 flex items-center justify-center text-text-primary"
+            >
+              <HoverIcon className="size-[22px]" />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="default"
+              initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
+              animate={{ opacity: 1, rotate: 0, scale: 1 }}
+              exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <Icon className="size-[22px]" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+      <AnimatePresence>
+        {isHovered && (
+          <motion.span
+            layout
+            initial={{ opacity: 0, width: 0, marginLeft: 0 }}
+            animate={{ opacity: 1, width: "auto", marginLeft: 6 }}
+            exit={{ opacity: 0, width: 0, marginLeft: 0 }}
+            className="whitespace-nowrap text-[12px] font-medium tracking-wide"
+          >
+            {label}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </motion.button>
+  );
+}
+
 function MetricTile({
   id,
   icon,
   label,
   value,
   sub,
+  className,
   children,
 }: {
   id?: string;
@@ -32,16 +116,17 @@ function MetricTile({
   label: string;
   value: string;
   sub?: string;
+  className?: string;
   children?: ReactNode;
 }) {
   return (
-    <div id={id} className="scroll-mt-6 rounded-lg border border-border bg-surface-1 px-4 py-3.5">
+    <div id={id} className={cn("scroll-mt-6 rounded-[24px] bg-white/60 backdrop-blur-xl border border-white/60 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.05)] px-5 py-4", className)}>
       <div className="flex items-center gap-2 text-text-muted">
         {icon}
-        <span className="text-xs font-medium">{label}</span>
+        <span className="text-xs font-bold uppercase tracking-widest">{label}</span>
       </div>
-      <p className="mt-1.5 text-metric text-text-primary">{value}</p>
-      {sub && <p className="mt-0.5 text-label text-text-muted">{sub}</p>}
+      <p className="mt-2 text-2xl font-semibold tracking-tight text-text-primary">{value}</p>
+      {sub && <p className="mt-1 text-[11px] font-medium text-text-muted">{sub}</p>}
       {children}
     </div>
   );
@@ -62,60 +147,263 @@ function MiniSparkline({ data }: { data: number[] }) {
 
 export function SystemScreen() {
   const [simulateDisconnect, setSimulateDisconnect] = useState(false);
+  const [vpsDialogOpen, setVpsDialogOpen] = useState(false);
+  
+  const { vps, connectVps } = useVps();
+  const [vpsIp, setVpsIp] = useState("187.127.70.52");
+  const [vpsSshId, setVpsSshId] = useState("root");
+  const [vpsSshKey, setVpsSshKey] = useState("");
+
   const health = simulateDisconnect ? systemDisconnected : systemHealthy;
   const allHealthy = !simulateDisconnect;
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}
+    >
       <PageHeader
         title="System"
         icon={ServerStackIcon}
         action={
-          <Button size="sm" variant="secondary" onClick={() => setSimulateDisconnect((v) => !v)}>
-            {simulateDisconnect ? "Revenir à l'état connecté" : "Simuler une déconnexion SSE (démo)"}
-          </Button>
+          <div className="flex items-center gap-1 rounded-[16px] bg-white/50 backdrop-blur-3xl border border-white/60 p-1 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.05)]">
+            {vps && (
+              <HoverExpandButton 
+                icon={PowerIcon}
+                label={simulateDisconnect ? "Rétablir la connexion" : "Déconnexion locale"}
+                onClick={() => setSimulateDisconnect((v) => !v)}
+              />
+            )}
+            
+            <Dialog open={vpsDialogOpen} onOpenChange={setVpsDialogOpen}>
+              <DialogTrigger asChild>
+                <HoverExpandButton 
+                  icon={ServerIcon}
+                  hoverIcon={ThickPlus}
+                  label="Associer un VPS"
+                />
+              </DialogTrigger>
+              <DialogContent title="Connecter un VPS" description="Ajoutez un serveur externe pour l'intégrer au cluster Cortex.">
+                <div className="mt-2 space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-text-secondary">Adresse IP</label>
+                    <Input placeholder="ex: 187.127.70.52" value={vpsIp} onChange={(e) => setVpsIp(e.target.value)} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-text-secondary">Identifiant SSH</label>
+                    <Input placeholder="ex: root" value={vpsSshId} onChange={(e) => setVpsSshId(e.target.value)} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-text-secondary">Mot de passe SSH / Clé</label>
+                    <Input type="password" placeholder="••••••••" value={vpsSshKey} onChange={(e) => setVpsSshKey(e.target.value)} />
+                  </div>
+                </div>
+                <div className="mt-6 flex items-center justify-end gap-3">
+                  <Button variant="ghost" onClick={() => setVpsDialogOpen(false)}>Annuler</Button>
+                  <Button variant="primary" onClick={() => {
+                    connectVps({ ip: vpsIp, sshId: vpsSshId, sshKey: vpsSshKey });
+                    setVpsDialogOpen(false);
+                  }}>Connecter</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <HoverExpandButton 
+              icon={SparklesIcon}
+              hoverIcon={ThickPlus}
+              label="Intégration Claude IA"
+            />
+          </div>
         }
       />
 
-      {/* Statut global */}
-      <div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-surface-1 px-4 py-3">
-        {allHealthy ? (
-          <CheckCircle2 className="size-4 text-success" />
-        ) : (
-          <AlertTriangle className="size-4 text-warning" />
-        )}
-        <span className="text-body-text font-medium text-text-primary">
-          {allHealthy ? "Tous les systèmes sont opérationnels" : "Un composant nécessite votre attention"}
-        </span>
-      </div>
+      {/* Bentos principaux : VPS, Claude Code, Codex */}
+      <motion.div variants={STAGGER_CONTAINER_VARIANTS} className="grid grid-cols-1 gap-6 tablet:grid-cols-4 laptop:grid-cols-12 mb-6">
+        
+        {/* Bento VPS / Core */}
+        <motion.div variants={STAGGER_ITEM_VARIANTS} className="tablet:col-span-4 laptop:col-span-4">
+          <BentoCard className="relative h-full overflow-hidden group">
+            {/* Background Effects */}
+            <div className="absolute inset-0 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:12px_12px] opacity-[0.03] pointer-events-none" />
+            <div className={cn(
+              "absolute -right-20 -top-20 size-64 blur-[64px] rounded-full transition-all duration-1000 group-hover:scale-110 pointer-events-none opacity-[0.15] group-hover:opacity-[0.25]",
+              health.cortexServer.status === "running" && "bg-success",
+              health.cortexServer.status === "degraded" && "bg-warning",
+              health.cortexServer.status === "stopped" && "bg-error"
+            )} />
+            <div className={cn(
+              "absolute -left-20 -bottom-20 size-56 blur-[64px] rounded-full transition-all duration-[1500ms] group-hover:translate-x-8 group-hover:-translate-y-4 pointer-events-none opacity-10 group-hover:opacity-20",
+              health.cortexServer.status === "running" && "bg-success",
+              health.cortexServer.status === "degraded" && "bg-warning",
+              health.cortexServer.status === "stopped" && "bg-error"
+            )} />
+            
+            <div className="relative flex flex-col h-full justify-between z-10">
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-xs font-bold uppercase tracking-widest text-text-primary flex items-center gap-2">
+                    <Server className="size-4" /> 
+                    {vps ? `VPS • ${vps.ip}` : "Core"}
+                  </span>
+                </div>
+                
+                <div className="mt-8 grid grid-cols-2 gap-6">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">Uptime</span>
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="text-3xl font-semibold tracking-tight text-text-primary">
+                        {Math.floor(health.cortexServer.uptimeSeconds / 3600)}
+                      </span>
+                      <span className="text-[11px] font-medium text-text-muted">h</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">Mémoire</span>
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="text-3xl font-semibold tracking-tight text-text-primary">
+                        {health.cortexServer.memoryMb}
+                      </span>
+                      <span className="text-[11px] font-medium text-text-muted">Mo</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6">
+                <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-wider mb-2">
+                  <span className="flex items-center gap-1.5 text-text-muted"><Zap className="size-3" strokeWidth={3} /> Charge RAM</span>
+                  <span className="text-text-primary font-semibold">{(health.cortexServer.memoryMb / 4096 * 100).toFixed(0)}%</span>
+                </div>
+                <div className="h-1.5 w-full bg-black/5 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-text-primary rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(health.cortexServer.memoryMb / 4096) * 100}%` }}
+                    transition={{ duration: 1.5, ease: EASE_SPRING_ARRAY, delay: 0.2 }}
+                  />
+                </div>
+              </div>
+            </div>
+          </BentoCard>
+        </motion.div>
 
-      {/* Grille dense de métriques */}
-      <div className="mb-4 grid grid-cols-2 gap-3 tablet:grid-cols-3 laptop:grid-cols-4">
-        <MetricTile id="cortex-server" icon={<Server className="size-3.5" />} label="Uptime serveur" value={`${Math.floor(health.cortexServer.uptimeSeconds / 3600)}h`} sub="Running" />
-        <MetricTile icon={<Server className="size-3.5" />} label="Mémoire" value={`${health.cortexServer.memoryMb} Mo`} />
-        <MetricTile id="claude-code" icon={<Cpu className="size-3.5" />} label="Claude Code" value={claudeLabelMap[health.claudeCode.status]} sub={health.claudeCode.lastCallAt ? `Dernier appel ${formatRelativeTime(health.claudeCode.lastCallAt, now)}` : undefined} />
-        <MetricTile
-          icon={<Cpu className="size-3.5" />}
-          label="Tokens (7j)"
-          value={health.claudeCode.tokensUsedToday.toLocaleString("fr-FR")}
+        {/* Bento Claude Code */}
+        <motion.div variants={STAGGER_ITEM_VARIANTS} className="tablet:col-span-4 laptop:col-span-4">
+          <BentoCard className="relative h-full overflow-hidden group">
+            {/* Background Effects */}
+            <div className="absolute inset-0 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:12px_12px] opacity-[0.03] pointer-events-none" />
+            <div className="absolute -right-20 -top-20 size-64 bg-accent-indigo/10 blur-[64px] rounded-full transition-all duration-1000 group-hover:bg-accent-indigo/20 group-hover:scale-110 pointer-events-none" />
+            <div className="absolute -left-20 -bottom-20 size-56 bg-purple-500/10 blur-[64px] rounded-full transition-all duration-[1500ms] group-hover:bg-purple-500/15 group-hover:translate-x-8 group-hover:-translate-y-4 pointer-events-none" />
+
+            <div className="relative flex flex-col h-full justify-between z-10">
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-white/50 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_2px_8px_rgba(0,0,0,0.05)]">
+                      <span className="text-sm font-bold text-text-primary">CC</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold uppercase tracking-widest text-text-primary">Claude Code</span>
+                      <span className="text-[9px] font-medium text-text-muted uppercase tracking-widest">Agent CLI</span>
+                    </div>
+                  </div>
+                  <div className={cn(
+                    "size-2 rounded-full",
+                    health.claudeCode.status === "available" ? "bg-success" : "bg-warning"
+                  )} />
+                </div>
+                <div className="mt-8 grid grid-cols-2 gap-6">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">Appel</span>
+                    <span className="text-2xl font-semibold tracking-tight text-text-primary mt-0.5 line-clamp-1">
+                      {health.claudeCode.lastCallAt ? formatRelativeTime(health.claudeCode.lastCallAt, now) : "—"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">Ce jour</span>
+                    <div className="flex items-baseline gap-0.5 mt-0.5">
+                      <span className="text-3xl font-semibold tracking-tight text-text-primary">
+                        {health.claudeCode.tokensUsedToday.toLocaleString("fr-FR")}
+                      </span>
+                      <span className="text-[11px] font-medium text-text-muted">tk</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </BentoCard>
+        </motion.div>
+
+        {/* Bento Codex (Prochainement) */}
+        <motion.div variants={STAGGER_ITEM_VARIANTS} className="tablet:col-span-4 laptop:col-span-4">
+          <BentoCard className="relative h-full overflow-hidden group opacity-60">
+            <div className="absolute inset-0 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:12px_12px] opacity-[0.03] pointer-events-none" />
+            <div className="relative flex flex-col h-full z-10">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-white/50 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_2px_8px_rgba(0,0,0,0.05)] opacity-50 grayscale">
+                    <span className="text-xs font-bold text-text-primary">CX</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold uppercase tracking-widest text-text-primary text-text-muted">Codex</span>
+                    <span className="text-[9px] font-medium text-text-muted uppercase tracking-widest">IA Editor</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 flex flex-col items-center justify-center py-6">
+                <Cpu className="size-8 text-text-muted/30 mb-2" />
+                <span className="text-xs font-medium text-text-muted">En attente d'intégration</span>
+              </div>
+            </div>
+          </BentoCard>
+        </motion.div>
+
+      </motion.div>
+
+      {/* Tuiles secondaires discrètes */}
+      <div className="mb-6 grid grid-cols-2 gap-6 tablet:grid-cols-4">
+        <MetricTile 
+          id="ledger" 
+          icon={<ScrollText className="size-3.5" />} 
+          label="Cortex Ledger" 
+          value={health.ledger.totalEvents.toLocaleString("fr-FR")} 
+          sub={`${(health.ledger.sizeKb / 1024).toFixed(1)} Mo • Sain`} 
+        />
+        <MetricTile 
+          id="storage" 
+          className="col-span-2"
+          icon={<HardDrive className="size-3.5" />} 
+          label="Stockage utilisé" 
+          value={`${health.storage.usedMb} Mo`} 
+          sub={`sur ${(health.storage.quotaMb / 1000).toFixed(0)} Go`}
         >
-          <MiniSparkline data={weeklyTokenUsage.map((d) => d.tokens)} />
+          <div className="mt-4">
+            <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-black/5">
+              {health.storage.breakdown.map((item, i) => (
+                <div 
+                  key={i}
+                  className={cn("h-full", item.colorClass)}
+                  style={{ width: `${(item.valueMb / health.storage.usedMb) * 100}%` }}
+                  title={`${item.label} : ${item.valueMb} Mo`}
+                />
+              ))}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+              {health.storage.breakdown.map((item, i) => (
+                <div key={i} className="flex items-center gap-1.5">
+                  <div className={cn("size-2 rounded-full", item.colorClass)} />
+                  <span className="text-[9px] font-medium uppercase tracking-wider text-text-muted">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </MetricTile>
-        <MetricTile id="ledger" icon={<ScrollText className="size-3.5" />} label="Ledger — événements" value={health.ledger.totalEvents.toLocaleString("fr-FR")} sub="Append-only, sain" />
-        <MetricTile icon={<ScrollText className="size-3.5" />} label="Ledger — taille" value={`${(health.ledger.sizeKb / 1024).toFixed(1)} Mo`} />
-        <MetricTile id="storage" icon={<HardDrive className="size-3.5" />} label="Stockage utilisé" value={`${health.storage.usedMb} Mo`} sub={`sur ${(health.storage.quotaMb / 1000).toFixed(0)} Go — ${health.storage.activeMissions} mission(s) active(s)`} />
         <MetricTile id="sse" icon={<Radio className="size-3.5" />} label="SSE" value={sseLabelMap[health.sse.status]} sub={health.sse.avgLagMs > 0 ? `${health.sse.connectedClients} client(s) · ${health.sse.avgLagMs} ms` : `${health.sse.connectedClients} client(s)`} />
       </div>
 
-      {/* Indicateurs colorés discrets (cohérence avec les tons du reste de l'app) */}
-      <div className="mb-4 flex flex-wrap gap-4 px-1">
-        <StatusIndicator tone="success" label="Cortex server" />
-        <StatusIndicator tone={claudeToneMap[health.claudeCode.status]} label="Claude Code" />
-        <StatusIndicator tone={sseToneMap[health.sse.status]} label="SSE" pulse={health.sse.status === "reconnecting"} />
-      </div>
-
       {/* Erreurs récentes — grande carte */}
-      <BentoCard id="errors" title="Erreurs récentes" className="scroll-mt-6">
+      <BentoCard id="errors" icon={<ExclamationTriangleIcon className="size-[18px] text-error" />} className="scroll-mt-6">
         {health.recentErrors.length === 0 ? (
           <EmptyState icon={<AlertTriangle className="size-5" />} title="Aucune erreur" description="Le système n'a signalé aucune erreur récente." compact />
         ) : (
@@ -129,6 +417,6 @@ export function SystemScreen() {
           </ul>
         )}
       </BentoCard>
-    </div>
+    </motion.div>
   );
 }

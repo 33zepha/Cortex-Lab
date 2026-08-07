@@ -73,10 +73,10 @@ export function AppShell() {
               {showWing && (
                 <motion.div 
                   initial={{ opacity: 0, width: 0, x: -40, marginLeft: 0 }}
-                  animate={{ opacity: 1, width: 160, x: 0, marginLeft: 8 }}
+                  animate={{ opacity: 1, width: 160, x: 0, marginLeft: 12 }}
                   exit={{ opacity: 0, width: 0, x: -40, marginLeft: 0 }}
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                  className="relative z-10 overflow-hidden mt-3 rounded-[20px] bg-white/30 backdrop-blur-xl border border-white/40 shadow-[inset_0_1px_4px_rgba(255,255,255,0.4)]"
+                  className="relative z-10 overflow-hidden rounded-[24px] bg-white/60 backdrop-blur-3xl border border-white/60 shadow-[4px_0_24px_rgba(0,0,0,0.08)]"
                 >
                   <Orbit isOpen={true} />
                 </motion.div>
@@ -91,17 +91,19 @@ export function AppShell() {
             "laptop:pl-[96px]"
           )}
         >
-          <main
+          <motion.main
+            layout="position"
+            transition={{ type: "spring", bounce: 0, duration: 0.35 }}
             className={cn(
-              "relative flex w-full max-w-[1400px] flex-col overflow-hidden",
+              "relative flex w-full max-w-[1400px] flex-col overflow-hidden will-change-transform",
               "rounded-[32px] border border-white/40 bg-white/20 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.04)]",
-              "h-[calc(100vh-32px)] laptop:h-[calc(100vh-48px)]"
+              "max-h-[calc(100vh-32px)] laptop:max-h-[calc(100vh-48px)] h-fit"
             )}
           >
-            <div className="flex-1 overflow-y-auto scrollbar-thin p-6 laptop:p-10">
+            <div className="w-full overflow-y-auto scrollbar-thin p-6 laptop:p-10">
               <Outlet />
             </div>
-          </main>
+          </motion.main>
         </div>
         
         <MobileNav onOpenPalette={() => setPaletteOpen(true)} />

@@ -1,9 +1,11 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import { Card } from "./Card";
+import { LIQUID_GLASS_ACTIVE } from "@/lib/ui-classes";
 
 export type BentoCardProps = HTMLAttributes<HTMLDivElement> & {
   title?: ReactNode;
+  icon?: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
   span?: string; // tailwind col-span utility passed by caller's grid
@@ -13,6 +15,7 @@ export type BentoCardProps = HTMLAttributes<HTMLDivElement> & {
 export function BentoCard({
   className,
   title,
+  icon,
   description,
   action,
   span,
@@ -32,17 +35,26 @@ export function BentoCard({
       )}
       {...props}
     >
-      {(title || description || action) && (
+      {(title || description || action || icon) && (
         <div className={cn(
-          "mb-6 flex flex-row items-center justify-between gap-4",
-          padding === "none" && "px-7 pt-7 pb-0 mb-5"
+          "flex flex-row items-start justify-between gap-4 relative z-10",
+          padding === "default" && "mb-4",
+          padding === "compact" && "mb-3",
+          padding === "none" && "px-7 pt-7 mb-4"
         )}>
           <div className="flex flex-col min-w-0">
-            {title && (
-              <h3 className="text-[15px] font-medium text-text-primary/90">
-                {title}
-              </h3>
-            )}
+            <div className="flex flex-row items-center gap-3">
+              {icon && (
+                <div className={cn("flex shrink-0 items-center justify-center size-10 rounded-[12px]", LIQUID_GLASS_ACTIVE)}>
+                  {icon}
+                </div>
+              )}
+              {title && (
+                <h3 className="text-[15px] font-medium text-text-primary/90">
+                  {title}
+                </h3>
+              )}
+            </div>
             {description && (
               <p className="text-[13.5px] text-text-muted mt-1">{description}</p>
             )}
