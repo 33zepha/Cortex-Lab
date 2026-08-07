@@ -1,8 +1,6 @@
 /// <reference types="vite/client" />
 const configuredApiBase = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "");
-
-const hostname = typeof window !== "undefined" ? window.location.hostname : "localhost";
-const API_BASE_URL = configuredApiBase ?? (import.meta.env.DEV ? `http://${hostname}:4000` : "");
+const API_BASE_URL = configuredApiBase ?? "";
 
 export function apiUrl(path: string) {
   return `${API_BASE_URL}${path}`;
