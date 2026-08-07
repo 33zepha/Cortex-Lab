@@ -10,6 +10,11 @@
   #root {
     height: 100%;
   }
+
+  html,
+  body {
+    overscroll-behavior: none;
+  }
 }
 
 @layer components {
@@ -50,6 +55,23 @@
   /* Aplat neutre, sans dégradé ni teinte — le fond ne doit rien "faire". */
   .app-ambient-bg {
     background: var(--color-background);
+  }
+
+  /* Le shell mobile se comporte comme une vraie app : scroll inertiel, sans chrome de scrollbar. */
+  .mobile-content-scroll {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+
+  @media (max-width: 1279px) {
+    .mobile-content-scroll {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .mobile-content-scroll::-webkit-scrollbar {
+      display: none;
+    }
   }
 }
 
