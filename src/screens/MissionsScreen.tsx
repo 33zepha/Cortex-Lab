@@ -133,7 +133,7 @@ export function MissionsScreen() {
         title="Missions"
         icon={RocketLaunchIcon} 
         action={
-          <div className="flex items-center gap-3">
+          <div className="flex w-full flex-col gap-2 tablet:w-auto tablet:flex-row tablet:items-center tablet:gap-3">
             <SearchInput
               value={query}
               onChange={(e) => setQuery(e.target.value)}

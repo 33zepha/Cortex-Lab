@@ -135,7 +135,7 @@ export function MissionDetailScreen() {
     >
       <Link
         to={ROUTES.missions}
-        className="mb-4 inline-flex items-center gap-1 text-sm text-text-muted hover:text-text-secondary"
+        className="-ml-2 mb-4 inline-flex items-center gap-1 rounded-md px-2 py-2.5 text-sm text-text-muted hover:text-text-secondary active:bg-surface-2"
       >
         <ChevronLeft className="size-4" /> Missions
       </Link>

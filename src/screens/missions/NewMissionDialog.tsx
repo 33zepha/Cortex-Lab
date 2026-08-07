@@ -46,7 +46,7 @@ export function NewMissionDialog({ onCreated }: { onCreated: () => void }) {
   return (
     <Dialog open={open} onOpenChange={(next) => !submitting && setOpen(next)}>
       <DialogTrigger asChild>
-        <Button variant="primary" size="sm">
+        <Button variant="primary" size="sm" className="w-full tablet:w-auto">
           <Sparkles className="size-3.5" /> Nouvelle mission
         </Button>
       </DialogTrigger>

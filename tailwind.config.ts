@@ -121,6 +121,12 @@ export default {
           from: { opacity: "0", transform: "translateY(6px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        // Dédiée au Dialog (position fixed + left/top 50%) : la transform de centrage
+        // (-50%,-50%) doit rester présente à chaque étape, sinon l'animation l'écrase.
+        "dialog-in": {
+          from: { opacity: "0", transform: "translate(-50%, -50%) translateY(6px)" },
+          to: { opacity: "1", transform: "translate(-50%, -50%) translateY(0)" },
+        },
         "slide-in-right": {
           from: { opacity: "0", transform: "translateX(12px)" },
           to: { opacity: "1", transform: "translateX(0)" },
@@ -145,6 +151,7 @@ export default {
       animation: {
         "fade-in": "fade-in 180ms cubic-bezier(0.4,0,0.2,1)",
         "slide-up": "slide-up 180ms cubic-bezier(0.4,0,0.2,1)",
+        "dialog-in": "dialog-in 180ms cubic-bezier(0.4,0,0.2,1)",
         "slide-in-right": "slide-in-right 180ms cubic-bezier(0.4,0,0.2,1)",
         "drawer-in": "drawer-in 220ms cubic-bezier(0.4,0,0.2,1)",
         "sheet-in": "sheet-in 220ms cubic-bezier(0.4,0,0.2,1)",

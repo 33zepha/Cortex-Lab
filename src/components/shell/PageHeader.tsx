@@ -13,7 +13,7 @@ export function PageHeader({
 }) {
   return (
     <div className="relative mb-8 mt-2">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <div className="relative">
           {/* Watermark icon — z-0, derrière le titre */}
           {Icon && (
@@ -23,7 +23,7 @@ export function PageHeader({
           )}
           <h1 className="relative z-10 text-xl font-semibold tracking-tight text-text-primary">{title}</h1>
         </div>
-        {action && <div className="shrink-0">{action}</div>}
+        {action && <div className="w-full shrink-0 tablet:w-auto">{action}</div>}
       </div>
       {description && <p className="text-body-text text-text-secondary mt-1.5">{description}</p>}
     </div>

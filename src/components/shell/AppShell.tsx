@@ -100,7 +100,7 @@ export function AppShell() {
               "max-h-[calc(100vh-32px)] laptop:max-h-[calc(100vh-48px)] h-fit"
             )}
           >
-            <div className="w-full overflow-y-auto scrollbar-thin p-6 laptop:p-10">
+            <div className="w-full overflow-y-auto scrollbar-thin p-6 pb-28 laptop:p-10">
               <Outlet />
             </div>
           </motion.main>
