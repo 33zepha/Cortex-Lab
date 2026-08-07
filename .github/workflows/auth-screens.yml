@@ -1,0 +1,71 @@
+name: Auth UI Screens
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/screens/AuthScreen.tsx"
+      - "src/styles/auth.css"
+      - "assets/auth/**"
+      - "scripts/materialize-auth-hero.mjs"
+      - "backend/scripts/screenshot-auth.ts"
+      - ".github/workflows/auth-screens.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auth-screens-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  capture:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start preview
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/cortex-preview.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/login >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/cortex-preview.log
+          exit 1
+
+      - name: Capture auth UI
+        run: npx tsx backend/scripts/screenshot-auth.ts
+
+      - name: Commit screenshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add artifacts/ui/auth-*.png
+          if git diff --cached --quiet; then
+            echo "Screenshots unchanged"
+            exit 0
+          fi
+          git commit -m "chore(ui): refresh auth screenshots"
+          git push
