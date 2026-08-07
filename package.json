@@ -13,6 +13,7 @@
     "vps:test": "tsx backend/scripts/vps-test-connection.ts",
     "mission:smoke-test": "tsx backend/scripts/run-real-mission-smoke-test.ts",
     "mission:cancel-smoke-test": "tsx backend/scripts/cancel-mission-smoke-test.ts",
+    "sse:resume-smoke-test": "tsx backend/scripts/sse-resume-smoke-test.ts",
     "mission:run": "tsx backend/scripts/run-real-mission.ts",
     "api": "tsx backend/server.ts"
   },
