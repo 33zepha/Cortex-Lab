@@ -1,4 +1,4 @@
-import type { ModelAdapter, ModelResult, RunnerTask } from "../contracts/model-adapter";
+import type { ModelAdapter, ModelResult, ModelTokenUsage, RunnerTask } from "../contracts/model-adapter";
 import type { VpsConfig } from "../infra/vps-config";
 import { SshClient } from "../infra/ssh-client";
 import { gitModifiedFiles } from "../workspace/workspace-manager";
@@ -28,7 +28,9 @@ export class ClaudeCodeAdapter implements ModelAdapter {
   }
 
   estimateTokens(task: RunnerTask): number {
-    return task.objective.length + task.step.length + task.context.length + task.constraints.length;
+    // Approximation volontairement conservative : ~4 caractères par token pour le pré-check.
+    const chars = task.objective.length + task.step.length + task.context.length + task.constraints.length;
+    return Math.max(1, Math.ceil(chars / 4));
   }
 
   async execute(task: RunnerTask): Promise<ModelResult> {
@@ -71,8 +73,7 @@ export class ClaudeCodeAdapter implements ModelAdapter {
         };
       }
 
-      const u = parsed.usage;
-      const tokensUsed = u ? u.input_tokens + u.output_tokens + u.cache_creation_input_tokens + u.cache_read_input_tokens : 0;
+      const tokenUsage = summarizeClaudeUsage(parsed.usage);
 
       return {
         success: run.code === 0 && !parsed.is_error,
@@ -80,7 +81,13 @@ export class ClaudeCodeAdapter implements ModelAdapter {
         filesModified,
         filesRead: [],
         error: parsed.is_error ? (parsed.result ?? "Claude Code a retourné une erreur") : undefined,
-        metadata: { tokensUsed, duration: parsed.duration_ms ?? Date.now() - startedAt },
+        metadata: {
+          // Le budget mission protège le travail actif. Les caches fournisseur restent observables
+          // séparément : les compter à 100 % faisait échouer une étape triviale à 165k+ tokens.
+          tokensUsed: tokenUsage.activeTokens,
+          duration: parsed.duration_ms ?? Date.now() - startedAt,
+          tokenUsage,
+        },
       };
     } catch (err) {
       if (task.signal?.aborted || (err instanceof Error && err.name === "AbortError")) {
@@ -116,16 +123,44 @@ function shellQuote(value: string): string {
   return `'${value.replace(/'/g, `'\\''`)}'`;
 }
 
+export type ClaudeCliUsage = {
+  input_tokens?: number;
+  output_tokens?: number;
+  cache_creation_input_tokens?: number;
+  cache_read_input_tokens?: number;
+};
+
+/**
+ * Normalise l'usage Claude sans confondre cache fournisseur et travail actif.
+ * Le runtime garde un budget sur input+output ; le volume cache reste disponible
+ * pour la télémétrie et un futur budget coût pondéré.
+ */
+export function summarizeClaudeUsage(usage?: ClaudeCliUsage): ModelTokenUsage {
+  const inputTokens = positiveInt(usage?.input_tokens);
+  const outputTokens = positiveInt(usage?.output_tokens);
+  const cacheCreationInputTokens = positiveInt(usage?.cache_creation_input_tokens);
+  const cacheReadInputTokens = positiveInt(usage?.cache_read_input_tokens);
+  const activeTokens = inputTokens + outputTokens;
+
+  return {
+    activeTokens,
+    inputTokens,
+    outputTokens,
+    cacheCreationInputTokens,
+    cacheReadInputTokens,
+    totalContextTokens: activeTokens + cacheCreationInputTokens + cacheReadInputTokens,
+  };
+}
+
+function positiveInt(value: number | undefined): number {
+  return Number.isFinite(value) && (value ?? 0) > 0 ? Math.floor(value!) : 0;
+}
+
 type CliJsonResult = {
   is_error: boolean;
   result?: string;
   duration_ms?: number;
-  usage?: {
-    input_tokens: number;
-    output_tokens: number;
-    cache_creation_input_tokens: number;
-    cache_read_input_tokens: number;
-  };
+  usage?: ClaudeCliUsage;
 };
 
 function parseCliJson(stdout: string): CliJsonResult | null {
