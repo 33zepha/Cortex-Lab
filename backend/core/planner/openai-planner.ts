@@ -12,7 +12,7 @@ export class OpenAiPlanner implements Planner {
   private readonly client: OpenAI;
   private readonly model: string;
 
-  constructor(apiKey: string, model = "gpt-4o-mini") {
+  constructor(apiKey: string, model = process.env.OPENAI_MODEL || "gpt-4o") {
     this.client = new OpenAI({ apiKey });
     this.model = model;
   }
