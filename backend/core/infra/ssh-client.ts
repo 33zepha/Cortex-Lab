@@ -24,10 +24,35 @@ export class SshClient {
     this.connected = true;
   }
 
-  async exec(command: string, cwd?: string): Promise<ExecResult> {
+  async exec(command: string, cwd?: string, signal?: AbortSignal): Promise<ExecResult> {
+    if (signal?.aborted) throw abortError();
     await this.connect();
-    const result = await this.ssh.execCommand(command, cwd ? { cwd } : undefined);
-    return { code: result.code, stdout: result.stdout, stderr: result.stderr };
+
+    const execution = this.ssh.execCommand(command, cwd ? { cwd } : undefined).then((result) => ({
+      code: result.code,
+      stdout: result.stdout,
+      stderr: result.stderr,
+    }));
+
+    if (!signal) return execution;
+
+    return new Promise<ExecResult>((resolve, reject) => {
+      const onAbort = () => {
+        this.dispose();
+        reject(abortError());
+      };
+      signal.addEventListener("abort", onAbort, { once: true });
+      execution.then(
+        (value) => {
+          signal.removeEventListener("abort", onAbort);
+          resolve(value);
+        },
+        (error) => {
+          signal.removeEventListener("abort", onAbort);
+          reject(error);
+        },
+      );
+    });
   }
 
   async uploadDirectory(localDir: string, remoteDir: string): Promise<void> {
@@ -56,6 +81,12 @@ export class SshClient {
       this.connected = false;
     }
   }
+}
+
+function abortError(): Error {
+  const error = new Error("Exécution annulée");
+  error.name = "AbortError";
+  return error;
 }
 
 function basename(p: string): string {

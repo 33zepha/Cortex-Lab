@@ -5,6 +5,7 @@ import { config } from "dotenv";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import OpenAI from "openai";
+import { ulid } from "ulid";
 import { NdjsonEventStore, readEntireLedger } from "./core/stores/event-store";
 import { FileEvidenceStore } from "./core/stores/evidence-store";
 import { listMissions } from "./core/stores/list-missions";
@@ -14,6 +15,7 @@ import { loadVpsConfigFromEnv } from "./core/infra/vps-config";
 import { WorkspaceManager } from "./core/workspace/workspace-manager";
 import { OpenAiPlanner } from "./core/planner/openai-planner";
 import { HeuristicPlanner } from "./core/planner/heuristic-planner";
+import { SimplePolicy } from "./core/policy/policy";
 import type { Planner } from "./core/contracts/planner";
 import { runMission } from "./core/runner/runner";
 import { toApiMission } from "./api-adapters/to-api-mission";
@@ -34,14 +36,21 @@ const modelAdapter = new ClaudeCodeAdapter({
   remoteWorkspaceBase: "/root/cortex-workspaces",
 });
 const openaiClient = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
-const planner: Planner = process.env.OPENAI_API_KEY ? new OpenAiPlanner(process.env.OPENAI_API_KEY) : new HeuristicPlanner();
+const defaultPlanner: Planner = process.env.OPENAI_API_KEY ? new OpenAiPlanner(process.env.OPENAI_API_KEY) : new HeuristicPlanner();
+const policy = new SimplePolicy({
+  tokenBudget: Number(process.env.CORTEX_TOKEN_BUDGET ?? 120_000),
+  timeoutSeconds: Number(process.env.CORTEX_STEP_TIMEOUT_SECONDS ?? 1_800),
+  allowedPathPrefixes: [""],
+  allowedCommands: [],
+});
 const apiToken = process.env.CORTEX_API_TOKEN?.trim() || null;
 const allowedOrigins = (process.env.CORTEX_ALLOWED_ORIGINS ?? "")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+const activeMissionControllers = new Map<string, AbortController>();
+let connectedSseClients = 0;
 
-// Cible par défaut des missions créées via l'UI — jamais le repo Cortex-Lab lui-même (DECISIONS.md #7).
 await fs.mkdir(playgroundDir, { recursive: true });
 const playgroundReadme = path.join(playgroundDir, "README.md");
 await fs.access(playgroundReadme).catch(async () => {
@@ -49,15 +58,11 @@ await fs.access(playgroundReadme).catch(async () => {
 });
 
 const app = Fastify({ logger: true });
-
-await app.register(cors, {
-  origin: allowedOrigins.length > 0 ? allowedOrigins : true,
-});
+await app.register(cors, { origin: allowedOrigins.length > 0 ? allowedOrigins : true });
 
 function hasValidApiToken(authorization: string | undefined): boolean {
   if (!apiToken) return true;
   if (!authorization) return false;
-
   const expected = Buffer.from(`Bearer ${apiToken}`);
   const received = Buffer.from(authorization);
   return expected.length === received.length && timingSafeEqual(expected, received);
@@ -68,32 +73,21 @@ app.addHook("onRequest", async (request, reply) => {
   return reply.code(401).send({ error: "Cortex API: non autorisé" });
 });
 
-if (!apiToken) {
-  app.log.warn("CORTEX_API_TOKEN absent — API non authentifiée (acceptable uniquement en développement local)");
-}
+if (!apiToken) app.log.warn("CORTEX_API_TOKEN absent — API non authentifiée (acceptable uniquement en développement local)");
 
-// Le health-check SSH est coûteux (connexion réseau) — mis en cache 30s pour éviter de le refaire à chaque poll UI.
 let claudeHealthCache: { available: boolean; checkedAt: number } | null = null;
 async function getClaudeAvailability(): Promise<boolean> {
-  if (claudeHealthCache && Date.now() - claudeHealthCache.checkedAt < 30_000) {
-    return claudeHealthCache.available;
-  }
+  if (claudeHealthCache && Date.now() - claudeHealthCache.checkedAt < 30_000) return claudeHealthCache.available;
   const health = await modelAdapter.health().catch(() => ({ available: false }));
   claudeHealthCache = { available: health.available, checkedAt: Date.now() };
   return health.available;
 }
 
-// models.list() est un appel gratuit chez OpenAI — sert juste à valider que la clé est active.
 let openaiHealthCache: { available: boolean; checkedAt: number } | null = null;
 async function getOpenAiAvailability(): Promise<boolean> {
   if (!openaiClient) return false;
-  if (openaiHealthCache && Date.now() - openaiHealthCache.checkedAt < 30_000) {
-    return openaiHealthCache.available;
-  }
-  const available = await openaiClient.models
-    .list()
-    .then(() => true)
-    .catch(() => false);
+  if (openaiHealthCache && Date.now() - openaiHealthCache.checkedAt < 30_000) return openaiHealthCache.available;
+  const available = await openaiClient.models.list().then(() => true).catch(() => false);
   openaiHealthCache = { available, checkedAt: Date.now() };
   return available;
 }
@@ -105,19 +99,16 @@ app.get("/api/health", async () => {
     getClaudeAvailability(),
     getOpenAiAvailability(),
   ]);
-  return buildApiHealth(dataDir, missions, allEvents, claudeAvailable, openaiAvailable);
+  return buildApiHealth(dataDir, missions, allEvents, claudeAvailable, openaiAvailable, connectedSseClients);
 });
 
 app.get("/api/missions", async () => {
   const missions = await listMissions(missionsDir);
-  const results = await Promise.all(
-    missions.map(async (mission) => {
-      const events = await eventStore.readAll(mission.id);
-      const evidence = await evidenceStore.list(mission.id);
-      return toApiMission(mission, events, evidence);
-    }),
-  );
-  return results;
+  return Promise.all(missions.map(async (mission) => {
+    const events = await eventStore.readAll(mission.id);
+    const evidence = await evidenceStore.list(mission.id);
+    return toApiMission(mission, events, evidence);
+  }));
 });
 
 app.get("/api/tokens/weekly", async () => {
@@ -125,21 +116,62 @@ app.get("/api/tokens/weekly", async () => {
   const dayFormatter = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" });
   const days: { day: string; tokens: number }[] = [];
   const now = new Date();
-
   for (let i = 6; i >= 0; i--) {
     const date = new Date(now);
     date.setDate(now.getDate() - i);
     const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
     const dayEnd = dayStart + 24 * 3600 * 1000;
-
     const tokens = missions
       .filter((m) => m.closedAt !== null && m.closedAt >= dayStart && m.closedAt < dayEnd)
       .reduce((sum, m) => sum + (m.tokensUsed ?? 0), 0);
-
     days.push({ day: dayFormatter.format(date), tokens });
   }
-
   return days;
+});
+
+app.get<{ Querystring: { cursor?: string; limit?: string } }>("/api/events", async (request) => {
+  const events = await readEntireLedger(ledgerPath);
+  const cursor = Math.max(0, Number(request.query.cursor ?? 0) || 0);
+  const limit = Math.min(500, Math.max(1, Number(request.query.limit ?? 200) || 200));
+  return { cursor, nextCursor: Math.min(events.length, cursor + limit), total: events.length, events: events.slice(cursor, cursor + limit) };
+});
+
+app.get<{ Querystring: { cursor?: string } }>("/api/stream", async (request, reply) => {
+  let cursor = Math.max(0, Number(request.query.cursor ?? 0) || 0);
+  reply.hijack();
+  reply.raw.writeHead(200, {
+    "Content-Type": "text/event-stream; charset=utf-8",
+    "Cache-Control": "no-cache, no-transform",
+    Connection: "keep-alive",
+    "X-Accel-Buffering": "no",
+  });
+  reply.raw.write("retry: 2000\n\n");
+  connectedSseClients += 1;
+
+  let closed = false;
+  const flush = async () => {
+    if (closed) return;
+    const events = await readEntireLedger(ledgerPath);
+    while (cursor < events.length && !closed) {
+      const event = events[cursor];
+      reply.raw.write(`id: ${cursor}\n`);
+      reply.raw.write(`event: ${event.type}\n`);
+      reply.raw.write(`data: ${JSON.stringify(event)}\n\n`);
+      cursor += 1;
+    }
+  };
+
+  await flush().catch((error) => app.log.error(error));
+  const poll = setInterval(() => void flush().catch((error) => app.log.error(error)), 750);
+  const heartbeat = setInterval(() => { if (!closed) reply.raw.write(`: heartbeat ${Date.now()}\n\n`); }, 15_000);
+  request.raw.on("close", () => {
+    if (closed) return;
+    closed = true;
+    clearInterval(poll);
+    clearInterval(heartbeat);
+    connectedSseClients = Math.max(0, connectedSseClients - 1);
+  });
+  return reply;
 });
 
 app.post<{ Body: { objective?: string; constraints?: string; model?: string; effort?: string; sourceRoot?: string } }>(
@@ -153,19 +185,23 @@ app.post<{ Body: { objective?: string; constraints?: string; model?: string; eff
 
     const selectedModel = model?.trim() || process.env.OPENAI_MODEL || "gpt-5.6";
     const effortConstraint = effort ? `[Effort : ${effort}] ${constraints ?? ""}`.trim() : constraints;
-    const customPlanner: Planner = process.env.OPENAI_API_KEY
-      ? new OpenAiPlanner(process.env.OPENAI_API_KEY, selectedModel)
-      : new HeuristicPlanner();
+    const customPlanner: Planner = process.env.OPENAI_API_KEY ? new OpenAiPlanner(process.env.OPENAI_API_KEY, selectedModel) : defaultPlanner;
+    const missionId = ulid();
+    const controller = new AbortController();
+    activeMissionControllers.set(missionId, controller);
 
-    const mission = await runMission(
-      { objective, constraints: effortConstraint, model: selectedModel, sourceRoot: sourceRoot || playgroundDir },
-      { eventStore, missionRepository, evidenceStore, modelAdapter, workspaceManager, planner: customPlanner },
-    );
-
-    const events = await eventStore.readAll(mission.id);
-    const evidence = await evidenceStore.list(mission.id);
-    reply.code(201);
-    return toApiMission(mission, events, evidence);
+    try {
+      const mission = await runMission(
+        { missionId, objective, constraints: effortConstraint, model: selectedModel, sourceRoot: sourceRoot || playgroundDir, signal: controller.signal },
+        { eventStore, missionRepository, evidenceStore, modelAdapter, workspaceManager, planner: customPlanner, policy },
+      );
+      const events = await eventStore.readAll(mission.id);
+      const evidence = await evidenceStore.list(mission.id);
+      reply.code(201);
+      return toApiMission(mission, events, evidence);
+    } finally {
+      activeMissionControllers.delete(missionId);
+    }
   },
 );
 
@@ -180,32 +216,20 @@ app.get<{ Params: { id: string } }>("/api/missions/:id", async (request, reply) 
   return toApiMission(mission, events, evidence);
 });
 
-app.post<{ Params: { id: string }; Body: { reason?: string } }>(
-  "/api/missions/:id/cancel",
-  async (request, reply) => {
-    const mission = await missionRepository.findById(request.params.id);
-    if (!mission) {
-      reply.code(404);
-      return { error: "Mission introuvable" };
-    }
-    const reason = request.body?.reason ?? "Annulée par l'utilisateur";
-    const existingEvents = await eventStore.readAll(mission.id);
-    await eventStore.append({
-      id: `evt_${Date.now()}`,
-      seq: existingEvents.length + 1,
-      missionId: mission.id,
-      ts: Date.now(),
-      actor: "api",
-      type: "mission.cancelled",
-      v: "1.0.0",
-      payload: { reason },
-    });
-    const updatedMission = await missionRepository.findById(mission.id);
-    const events = await eventStore.readAll(mission.id);
-    const evidenceList = await evidenceStore.list(mission.id);
-    return toApiMission(updatedMission ?? mission, events, evidenceList);
-  },
-);
+app.post<{ Params: { id: string }; Body: { reason?: string } }>("/api/missions/:id/cancel", async (request, reply) => {
+  const mission = await missionRepository.findById(request.params.id);
+  const controller = activeMissionControllers.get(request.params.id);
+  if (!mission && !controller) {
+    reply.code(404);
+    return { error: "Mission introuvable" };
+  }
+  if (!controller) {
+    reply.code(409);
+    return { error: "Mission déjà terminée ou non annulable" };
+  }
+  controller.abort(request.body?.reason ?? "Annulée par l'utilisateur");
+  return { id: request.params.id, status: "cancelling" };
+});
 
 app.post<{ Params: { id: string }; Body: { decision?: "approve" | "reject"; detail?: string } }>(
   "/api/missions/:id/decision",
@@ -235,9 +259,9 @@ app.post<{ Params: { id: string }; Body: { decision?: "approve" | "reject"; deta
 );
 
 const port = Number(process.env.API_PORT ?? 4000);
-app
-  .listen({ port, host: "0.0.0.0" })
-  .then(() => console.log(`Cortex API sur http://localhost:${port}`))
+const host = process.env.API_HOST ?? "127.0.0.1";
+app.listen({ port, host })
+  .then(() => console.log(`Cortex API sur http://${host}:${port}`))
   .catch((err) => {
     app.log.error(err);
     process.exit(1);

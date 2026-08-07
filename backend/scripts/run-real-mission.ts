@@ -1,8 +1,6 @@
 /**
- * Exécute une mission réelle de bout en bout, persistée dans le vrai data/ du repo
- * (ledger NDJSON, missions, evidence) — inspectable après coup. La mission travaille
- * sur un fixture jetable, jamais sur le repo Cortex-Lab lui-même (DECISIONS.md #7).
- *
+ * Exécute une mission réelle de bout en bout, persistée dans le vrai data/ du repo.
+ * Travaille sur un fixture jetable, jamais sur Cortex-Lab lui-même.
  * Usage: npm run mission:run
  */
 import { config } from "dotenv";
@@ -16,6 +14,7 @@ import { WorkspaceManager } from "../core/workspace/workspace-manager";
 import { ClaudeCodeAdapter } from "../core/adapters/claude-code-adapter";
 import { loadVpsConfigFromEnv } from "../core/infra/vps-config";
 import { OpenAiPlanner } from "../core/planner/openai-planner";
+import { SimplePolicy } from "../core/policy/policy";
 import { runMission } from "../core/runner/runner";
 
 config();
@@ -24,11 +23,7 @@ async function main() {
   const dataDir = path.join(process.cwd(), "data");
   const fixtureSource = await fs.mkdtemp(path.join(os.tmpdir(), "cortex-mission-fixture-"));
 
-  await fs.writeFile(
-    path.join(fixtureSource, "README.md"),
-    "# Fixture\n\nUn petit projet jetable pour valider le Runner Cortex.\n",
-    "utf8",
-  );
+  await fs.writeFile(path.join(fixtureSource, "README.md"), "# Fixture\n\nUn petit projet jetable pour valider le Runner Cortex.\n", "utf8");
 
   if (!process.env.OPENAI_API_KEY) {
     console.error("OPENAI_API_KEY manquant dans .env — le Planner en a besoin.");
@@ -45,18 +40,23 @@ async function main() {
     permissionMode: "acceptEdits",
   });
   const planner = new OpenAiPlanner(process.env.OPENAI_API_KEY);
+  const policy = new SimplePolicy({
+    tokenBudget: Number(process.env.CORTEX_TOKEN_BUDGET ?? 120_000),
+    timeoutSeconds: Number(process.env.CORTEX_STEP_TIMEOUT_SECONDS ?? 1_800),
+    allowedPathPrefixes: [""],
+    allowedCommands: [],
+  });
 
   console.log("Lancement d'une mission réelle, persistée dans data/…\n");
 
   const mission = await runMission(
     {
-      objective:
-        "Ajoute une section 'Usage' au README.md expliquant que c'est un fixture de test pour Cortex Runner.",
+      objective: "Ajoute une section 'Usage' au README.md expliquant que c'est un fixture de test pour Cortex Runner.",
       constraints: "Un seul fichier modifié : README.md.",
       model: "claude-code",
       sourceRoot: fixtureSource,
     },
-    { eventStore, missionRepository, evidenceStore, modelAdapter, workspaceManager, planner },
+    { eventStore, missionRepository, evidenceStore, modelAdapter, workspaceManager, planner, policy },
   );
 
   console.log("--- Mission projetée (depuis le ledger) ---");
@@ -70,7 +70,6 @@ async function main() {
   }
 
   console.log(`\n✓ Terminé. Inspecte data/ledger/events.ndjson et data/missions/${mission.id}.json.`);
-
   await fs.rm(fixtureSource, { recursive: true, force: true });
 }
 
