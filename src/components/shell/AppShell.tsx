@@ -50,7 +50,6 @@ export function AppShell() {
 
   return (
     <div className="relative isolate flex h-[100dvh] min-h-0 w-screen overflow-hidden bg-slate-50">
-      {/* Fond neutre, plat */}
       <div className="app-ambient-bg absolute inset-0 z-0" />
 
       <div className="relative z-10 flex h-full min-h-0 w-full items-stretch p-0 laptop:items-center laptop:p-6">
@@ -100,7 +99,7 @@ export function AppShell() {
               "laptop:h-fit laptop:max-h-[calc(100vh-48px)] laptop:rounded-[32px] laptop:border laptop:border-white/40 laptop:bg-white/20 laptop:shadow-[0_8px_32px_rgba(0,0,0,0.04)] laptop:backdrop-blur-2xl",
             )}
           >
-            <div className="mobile-content-scroll w-full flex-1 overscroll-contain overflow-y-auto px-4 pt-[calc(14px+env(safe-area-inset-top))] pb-[calc(92px+env(safe-area-inset-bottom))] mobile:px-5 laptop:p-10 laptop:scrollbar-thin">
+            <div className="mobile-content-scroll w-full flex-1 overscroll-contain overflow-y-auto laptop:p-10 laptop:scrollbar-thin">
               <Outlet />
             </div>
           </motion.main>
