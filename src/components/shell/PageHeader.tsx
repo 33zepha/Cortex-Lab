@@ -17,10 +17,10 @@ export function PageHeader({
         <div className="relative min-w-0 py-2 laptop:py-0">
           {Icon && (
             <div
-              className="pointer-events-none absolute -left-1 -top-3 z-0 flex items-center select-none laptop:inset-0 laptop:left-0 laptop:top-0"
+              className="pointer-events-none absolute left-0 top-[-10px] z-0 flex items-center select-none laptop:inset-0 laptop:left-0 laptop:top-0"
               aria-hidden
             >
-              <Icon className="size-[68px] -rotate-6 text-text-primary opacity-[0.045] laptop:size-16 laptop:opacity-[0.05]" />
+              <Icon className="size-16 -rotate-6 text-text-primary opacity-[0.045] laptop:size-16 laptop:opacity-[0.05]" />
             </div>
           )}
           <h1 className="relative z-10 truncate text-[28px] font-bold leading-none tracking-[-0.045em] text-text-primary laptop:text-xl laptop:font-semibold laptop:leading-normal laptop:tracking-tight">
