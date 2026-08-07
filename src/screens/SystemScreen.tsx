@@ -53,7 +53,7 @@ function formatUptime(seconds: number): string {
 
 function SectionTitle({ title, detail }: { title: string; detail: string }) {
   return (
-    <div className="mb-2.5 flex items-end justify-between gap-4 px-1 laptop:mb-3">
+    <div className="mb-2.5 flex items-end justify-between gap-4 laptop:mb-3">
       <h2 className="text-[11px] font-bold uppercase tracking-[0.13em] text-text-primary">{title}</h2>
       <span className="text-[10px] font-semibold text-text-muted">{detail}</span>
     </div>
