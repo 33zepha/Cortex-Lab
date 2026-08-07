@@ -4,92 +4,117 @@ set -Eeuo pipefail
 log() { printf '\n\033[1;36m[cortex-deploy]\033[0m %s\n' "$*"; }
 fail() { printf '\n\033[1;31m[cortex-deploy]\033[0m %s\n' "$*" >&2; exit 1; }
 
-[[ "${EUID}" -eq 0 ]] || fail "Relance avec sudo: sudo bash scripts/deploy-cortex-vps.sh"
 command -v git >/dev/null || fail "git est requis"
 command -v npm >/dev/null || fail "npm est requis"
 command -v curl >/dev/null || fail "curl est requis"
-command -v systemctl >/dev/null || fail "systemd est requis"
+command -v pm2 >/dev/null || fail "pm2 est requis"
 
-STATE_DIR="/etc/cortex"
-REPO_ROOT_FILE="$STATE_DIR/repo-root"
-ENV_FILE="$STATE_DIR/cortex-api.env"
-SERVICE="cortex-api.service"
-
-if [[ -f "$REPO_ROOT_FILE" ]]; then
-  REPO_ROOT="$(cat "$REPO_ROOT_FILE")"
-else
-  REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
-fi
-
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
 [[ -n "$REPO_ROOT" && -d "$REPO_ROOT/.git" && -f "$REPO_ROOT/package.json" ]] \
-  || fail "Checkout Cortex-Lab introuvable. Lance ce script depuis le repo ou provisionne /etc/cortex/repo-root."
-
+  || fail "Lance ce script depuis le checkout Cortex-Lab."
 cd "$REPO_ROOT"
 
 if ! git diff --quiet || ! git diff --cached --quiet; then
-  fail "Le checkout VPS contient des modifications suivies non commitées. Je refuse de les écraser."
+  fail "Le checkout VPS contient des modifications suivies non commitées. Commit/stash avant le deploy."
 fi
 
-TOKEN=""
-if [[ -f "$ENV_FILE" ]]; then
-  TOKEN="$(sed -n 's/^CORTEX_API_TOKEN=//p' "$ENV_FILE" | head -n1)"
+[[ -f .env ]] || fail ".env introuvable dans $REPO_ROOT"
+read_env() {
+  local key="$1"
+  sed -n "s/^${key}=//p" .env | tail -n1 | sed -e 's/^"//' -e 's/"$//'
+}
+
+API_PORT_VALUE="$(read_env API_PORT)"
+API_PORT_VALUE="${API_PORT_VALUE:-8080}"
+API_HOST_VALUE="$(read_env API_HOST)"
+API_HOST_VALUE="${API_HOST_VALUE:-127.0.0.1}"
+TOKEN="$(read_env CORTEX_API_TOKEN)"
+
+if [[ "$API_HOST_VALUE" != "127.0.0.1" && "$API_HOST_VALUE" != "localhost" && "$API_HOST_VALUE" != "::1" && -z "$TOKEN" ]]; then
+  fail "Refus de déployer une API publique (${API_HOST_VALUE}:${API_PORT_VALUE}) sans CORTEX_API_TOKEN dans .env"
 fi
-[[ -n "$TOKEN" ]] || fail "CORTEX_API_TOKEN introuvable dans $ENV_FILE"
+
+pm2 describe cortex-api >/dev/null 2>&1 || fail "Process PM2 cortex-api introuvable"
 
 BEFORE_SHA="$(git rev-parse HEAD)"
 log "Runtime actuel: ${BEFORE_SHA:0:12}"
 
-if command -v /usr/local/sbin/cortex-backup >/dev/null 2>&1; then
-  log "Backup des données runtime"
-  /usr/local/sbin/cortex-backup
-else
-  log "Backup helper absent — création d'un backup minimal"
-  BACKUP_DIR="/var/backups/cortex"
-  install -d -m 700 "$BACKUP_DIR"
-  STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-  tar -czf "$BACKUP_DIR/cortex-data-$STAMP.tar.gz" data/missions data/ledger data/evidence
+BACKUP_DIR="/var/backups/cortex"
+mkdir -p "$BACKUP_DIR"
+chmod 700 "$BACKUP_DIR" || true
+STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+BACKUP_PATH="$BACKUP_DIR/cortex-data-$STAMP.tar.gz"
+BACKUP_ITEMS=()
+for item in data/missions data/ledger data/evidence; do
+  [[ -e "$item" ]] && BACKUP_ITEMS+=("$item")
+done
+if (( ${#BACKUP_ITEMS[@]} > 0 )); then
+  log "Backup runtime → $BACKUP_PATH"
+  tar -czf "$BACKUP_PATH" "${BACKUP_ITEMS[@]}"
 fi
 
-log "Synchronisation avec origin/main"
+restore_checkout() {
+  log "Restauration du checkout ${BEFORE_SHA:0:12}"
+  git reset --hard "$BEFORE_SHA" >/dev/null
+}
+
+log "Synchronisation origin/main"
 git fetch --prune origin main
 git checkout main
 git pull --ff-only origin main
 AFTER_SHA="$(git rev-parse HEAD)"
 log "Runtime cible: ${AFTER_SHA:0:12}"
 
-log "Installation déterministe des dépendances"
-if [[ -f package-lock.json ]]; then
-  npm ci
-else
-  npm install
+log "Installation déterministe"
+if ! npm ci; then
+  restore_checkout
+  fail "npm ci a échoué — runtime PM2 inchangé"
 fi
 
-log "Validation TypeScript + build production"
-npm run build
+log "Build production"
+if ! npm run build; then
+  restore_checkout
+  fail "build en échec — runtime PM2 inchangé"
+fi
 
-log "Redémarrage de $SERVICE"
-systemctl restart "$SERVICE"
+log "Tests"
+if ! npm test; then
+  restore_checkout
+  fail "tests en échec — runtime PM2 inchangé"
+fi
 
-log "Vérification locale de l'API"
+AUTH_ARGS=()
+[[ -n "$TOKEN" ]] && AUTH_ARGS=(-H "Authorization: Bearer $TOKEN")
+LOCAL_HEALTH="http://127.0.0.1:${API_PORT_VALUE}/api/health"
+LOCAL_EVENTS="http://127.0.0.1:${API_PORT_VALUE}/api/events?cursor=0&limit=1"
+
+log "Restart PM2 cortex-api"
+pm2 restart cortex-api --update-env >/dev/null
+
+healthy=false
 for _ in $(seq 1 30); do
-  if curl -fsS --max-time 3 -H "Authorization: Bearer $TOKEN" http://127.0.0.1:4000/api/health >/dev/null 2>&1; then
+  if curl -fsS --max-time 4 "${AUTH_ARGS[@]}" "$LOCAL_HEALTH" >/dev/null 2>&1; then
+    healthy=true
     break
   fi
   sleep 1
 done
 
-curl -fsS --max-time 5 -H "Authorization: Bearer $TOKEN" http://127.0.0.1:4000/api/health >/dev/null \
-  || { journalctl -u "$SERVICE" -n 80 --no-pager >&2; fail "Health check local en échec"; }
+if [[ "$healthy" != "true" ]] || ! curl -fsS --max-time 5 "${AUTH_ARGS[@]}" "$LOCAL_EVENTS" >/dev/null 2>&1; then
+  log "Nouveau runtime non sain — rollback automatique"
+  pm2 logs cortex-api --lines 80 --nostream >&2 || true
+  git reset --hard "$BEFORE_SHA" >/dev/null
+  npm ci >/dev/null 2>&1 || true
+  npm run build >/dev/null 2>&1 || true
+  pm2 restart cortex-api --update-env >/dev/null || true
+  fail "Deploy annulé et rollback vers ${BEFORE_SHA:0:12}"
+fi
 
-curl -fsS --max-time 5 -H "Authorization: Bearer $TOKEN" "http://127.0.0.1:4000/api/events?cursor=0&limit=1" >/dev/null \
-  || { journalctl -u "$SERVICE" -n 80 --no-pager >&2; fail "La nouvelle route /api/events n'est pas disponible après restart"; }
-
-ACTIVE="$(systemctl is-active "$SERVICE" || true)"
-[[ "$ACTIVE" == "active" ]] || fail "$SERVICE n'est pas actif"
+pm2 save >/dev/null 2>&1 || true
 
 printf '\n\033[1;32m[cortex-deploy] OK\033[0m\n'
-printf '%-20s %s\n' "before:" "$BEFORE_SHA"
-printf '%-20s %s\n' "after:" "$AFTER_SHA"
-printf '%-20s %s\n' "service:" "$ACTIVE"
-printf '%-20s %s\n' "health:" "200"
-printf '%-20s %s\n' "events:" "200"
+printf '%-18s %s\n' "before:" "$BEFORE_SHA"
+printf '%-18s %s\n' "after:" "$AFTER_SHA"
+printf '%-18s %s\n' "pm2:" "cortex-api online"
+printf '%-18s %s\n' "health:" "200"
+printf '%-18s %s\n' "events:" "200"

@@ -11,6 +11,7 @@
     "screenshot": "tsx backend/scripts/screenshot.ts",
     "test": "vitest run",
     "vps:test": "tsx backend/scripts/vps-test-connection.ts",
+    "deploy:vps": "bash scripts/deploy-cortex-vps.sh",
     "mission:smoke-test": "tsx backend/scripts/run-real-mission-smoke-test.ts",
     "mission:cancel-smoke-test": "tsx backend/scripts/cancel-mission-smoke-test.ts",
     "sse:resume-smoke-test": "tsx backend/scripts/sse-resume-smoke-test.ts",
