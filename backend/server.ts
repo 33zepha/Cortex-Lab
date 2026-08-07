@@ -142,22 +142,23 @@ app.get("/api/tokens/weekly", async () => {
   return days;
 });
 
-app.post<{ Body: { objective?: string; constraints?: string; model?: string; sourceRoot?: string } }>(
+app.post<{ Body: { objective?: string; constraints?: string; model?: string; effort?: string; sourceRoot?: string } }>(
   "/api/missions",
   async (request, reply) => {
-    const { objective, constraints, model, sourceRoot } = request.body ?? {};
+    const { objective, constraints, model, effort, sourceRoot } = request.body ?? {};
     if (!objective || objective.trim().length < 10) {
       reply.code(400);
       return { error: "objective requis (10 caractères minimum)" };
     }
 
     const selectedModel = model?.trim() || process.env.OPENAI_MODEL || "gpt-5.6";
+    const effortConstraint = effort ? `[Effort : ${effort}] ${constraints ?? ""}`.trim() : constraints;
     const customPlanner: Planner = process.env.OPENAI_API_KEY
       ? new OpenAiPlanner(process.env.OPENAI_API_KEY, selectedModel)
       : new HeuristicPlanner();
 
     const mission = await runMission(
-      { objective, constraints, model: selectedModel, sourceRoot: sourceRoot || playgroundDir },
+      { objective, constraints: effortConstraint, model: selectedModel, sourceRoot: sourceRoot || playgroundDir },
       { eventStore, missionRepository, evidenceStore, modelAdapter, workspaceManager, planner: customPlanner },
     );
 

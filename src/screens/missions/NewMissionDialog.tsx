@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Cpu } from "lucide-react";
+import { Sparkles, Cpu, Gauge } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent, Button } from "@/components/ui";
 import { apiPost } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
@@ -19,13 +19,23 @@ const selectClasses =
   "disabled:opacity-45 disabled:pointer-events-none";
 
 const MODEL_OPTIONS = [
-  { value: "gpt-5.6", label: "gpt-5.6 (OpenAI Next-Gen)" },
+  { value: "gpt-5.6", label: "gpt-5.6 (OpenAI Next-Gen Standard)" },
+  { value: "gpt-5.6-sol", label: "gpt-5.6 Sol (High Speed & Parallel)" },
+  { value: "gpt-5.6-terra", label: "gpt-5.6 Terra (Deep Architecture & Context)" },
+  { value: "gpt-5.6-luna", label: "gpt-5.6 Luna (Lightweight & Precision)" },
+  { value: "gpt-5.5", label: "gpt-5.5 (OpenAI Pro)" },
   { value: "gpt-4o", label: "gpt-4o (OpenAI Omni Standard)" },
   { value: "gpt-4o-mini", label: "gpt-4o-mini (OpenAI Fast & Light)" },
   { value: "o3-mini", label: "o3-mini (OpenAI Reasoning)" },
   { value: "o1", label: "o1 (OpenAI High Reasoning)" },
   { value: "claude-code", label: "claude-code (Claude Code CLI VPS)" },
   { value: "custom", label: "Autre modèle personnalisé…" },
+];
+
+const EFFORT_OPTIONS = [
+  { value: "high", label: "Élevé (Analyse approfondie & itérations maximales)" },
+  { value: "medium", label: "Moyen (Équilibre vitesse & profondeur)" },
+  { value: "low", label: "Faible (Exécution directe et rapide)" },
 ];
 
 export function NewMissionDialog({ onCreated }: { onCreated: () => void }) {
@@ -35,6 +45,7 @@ export function NewMissionDialog({ onCreated }: { onCreated: () => void }) {
   const [constraints, setConstraints] = useState("");
   const [selectedModel, setSelectedModel] = useState("gpt-5.6");
   const [customModel, setCustomModel] = useState("");
+  const [effort, setEffort] = useState("high");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,6 +61,7 @@ export function NewMissionDialog({ onCreated }: { onCreated: () => void }) {
         objective: objective.trim(),
         constraints: constraints.trim() || undefined,
         model: finalModel,
+        effort,
       });
       setOpen(false);
       setObjective("");
@@ -72,36 +84,60 @@ export function NewMissionDialog({ onCreated }: { onCreated: () => void }) {
       </DialogTrigger>
       <DialogContent
         title="Nouvelle mission"
-        description="Choisissez le modèle IA et décrivez votre objectif."
+        description="Choisissez le modèle IA, le niveau d'effort et décrivez votre objectif."
       >
         <div className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-text-secondary flex items-center gap-1.5">
-              <Cpu className="size-3.5 text-accent-indigo" /> Modèle IA
-            </label>
-            <select
-              className={selectClasses}
-              value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value)}
-              disabled={submitting}
-            >
-              {MODEL_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            {selectedModel === "custom" && (
+          <div className="grid grid-cols-1 tablet:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-text-secondary flex items-center gap-1.5">
+                <Cpu className="size-3.5 text-accent-indigo" /> Modèle IA
+              </label>
+              <select
+                className={selectClasses}
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value)}
+                disabled={submitting}
+              >
+                {MODEL_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-text-secondary flex items-center gap-1.5">
+                <Gauge className="size-3.5 text-warning" /> Niveau d'effort
+              </label>
+              <select
+                className={selectClasses}
+                value={effort}
+                onChange={(e) => setEffort(e.target.value)}
+                disabled={submitting}
+              >
+                {EFFORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {selectedModel === "custom" && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-text-secondary">Nom du modèle personnalisé</label>
               <input
                 type="text"
-                className="mt-2 w-full rounded-md border border-border bg-surface-2 px-3 py-1.5 text-sm text-text-primary placeholder:text-text-muted"
-                placeholder="Entrez le nom du modèle (ex: gpt-5.6-turbo)"
+                className="w-full rounded-md border border-border bg-surface-2 px-3 py-1.5 text-sm text-text-primary placeholder:text-text-muted"
+                placeholder="Ex : gpt-5.6-turbo, gpt-5.5-preview"
                 value={customModel}
                 onChange={(e) => setCustomModel(e.target.value)}
                 disabled={submitting}
               />
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-text-secondary">Objectif</label>
@@ -130,7 +166,7 @@ export function NewMissionDialog({ onCreated }: { onCreated: () => void }) {
           {error && <p className="text-sm text-error">{error}</p>}
           {submitting && (
             <p className="text-xs text-text-muted">
-              Planification ({selectedModel}) puis exécution sur le VPS — jusqu'à une minute.
+              Planification ({selectedModel} • effort {effort}) puis exécution sur le VPS — jusqu'à une minute.
             </p>
           )}
         </div>
