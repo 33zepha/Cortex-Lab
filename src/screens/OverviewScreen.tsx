@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, TrendingUp, Clock, Cpu, Zap, Activity } from "lucide-react";
+import { ArrowRight, TrendingUp, Zap } from "lucide-react";
 import { motion } from "framer-motion";
-import { Squares2X2Icon, CircleStackIcon, ServerIcon, CpuChipIcon } from "@heroicons/react/24/solid";
+import { Squares2X2Icon } from "@heroicons/react/24/solid";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { BentoCard, StatusIndicator } from "@/components/ui";
+import { BentoCard } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { EASE_SPRING_ARRAY, STAGGER_CONTAINER_VARIANTS, STAGGER_ITEM_VARIANTS } from "@/lib/animations";
 import { allMissions } from "@/fixtures/missions";
@@ -16,8 +16,6 @@ import { MiniKanban } from "@/screens/overview/MiniKanban";
 import { TokenUsageChart, TokenPoint } from "@/screens/overview/TokenUsageChart";
 
 const now = Date.parse("2026-08-06T14:30:00Z");
-
-const antigravityTile = "group relative flex flex-col justify-between overflow-hidden rounded-[16px] bg-black/[0.02] border border-black/[0.04] p-3.5 transition-all duration-[500ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:scale-[1.03] hover:bg-white hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] hover:border-transparent";
 
 export function OverviewScreen() {
   const [hoveredPoint, setHoveredPoint] = useState<TokenPoint | null>(null);

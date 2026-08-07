@@ -1,27 +1,22 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ReactNode } from "react";
-import { Server, Cpu, ScrollText, HardDrive, Radio, AlertTriangle, CheckCircle2, Zap, Plug, Bot, Unplug, Plus } from "lucide-react";
+import { Server, Cpu, ScrollText, HardDrive, Radio, AlertTriangle, Zap, Plus } from "lucide-react";
 import { ServerStackIcon, ExclamationTriangleIcon, PowerIcon, ServerIcon, SparklesIcon } from "@heroicons/react/24/solid";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { BentoCard, StatusIndicator, EmptyState, Button, Dialog, DialogTrigger, DialogContent, Input, Tooltip, TooltipProvider } from "@/components/ui";
-import { systemHealthy, systemDisconnected, weeklyTokenUsage } from "@/fixtures/system";
+import { BentoCard, EmptyState, Button, Dialog, DialogTrigger, DialogContent, Input } from "@/components/ui";
+import { systemHealthy, systemDisconnected } from "@/fixtures/system";
 import { formatRelativeTime } from "@/lib/status";
 import { EASE_SPRING_ARRAY, STAGGER_CONTAINER_VARIANTS, STAGGER_ITEM_VARIANTS } from "@/lib/animations";
 import { useVps } from "@/lib/VpsContext";
 import { cn } from "@/lib/cn";
-import type { Tone } from "@/lib/status";
 import type { SystemHealth } from "@/lib/types";
 import { LIQUID_GLASS_HOVER, TRANSITION_SPRING } from "@/lib/ui-classes";
 
 const now = Date.parse("2026-08-06T14:30:00Z");
 
-type ClaudeStatus = SystemHealth["claudeCode"]["status"];
 type SseStatus = SystemHealth["sse"]["status"];
 
-const claudeToneMap: Record<ClaudeStatus, Tone> = { available: "success", degraded: "warning", unavailable: "error" };
-const sseToneMap: Record<SseStatus, Tone> = { connected: "success", reconnecting: "warning", disconnected: "error" };
-const claudeLabelMap: Record<ClaudeStatus, string> = { available: "Disponible", degraded: "Dégradé", unavailable: "Indisponible" };
 const sseLabelMap: Record<SseStatus, string> = { connected: "Connecté", reconnecting: "Reconnexion…", disconnected: "Déconnecté" };
 
 const ThickPlus = (props: any) => <Plus strokeWidth={3.5} {...props} />;
@@ -132,19 +127,6 @@ function MetricTile({
   );
 }
 
-function MiniSparkline({ data }: { data: number[] }) {
-  const max = Math.max(...data);
-  const w = 120;
-  const h = 28;
-  const step = w / (data.length - 1);
-  const points = data.map((v, i) => `${i * step},${h - (v / max) * h}`).join(" ");
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="mt-2 h-7 w-full" preserveAspectRatio="none" aria-hidden>
-      <polyline points={points} fill="none" className="stroke-chart-line" strokeWidth={1.5} />
-    </svg>
-  );
-}
-
 export function SystemScreen() {
   const [simulateDisconnect, setSimulateDisconnect] = useState(false);
   const [vpsDialogOpen, setVpsDialogOpen] = useState(false);
@@ -155,7 +137,6 @@ export function SystemScreen() {
   const [vpsSshKey, setVpsSshKey] = useState("");
 
   const health = simulateDisconnect ? systemDisconnected : systemHealthy;
-  const allHealthy = !simulateDisconnect;
 
   return (
     <motion.div

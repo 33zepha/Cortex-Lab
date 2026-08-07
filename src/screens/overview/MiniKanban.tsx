@@ -1,7 +1,7 @@
 import { useMemo, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, LayoutGrid } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { BentoCard } from "@/components/ui";
 import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/cn";
