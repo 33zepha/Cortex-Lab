@@ -36,16 +36,15 @@ export const HoverExpandButton = forwardRef<HTMLButtonElement, HoverExpandButton
         layout
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onTouchStart={() => setIsHovered((v) => !v)}
         onClick={onClick}
         disabled={disabled}
         className={cn(
-          "flex h-[36px] items-center overflow-hidden rounded-[12px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-indigo select-none",
+          "flex h-10 items-center overflow-hidden rounded-[12px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-indigo select-none laptop:h-[36px]",
           TRANSITION_SPRING,
           variantStyles[variant],
           LIQUID_GLASS_HOVER,
-          "active:scale-[0.94] active:duration-150 active:ease-out disabled:opacity-50 disabled:pointer-events-none",
-          className
+          "active:scale-[0.94] active:duration-150 active:ease-out disabled:pointer-events-none disabled:opacity-50",
+          className,
         )}
         style={{ paddingLeft: 8, paddingRight: showLabel ? 12 : 8 }}
         {...props}
@@ -61,7 +60,7 @@ export const HoverExpandButton = forwardRef<HTMLButtonElement, HoverExpandButton
                 transition={{ duration: 0.2 }}
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <HoverIcon className="size-[22px]" />
+                <HoverIcon className="size-[22px] stroke-[2.8]" />
               </motion.div>
             ) : (
               <motion.div
@@ -72,7 +71,7 @@ export const HoverExpandButton = forwardRef<HTMLButtonElement, HoverExpandButton
                 transition={{ duration: 0.2 }}
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <Icon className="size-[22px]" />
+                <Icon className="size-[22px] stroke-[2.8]" />
               </motion.div>
             )}
           </AnimatePresence>
@@ -84,7 +83,7 @@ export const HoverExpandButton = forwardRef<HTMLButtonElement, HoverExpandButton
               initial={{ opacity: 0, width: 0, marginLeft: 0 }}
               animate={{ opacity: 1, width: "auto", marginLeft: 6 }}
               exit={{ opacity: 0, width: 0, marginLeft: 0 }}
-              className="whitespace-nowrap text-[12px] font-medium tracking-wide"
+              className="whitespace-nowrap text-[12px] font-bold tracking-[-0.01em] laptop:font-medium laptop:tracking-wide"
             >
               {label}
             </motion.span>
@@ -92,13 +91,13 @@ export const HoverExpandButton = forwardRef<HTMLButtonElement, HoverExpandButton
         </AnimatePresence>
       </motion.button>
     );
-  }
+  },
 );
 HoverExpandButton.displayName = "HoverExpandButton";
 
 export function GlassActionGroup({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn("flex items-center gap-1 rounded-[16px] bg-white/50 backdrop-blur-3xl border border-white/60 p-1 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.05)]", className)}>
+    <div className={cn("flex w-fit items-center gap-1 rounded-[15px] border border-white/60 bg-white/50 p-1 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.05)] backdrop-blur-3xl laptop:rounded-[16px]", className)}>
       {children}
     </div>
   );
