@@ -9,6 +9,7 @@ import { MissionDetailScreen } from "@/screens/MissionDetailScreen";
 import { ConsoleScreen } from "@/screens/ConsoleScreen";
 import { SystemScreen } from "@/screens/SystemScreen";
 import { ProfileScreen } from "@/screens/ProfileScreen";
+import { AuthScreen } from "@/screens/AuthScreen";
 import "@/styles/global.css";
 
 import { VpsProvider } from "@/lib/VpsContext";
@@ -22,6 +23,8 @@ createRoot(root).render(
       <TooltipProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/login" element={<AuthScreen initialMode="login" />} />
+            <Route path="/signup" element={<AuthScreen initialMode="signup" />} />
             <Route element={<AppShell />}>
               <Route path="/" element={<OverviewScreen />} />
               <Route path="/missions" element={<MissionsScreen />} />
