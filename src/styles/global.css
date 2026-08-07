@@ -52,12 +52,11 @@
   .sidecar-slide-in {
     animation: sidecar-slide-in var(--duration-standard) var(--ease-out);
   }
-  /* Aplat neutre, sans dégradé ni teinte — le fond ne doit rien "faire". */
+
   .app-ambient-bg {
     background: var(--color-background);
   }
 
-  /* Le shell mobile se comporte comme une vraie app : scroll inertiel, sans chrome de scrollbar. */
   .mobile-content-scroll {
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
@@ -66,22 +65,27 @@
 
   @media (max-width: 1279px) {
     .mobile-content-scroll {
+      box-sizing: border-box;
+      padding-top: calc(var(--mobile-page-top) + env(safe-area-inset-top));
+      padding-right: max(var(--mobile-gutter), env(safe-area-inset-right));
+      padding-bottom: calc(var(--mobile-dock-clearance) + env(safe-area-inset-bottom));
+      padding-left: max(var(--mobile-gutter), env(safe-area-inset-left));
       scrollbar-width: none;
       -ms-overflow-style: none;
     }
+
     .mobile-content-scroll::-webkit-scrollbar {
       display: none;
     }
   }
 }
 
-/* Scrollbar personnalisée pour le Kanban */
 .kanban-scrollbar {
   transition: all 0.3s ease;
-  scrollbar-width: thin; /* Pour Firefox, on force quand même un aspect fin */
+  scrollbar-width: thin;
 }
 .kanban-scrollbar:hover {
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent; /* Effet hover pour Firefox */
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
 }
 
 .kanban-scrollbar::-webkit-scrollbar {
@@ -90,7 +94,7 @@
   background: transparent !important;
 }
 .kanban-scrollbar::-webkit-scrollbar-button {
-  display: none !important; /* Cache les flèches sur Windows */
+  display: none !important;
   width: 0 !important;
   height: 0 !important;
 }
