@@ -49,7 +49,7 @@ export function AppShell() {
   }, []);
 
   return (
-    <div className="relative isolate flex h-[100dvh] min-h-0 w-screen overflow-hidden bg-slate-50">
+    <div className="relative isolate flex h-full min-h-0 w-screen overflow-hidden bg-slate-50">
       <div className="app-ambient-bg absolute inset-0 z-0" />
 
       <div className="relative z-10 flex h-full min-h-0 w-full items-stretch p-0 laptop:items-center laptop:p-6">
