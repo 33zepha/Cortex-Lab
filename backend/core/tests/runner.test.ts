@@ -10,6 +10,7 @@ import { SimplePolicy } from "../policy/policy";
 import { runMission } from "../runner/runner";
 import type { ModelAdapter, ModelResult, RunnerTask } from "../contracts/model-adapter";
 import type { Planner } from "../contracts/planner";
+import type { MissionPlan } from "../contracts/mission-plan";
 
 let tmpDir: string;
 let sourceRoot: string;
@@ -37,57 +38,80 @@ function deps(adapter: ModelAdapter, planner: Planner) {
   };
 }
 
+function plannerFor(tasks: MissionPlan["tasks"]): Planner {
+  return { version: "2.0.0", plan: async () => ({ version: "2.0.0", tasks }) };
+}
+
+function task(id: string, objective: string, dependencies: string[] = []): MissionPlan["tasks"][number] {
+  return {
+    id,
+    objective,
+    acceptanceCriteria: [`${id} vérifié`],
+    dependencies,
+    risk: "low",
+    preferredCapabilities: ["code.read"],
+  };
+}
+
 describe("runMission", () => {
-  it("exécute chaque étape du planner et transmet le contexte entre étapes", async () => {
+  it("exécute le graphe et transmet seulement le contexte des dépendances", async () => {
     const calls: RunnerTask[] = [];
     const adapter: ModelAdapter = {
       version: "1.0.0",
       health: async () => ({ available: true }),
       estimateTokens: () => 10,
-      execute: async (task): Promise<ModelResult> => {
-        calls.push(task);
-        return { success: true, output: `done:${task.step}`, filesModified: [], filesRead: [], metadata: { tokensUsed: 20, duration: 1 } };
+      execute: async (runnerTask): Promise<ModelResult> => {
+        calls.push(runnerTask);
+        return { success: true, output: `done:${runnerTask.taskId}`, filesModified: [], filesRead: [], metadata: { tokensUsed: 20, duration: 1 } };
       },
     };
-    const planner: Planner = { version: "1.0.0", plan: async () => ["inspect", "implement"] };
+    const planner = plannerFor([
+      task("inspect", "inspect"),
+      task("research", "research"),
+      task("implement", "implement", ["inspect"]),
+      task("verify", "verify", ["implement", "research"]),
+    ]);
     const d = deps(adapter, planner);
 
     const mission = await runMission({ objective: "Modifier proprement le projet de test", model: "fake", sourceRoot }, d);
+    const events = await d.eventStore.readAll(mission.id);
+    const planEvent = events.find((event) => event.type === "plan.ready");
 
     expect(mission.status).toBe("completed");
-    expect(calls).toHaveLength(2);
-    expect(calls[0].step).toBe("inspect");
-    expect(calls[1].step).toBe("implement");
-    expect(calls[1].context).toContain("done:inspect");
-    expect(mission.tokensUsed).toBe(40);
+    expect(calls.map((call) => call.taskId)).toEqual(["inspect", "research", "implement", "verify"]);
+    expect(calls[2].context).toContain("[inspect]");
+    expect(calls[2].context).not.toContain("[research]");
+    expect(calls[3].context).toContain("[implement]");
+    expect(calls[3].context).toContain("[research]");
+    expect(calls[3].acceptanceCriteria).toEqual(["verify vérifié"]);
+    expect(planEvent?.payload.steps).toEqual(["inspect", "research", "implement", "verify"]);
+    expect(planEvent?.payload.plan.version).toBe("2.0.0");
+    expect(mission.tokensUsed).toBe(80);
   });
 
   it("annule réellement l'adapter via AbortSignal et ne clôture pas la mission deux fois", async () => {
     const controller = new AbortController();
     let adapterSawAbort = false;
     let markAdapterStarted!: () => void;
-    const adapterStarted = new Promise<void>((resolve) => {
-      markAdapterStarted = resolve;
-    });
+    const adapterStarted = new Promise<void>((resolve) => { markAdapterStarted = resolve; });
     const adapter: ModelAdapter = {
       version: "1.0.0",
       health: async () => ({ available: true }),
       estimateTokens: () => 10,
-      execute: async (task) => new Promise<ModelResult>((resolve) => {
+      execute: async (runnerTask) => new Promise<ModelResult>((resolve) => {
         const cancel = () => {
           adapterSawAbort = true;
           resolve({ success: false, output: "", filesModified: [], filesRead: [], error: "Mission annulée", metadata: { tokensUsed: 0, duration: 1 } });
         };
-        if (task.signal?.aborted) {
+        if (runnerTask.signal?.aborted) {
           cancel();
           return;
         }
-        task.signal?.addEventListener("abort", cancel, { once: true });
+        runnerTask.signal?.addEventListener("abort", cancel, { once: true });
         markAdapterStarted();
       }),
     };
-    const planner: Planner = { version: "1.0.0", plan: async () => ["long-step"] };
-    const d = deps(adapter, planner);
+    const d = deps(adapter, plannerFor([task("long-step", "long-step")]));
 
     const missionPromise = runMission({ objective: "Exécuter une mission annulable de test", model: "fake", sourceRoot, signal: controller.signal }, d);
     await adapterStarted;
@@ -101,33 +125,20 @@ describe("runMission", () => {
     expect(events.filter((event) => event.type === "mission.closed")).toHaveLength(0);
   });
 
-  it("n'émet file.modified que lorsque le contenu change réellement entre deux étapes", async () => {
+  it("n'émet file.modified que lorsque le contenu change réellement entre deux tâches", async () => {
     const adapter: ModelAdapter = {
       version: "1.0.0",
       health: async () => ({ available: true }),
       estimateTokens: () => 10,
-      execute: async (task): Promise<ModelResult> => {
-        if (task.step === "write") {
-          await fs.writeFile(path.join(task.workspace.root, "hello.txt"), "hello\n", "utf8");
-          return {
-            success: true,
-            output: "written",
-            filesModified: ["hello.txt"],
-            filesRead: ["README.md"],
-            metadata: { tokensUsed: 20, duration: 1 },
-          };
+      execute: async (runnerTask): Promise<ModelResult> => {
+        if (runnerTask.taskId === "write") {
+          await fs.writeFile(path.join(runnerTask.workspace.root, "hello.txt"), "hello\n", "utf8");
+          return { success: true, output: "written", filesModified: ["hello.txt"], filesRead: ["README.md"], metadata: { tokensUsed: 20, duration: 1 } };
         }
-        return {
-          success: true,
-          output: "verified",
-          filesModified: ["hello.txt"],
-          filesRead: ["hello.txt"],
-          metadata: { tokensUsed: 20, duration: 1 },
-        };
+        return { success: true, output: "verified", filesModified: ["hello.txt"], filesRead: ["hello.txt"], metadata: { tokensUsed: 20, duration: 1 } };
       },
     };
-    const planner: Planner = { version: "1.0.0", plan: async () => ["write", "verify"] };
-    const d = deps(adapter, planner);
+    const d = deps(adapter, plannerFor([task("write", "write"), task("verify", "verify", ["write"])]));
 
     const mission = await runMission({ objective: "Écrire puis vérifier un fichier de test", model: "fake", sourceRoot }, d);
     const events = await d.eventStore.readAll(mission.id);
@@ -153,8 +164,7 @@ describe("runMission", () => {
         metadata: { tokensUsed: 20, duration: 1 },
       }),
     };
-    const planner: Planner = { version: "1.0.0", plan: async () => ["modify"] };
-    const d = deps(adapter, planner);
+    const d = deps(adapter, plannerFor([task("modify", "modify")]));
 
     const mission = await runMission({ objective: "Tester une modification interdite par policy", model: "fake", sourceRoot }, d);
 
