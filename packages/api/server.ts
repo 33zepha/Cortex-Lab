@@ -1,5 +1,6 @@
 import path from "node:path";
 import { promises as fs } from "node:fs";
+import { timingSafeEqual } from "node:crypto";
 import { config } from "dotenv";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
@@ -32,6 +33,11 @@ const modelAdapter = new ClaudeCodeAdapter({
 });
 const openaiClient = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 const planner = process.env.OPENAI_API_KEY ? new OpenAiPlanner(process.env.OPENAI_API_KEY) : null;
+const apiToken = process.env.CORTEX_API_TOKEN?.trim() || null;
+const allowedOrigins = (process.env.CORTEX_ALLOWED_ORIGINS ?? "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 // Cible par défaut des missions créées via l'UI — jamais le repo Cortex-Lab lui-même (DECISIONS.md #7).
 await fs.mkdir(playgroundDir, { recursive: true });
@@ -42,7 +48,27 @@ await fs.access(playgroundReadme).catch(async () => {
 
 const app = Fastify({ logger: true });
 
-await app.register(cors, { origin: true });
+await app.register(cors, {
+  origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+});
+
+function hasValidApiToken(authorization: string | undefined): boolean {
+  if (!apiToken) return true;
+  if (!authorization) return false;
+
+  const expected = Buffer.from(`Bearer ${apiToken}`);
+  const received = Buffer.from(authorization);
+  return expected.length === received.length && timingSafeEqual(expected, received);
+}
+
+app.addHook("onRequest", async (request, reply) => {
+  if (hasValidApiToken(request.headers.authorization)) return;
+  return reply.code(401).send({ error: "Cortex API: non autorisé" });
+});
+
+if (!apiToken) {
+  app.log.warn("CORTEX_API_TOKEN absent — API non authentifiée (acceptable uniquement en développement local)");
+}
 
 // Le health-check SSH est coûteux (connexion réseau) — mis en cache 30s pour éviter de le refaire à chaque poll UI.
 let claudeHealthCache: { available: boolean; checkedAt: number } | null = null;
