@@ -49,7 +49,9 @@ await fs.access(playgroundReadme).catch(async () => {
 const app = Fastify({ logger: true });
 
 await app.register(cors, {
-  origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+  // En production, le navigateur passe par le proxy same-origin Vercel : l'API VPS n'a pas besoin de CORS public.
+  // Sans token (dev local), on garde CORS ouvert pour le serveur Vite local.
+  origin: allowedOrigins.length > 0 ? allowedOrigins : !apiToken,
 });
 
 function hasValidApiToken(authorization: string | undefined): boolean {
@@ -93,7 +95,7 @@ async function getOpenAiAvailability(): Promise<boolean> {
     .then(() => true)
     .catch(() => false);
   openaiHealthCache = { available, checkedAt: Date.now() };
-  return available;
+  return openaiHealthCache.available;
 }
 
 app.get("/api/health", async () => {
@@ -177,9 +179,10 @@ app.get<{ Params: { id: string } }>("/api/missions/:id", async (request, reply) 
 });
 
 const port = Number(process.env.API_PORT ?? 4000);
+const host = process.env.API_HOST?.trim() || "127.0.0.1";
 app
-  .listen({ port, host: "0.0.0.0" })
-  .then(() => console.log(`Cortex API sur http://localhost:${port}`))
+  .listen({ port, host })
+  .then(() => console.log(`Cortex API sur http://${host}:${port}`))
   .catch((err) => {
     app.log.error(err);
     process.exit(1);
