@@ -29,21 +29,21 @@ export function KpiRow({ missions }: { missions: Mission[] }) {
     <Card className="mb-4 overflow-hidden p-0">
       <div className="grid grid-cols-2 laptop:grid-cols-4">
         {items.map(({ label, value, icon: Icon, tone }) => (
-          <div 
-            key={label} 
-            className="group flex items-center gap-3 px-5 py-3 transition-colors duration-300 hover:bg-white/40 cursor-pointer"
+          <div
+            key={label}
+            className="group flex cursor-pointer items-center gap-3 px-5 py-3 transition-all duration-300 hover:bg-white/40 active:scale-[0.99] active:bg-white/50"
           >
-            <span 
+            <span
               className={cn(
-                "flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-white/40 border border-white/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),0_4px_12px_rgba(0,0,0,0.02)] backdrop-blur-md transition-transform duration-300 group-hover:scale-110",
-                tone
+                "flex size-9 shrink-0 items-center justify-center rounded-[10px] border border-white/60 bg-white/40 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),0_4px_12px_rgba(0,0,0,0.02)] backdrop-blur-md transition-transform duration-300 group-hover:scale-110 group-active:scale-95",
+                tone,
               )}
             >
               <Icon className="size-[18px]" strokeWidth={3} aria-hidden />
             </span>
-            <div className="flex flex-col min-w-0 justify-center">
+            <div className="flex min-w-0 flex-col justify-center">
               <p className="truncate text-[11px] font-medium uppercase tracking-wider text-text-muted">{label}</p>
-              <p className="truncate text-lg font-semibold tracking-tight text-text-primary/90 leading-tight">{value}</p>
+              <p className="truncate text-lg font-semibold leading-tight tracking-tight text-text-primary/90">{value}</p>
             </div>
           </div>
         ))}
