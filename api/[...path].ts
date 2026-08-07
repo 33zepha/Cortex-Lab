@@ -5,7 +5,7 @@ function configError(message: string) {
   return Response.json({ error: message }, { status: 503 });
 }
 
-export default async function handler(request: Request): Promise<Response> {
+async function proxy(request: Request): Promise<Response> {
   if (!UPSTREAM_ORIGIN) {
     return configError("CORTEX_API_ORIGIN manquant côté Vercel");
   }
@@ -25,7 +25,10 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   const incoming = new URL(request.url);
-  const upstreamUrl = new URL(`${incoming.pathname}${incoming.search}`, `${upstreamBase.toString().replace(/\/$/, "")}/`);
+  const upstreamUrl = new URL(
+    `${incoming.pathname}${incoming.search}`,
+    `${upstreamBase.toString().replace(/\/$/, "")}/`,
+  );
 
   const headers = new Headers();
   headers.set("Authorization", `Bearer ${API_TOKEN}`);
@@ -60,3 +63,11 @@ export default async function handler(request: Request): Promise<Response> {
     return Response.json({ error: "API Cortex centrale inaccessible" }, { status: 502 });
   }
 }
+
+export const GET = proxy;
+export const POST = proxy;
+export const PUT = proxy;
+export const PATCH = proxy;
+export const DELETE = proxy;
+export const HEAD = proxy;
+export const OPTIONS = proxy;
