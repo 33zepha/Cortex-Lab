@@ -16,13 +16,30 @@ export interface RunnerTask {
   };
 }
 
+export type ModelTokenUsage = {
+  /** Tokens réellement traités hors mécanisme de cache. Sert au garde-fou de budget. */
+  activeTokens: number;
+  inputTokens: number;
+  outputTokens: number;
+  /** Cache observé pour la télémétrie, mais non débité à 100 % du budget mission. */
+  cacheCreationInputTokens: number;
+  cacheReadInputTokens: number;
+  /** Volume total vu par le fournisseur, utile pour diagnostiquer le contexte/cache. */
+  totalContextTokens: number;
+};
+
 export interface ModelResult {
   success: boolean;
   output: string;
   filesModified: string[];
   filesRead: string[];
   error?: string;
-  metadata: { tokensUsed: number; duration: number };
+  metadata: {
+    /** Budget runtime : tokens actifs, hors lecture/création de cache fournisseur. */
+    tokensUsed: number;
+    duration: number;
+    tokenUsage?: ModelTokenUsage;
+  };
 }
 
 export interface ModelAdapter {
