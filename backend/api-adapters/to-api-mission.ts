@@ -1,12 +1,8 @@
 import type { MissionEntity } from "../core/contracts/mission";
 import type { DomainEventEnvelope } from "../core/contracts/events";
+import type { MissionPlan } from "../core/contracts/mission-plan";
 import type { Evidence as DomainEvidence } from "../core/contracts/stores";
 
-/**
- * DTO exposé par l'API — forme volontairement identique à `Mission` (src/lib/types.ts) pour que
- * le frontend n'ait besoin d'aucun changement de type, seulement d'un changement de source de
- * données (fixtures -> fetch). Dupliqué délibérément : le domaine ne doit rien savoir du DTO API.
- */
 export type ApiEvidence = {
   id: string;
   kind: "test" | "diff" | "artifact" | "log";
@@ -40,6 +36,7 @@ export type ApiMission = {
   filesModified: string[];
   tests: MissionEntity["tests"];
   evidence: ApiEvidence[];
+  plan?: MissionPlan;
   patch?: string;
   summary?: string;
   error?: string | null;
@@ -52,7 +49,7 @@ function estimateProgress(mission: MissionEntity): number {
   if (mission.status === "completed") return 100;
   if (mission.status === "failed" || mission.status === "cancelled") return mission.filesModified.length > 0 ? 60 : 20;
   if (mission.status === "needs_review") return 90;
-  return mission.step === "planning" ? 10 : 50; // running, sans mesure fine de progression en v0.1
+  return mission.step === "planning" ? 10 : 50;
 }
 
 function titleForFile(files: string[]): string {
@@ -67,29 +64,35 @@ function toTimeline(events: DomainEventEnvelope[]): ApiTimelineEvent[] {
     switch (event.type) {
       case "plan.ready": {
         const steps = (event.payload.steps as string[]) ?? [];
+        const graphVersion = (event.payload.plan as MissionPlan | undefined)?.version;
         timeline.push({
           id: event.id,
           type: "plan",
           ts: event.ts,
-          title: "Plan formulé",
-          detail: `${steps.length} étape(s) identifiée(s)`,
+          title: graphVersion ? `MissionGraph ${graphVersion}` : "Plan formulé",
+          detail: `${steps.length} tâche(s) identifiée(s)`,
           children: steps,
         });
         break;
       }
-      case "step.started":
-        timeline.push({ id: event.id, type: "step", ts: event.ts, title: `Étape — ${event.payload.step}` });
+      case "step.started": {
+        const taskId = event.payload.taskId as string | undefined;
+        timeline.push({
+          id: event.id,
+          type: "step",
+          ts: event.ts,
+          title: taskId ? `${taskId} — ${event.payload.step}` : `Étape — ${event.payload.step}`,
+          detail: taskId && Array.isArray(event.payload.dependencies)
+            ? `Dépendances: ${(event.payload.dependencies as string[]).join(", ") || "aucune"}`
+            : undefined,
+        });
         break;
+      }
       case "file.read":
         timeline.push({ id: event.id, type: "file_read", ts: event.ts, title: `${event.payload.path} lu` });
         break;
       case "file.modified":
-        timeline.push({
-          id: event.id,
-          type: "file_modified",
-          ts: event.ts,
-          title: `${event.payload.path} modifié`,
-        });
+        timeline.push({ id: event.id, type: "file_modified", ts: event.ts, title: `${event.payload.path} modifié` });
         break;
       case "test.completed":
         timeline.push({
@@ -102,7 +105,6 @@ function toTimeline(events: DomainEventEnvelope[]): ApiTimelineEvent[] {
         break;
       case "evidence.recorded":
         pendingEvidenceId = event.payload.evidenceId as string;
-        // Rattache la preuve au dernier événement file_modified/test du timeline.
         for (let i = timeline.length - 1; i >= 0; i--) {
           if (timeline[i].type === "file_modified" || timeline[i].type === "test") {
             timeline[i].evidenceId = pendingEvidenceId;
@@ -111,13 +113,7 @@ function toTimeline(events: DomainEventEnvelope[]): ApiTimelineEvent[] {
         }
         break;
       case "decision.requested":
-        timeline.push({
-          id: event.id,
-          type: "decision",
-          ts: event.ts,
-          title: "Décision humaine requise",
-          detail: event.payload.prompt as string,
-        });
+        timeline.push({ id: event.id, type: "decision", ts: event.ts, title: "Décision humaine requise", detail: event.payload.prompt as string });
         break;
       case "decision.provided":
         timeline.push({ id: event.id, type: "decision", ts: event.ts, title: "Décision fournie" });
@@ -137,10 +133,15 @@ function toTimeline(events: DomainEventEnvelope[]): ApiTimelineEvent[] {
         break;
       }
       default:
-        break; // mission.created : implicite, pas d'entrée timeline dédiée
+        break;
     }
   }
   return timeline;
+}
+
+function missionPlanFromEvents(events: DomainEventEnvelope[]): MissionPlan | undefined {
+  const planEvent = [...events].reverse().find((event) => event.type === "plan.ready" && event.payload.plan);
+  return planEvent?.payload.plan as MissionPlan | undefined;
 }
 
 export function toApiMission(mission: MissionEntity, events: DomainEventEnvelope[], evidence: DomainEvidence[]): ApiMission {
@@ -169,6 +170,7 @@ export function toApiMission(mission: MissionEntity, events: DomainEventEnvelope
     filesModified: mission.filesModified,
     tests: mission.tests,
     evidence: apiEvidence,
+    plan: missionPlanFromEvents(events),
     patch: lastDiff?.content,
     summary: mission.summary,
     error: mission.error,

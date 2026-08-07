@@ -1,14 +1,37 @@
 import OpenAI from "openai";
 import type { Planner } from "../contracts/planner";
+import { parseMissionPlan, type MissionPlan } from "../contracts/mission-plan";
 
-const SYSTEM_PROMPT =
-  "Tu es un planificateur technique. Décompose l'objectif fourni en 2 à 5 étapes concrètes et " +
-  "actionnables pour un agent de développement autonome. Réponds uniquement en JSON strict de la " +
-  'forme {"steps": ["étape 1", "étape 2", ...]}, sans numérotation ni texte hors JSON.';
+const SYSTEM_PROMPT = `Tu es le planificateur technique de Cortex.
+Transforme l'objectif en un graphe de 2 à 7 tâches concrètes pour un agent de développement autonome.
+Réponds uniquement en JSON strict, sans markdown ni texte hors JSON.
 
-/** Seule implémentation réelle en v0.1 : OpenAI. Aucun fallback silencieux — une erreur API fait échouer le plan. */
+Format exact:
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "id": "inspect",
+      "objective": "...",
+      "acceptanceCriteria": ["..."],
+      "dependencies": [],
+      "risk": "low",
+      "preferredCapabilities": ["code.read"]
+    }
+  ]
+}
+
+Règles:
+- id court, stable et unique, caractères alphanumériques/._- uniquement;
+- dependencies contient uniquement des ids présents dans tasks et ne crée aucun cycle;
+- acceptanceCriteria contient au moins un critère observable par tâche;
+- risk vaut low, medium ou high;
+- preferredCapabilities décrit les capacités nécessaires (ex: code.read, code.write, test.run, research);
+- ne crée une dépendance que si la tâche dépend réellement du résultat d'une autre tâche.`;
+
+/** Planner réel v2 : produit un MissionPlan validé. Aucun fallback silencieux. */
 export class OpenAiPlanner implements Planner {
-  version = "1.0.0" as const;
+  version = "2.0.0" as const;
   private readonly client: OpenAI;
   private readonly model: string;
 
@@ -17,7 +40,7 @@ export class OpenAiPlanner implements Planner {
     this.model = model;
   }
 
-  async plan(objective: string, constraints?: string): Promise<string[]> {
+  async plan(objective: string, constraints?: string): Promise<MissionPlan> {
     const userContent = constraints ? `Objectif: ${objective}\nContraintes: ${constraints}` : `Objectif: ${objective}`;
 
     const response = await this.client.chat.completions.create({
@@ -39,10 +62,10 @@ export class OpenAiPlanner implements Planner {
       throw new Error(`Réponse OpenAI non-JSON: ${content.slice(0, 200)}`);
     }
 
-    const steps = (parsed as { steps?: unknown }).steps;
-    if (!Array.isArray(steps) || steps.length === 0 || !steps.every((s) => typeof s === "string")) {
-      throw new Error("Plan invalide retourné par OpenAI (attendu: { steps: string[] })");
+    try {
+      return parseMissionPlan(parsed);
+    } catch (error) {
+      throw new Error(`MissionPlan v2 invalide retourné par OpenAI: ${error instanceof Error ? error.message : String(error)}`);
     }
-    return steps;
   }
 }
