@@ -7,16 +7,16 @@ import { ROUTES } from "@/lib/routes";
 import type { Mission } from "@/lib/types";
 
 const textareaClasses =
-  "w-full rounded-md border border-border bg-surface-2 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted " +
+  "w-full rounded-[12px] border border-border bg-surface-2 px-3 py-2.5 text-[16px] text-text-primary placeholder:text-text-muted " +
   "transition-colors duration-fast ease-standard hover:border-border-strong " +
   "focus-visible:outline-none focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-accent-indigo-muted " +
-  "disabled:opacity-45 disabled:pointer-events-none resize-none";
+  "disabled:opacity-45 disabled:pointer-events-none resize-none laptop:rounded-md laptop:py-2 laptop:text-sm";
 
 const selectClasses =
-  "w-full rounded-md border border-border bg-surface-2 px-3 py-2 text-sm text-text-primary " +
+  "min-h-11 w-full rounded-[12px] border border-border bg-surface-2 px-3 py-2 text-[16px] text-text-primary " +
   "transition-colors duration-fast ease-standard hover:border-border-strong " +
   "focus-visible:outline-none focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-accent-indigo-muted " +
-  "disabled:opacity-45 disabled:pointer-events-none";
+  "disabled:opacity-45 disabled:pointer-events-none laptop:min-h-0 laptop:rounded-md laptop:text-sm";
 
 const MODEL_OPTIONS = [
   { value: "gpt-5.6", label: "gpt-5.6 (OpenAI Next-Gen Standard)" },
@@ -81,9 +81,9 @@ export function NewMissionDialog({ onCreated }: { onCreated: () => void }) {
         <button
           type="button"
           aria-label="Nouvelle mission"
-          className="group flex h-11 items-center justify-center gap-2 rounded-[14px] border border-white/70 bg-white/55 px-3 text-text-primary shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_5px_18px_-10px_rgba(0,0,0,0.3)] backdrop-blur-2xl transition-[transform,background-color,box-shadow] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:bg-white/78 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_8px_24px_-12px_rgba(0,0,0,0.32)] active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/20 laptop:h-10 laptop:px-3.5"
+          className="group flex h-11 items-center justify-center gap-2 rounded-[14px] border border-white/70 bg-white/55 px-3 text-text-primary shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_5px_18px_-10px_rgba(0,0,0,0.3)] backdrop-blur-2xl transition-[background-color,box-shadow,opacity] duration-200 hover:bg-white/78 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_8px_24px_-12px_rgba(0,0,0,0.32)] active:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/20 laptop:h-10 laptop:px-3.5"
         >
-          <Plus className="size-[21px] stroke-[3.3] transition-transform duration-300 group-hover:rotate-90" aria-hidden />
+          <Plus className="size-[21px] stroke-[3.3]" aria-hidden />
           <span className="hidden text-[12px] font-bold tracking-[-0.01em] tablet:inline">Nouvelle mission</span>
         </button>
       </DialogTrigger>
@@ -119,7 +119,7 @@ export function NewMissionDialog({ onCreated }: { onCreated: () => void }) {
               <label className="text-xs font-medium text-text-secondary">Nom du modèle personnalisé</label>
               <input
                 type="text"
-                className="w-full rounded-md border border-border bg-surface-2 px-3 py-1.5 text-sm text-text-primary placeholder:text-text-muted"
+                className="min-h-11 w-full rounded-[12px] border border-border bg-surface-2 px-3 py-2 text-[16px] text-text-primary placeholder:text-text-muted laptop:min-h-0 laptop:rounded-md laptop:py-1.5 laptop:text-sm"
                 placeholder="Ex : gpt-5.6-turbo, gpt-5.5-preview"
                 value={customModel}
                 onChange={(e) => setCustomModel(e.target.value)}
