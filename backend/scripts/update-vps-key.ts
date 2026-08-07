@@ -26,14 +26,20 @@ async function main() {
   const gitPull = await ssh.execCommand("cd /root/Cortex-Lab && git pull origin main");
   console.log(gitPull.stdout || gitPull.stderr);
 
-  console.log("Mise à jour de OPENAI_API_KEY dans /root/Cortex-Lab/.env…");
-  // Échappe les caractères spéciaux pour bash
+  const openAiModel = process.env.OPENAI_MODEL ?? "gpt-5.6";
+
+  console.log("Mise à jour de OPENAI_API_KEY et OPENAI_MODEL dans /root/Cortex-Lab/.env…");
   const updateEnvCmd = `
     cd /root/Cortex-Lab
     if grep -q "^OPENAI_API_KEY=" .env; then
       sed -i 's|^OPENAI_API_KEY=.*|OPENAI_API_KEY=${openAiKey}|' .env
     else
       echo "OPENAI_API_KEY=${openAiKey}" >> .env
+    fi
+    if grep -q "^OPENAI_MODEL=" .env; then
+      sed -i 's|^OPENAI_MODEL=.*|OPENAI_MODEL=${openAiModel}|' .env
+    else
+      echo "OPENAI_MODEL=${openAiModel}" >> .env
     fi
   `;
   await ssh.execCommand(updateEnvCmd);
