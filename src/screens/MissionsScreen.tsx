@@ -185,7 +185,7 @@ export function MissionsScreen() {
       ) : (
         <>
           <div className="flex min-h-0 flex-1 flex-col laptop:hidden">
-            <div className="scrollbar-none -mx-1 mb-3 flex shrink-0 gap-1.5 overflow-x-auto px-1 pb-1">
+            <div className="scrollbar-none mb-3 flex shrink-0 gap-1.5 overflow-x-auto pb-1">
               {MOBILE_FILTERS.map((filter) => {
                 const count = filter.id === "all" ? filtered.length : missionsByStatus[filter.id].length;
                 const active = mobileFilter === filter.id;
