@@ -62,7 +62,7 @@ export function MobileNav({ onOpenPalette }: { onOpenPalette: () => void }) {
             <Search strokeWidth={3.2} className="size-[22px]" aria-hidden />
           </button>
           <NavLink
-            to="/profile"
+            to={ROUTES.profile}
             aria-label="Profil"
             className={({ isActive }) => cn(baseButtonClasses, isActive && LIQUID_GLASS_ACTIVE, isActive && "text-text-primary")}
           >
