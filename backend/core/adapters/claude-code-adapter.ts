@@ -153,7 +153,8 @@ export function summarizeClaudeUsage(usage?: ClaudeCliUsage): ModelTokenUsage {
 }
 
 function positiveInt(value: number | undefined): number {
-  return Number.isFinite(value) && (value ?? 0) > 0 ? Math.floor(value!) : 0;
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) return 0;
+  return Math.floor(value);
 }
 
 type CliJsonResult = {
