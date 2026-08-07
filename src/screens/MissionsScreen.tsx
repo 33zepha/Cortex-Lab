@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { RocketLaunchIcon } from "@heroicons/react/24/solid";
 import { Inbox } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { SearchInput, EmptyState, ErrorState, Skeleton, GlassActionGroup } from "@/components/ui";
+import { SearchInput, EmptyState, ErrorState, Skeleton } from "@/components/ui";
 import { emptyMissions } from "@/fixtures/missions";
 import { MissionKanbanCard } from "./missions/MissionKanbanCard";
 import { NewMissionDialog } from "./missions/NewMissionDialog";
@@ -26,7 +26,11 @@ type MobileFilter = "all" | MissionStatus;
 
 const MOBILE_FILTERS: { id: MobileFilter; title: string }[] = [
   { id: "all", title: "Toutes" },
-  ...KANBAN_COLUMNS.map(({ id, title }) => ({ id, title })),
+  { id: "running", title: "En cours" },
+  { id: "needs_review", title: "Revue" },
+  { id: "completed", title: "Finies" },
+  { id: "failed", title: "Échecs" },
+  { id: "cancelled", title: "Annulées" },
 ];
 
 export function MissionsScreen() {
@@ -103,11 +107,11 @@ export function MissionsScreen() {
         className="flex h-full flex-col"
       >
         <PageHeader title="Missions" icon={RocketLaunchIcon} />
-        <Skeleton className="mb-5 h-9 w-full tablet:mb-8 tablet:w-80" />
+        <Skeleton className="mb-4 h-11 w-full rounded-[14px] tablet:mb-8 tablet:w-80" />
 
-        <div className="space-y-3 laptop:hidden">
+        <div className="space-y-2.5 laptop:hidden">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-[112px] w-full rounded-[24px]" />
+            <Skeleton key={i} className="h-[96px] w-full rounded-[20px]" />
           ))}
         </div>
 
@@ -129,17 +133,9 @@ export function MissionsScreen() {
 
   if (error && demoState !== "empty") {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}
-      >
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}>
         <PageHeader title="Missions" icon={RocketLaunchIcon} />
-        <ErrorState
-          title="Impossible de joindre l'API Cortex"
-          description={error}
-          onRetry={() => window.location.reload()}
-        />
+        <ErrorState title="Impossible de joindre l'API Cortex" description={error} onRetry={() => window.location.reload()} />
       </motion.div>
     );
   }
@@ -155,7 +151,7 @@ export function MissionsScreen() {
         title="Missions"
         icon={RocketLaunchIcon}
         action={
-          <div className="flex w-full flex-col gap-2 tablet:w-auto tablet:flex-row tablet:items-center tablet:gap-3">
+          <div className="flex shrink-0 items-center gap-3">
             <SearchInput
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -163,9 +159,7 @@ export function MissionsScreen() {
               placeholder="Filtrer par objectif…"
               className="hidden w-64 rounded-[16px] border border-white/60 bg-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.04)] backdrop-blur-2xl tablet:block"
             />
-            <GlassActionGroup>
-              <NewMissionDialog onCreated={refetch} />
-            </GlassActionGroup>
+            <NewMissionDialog onCreated={refetch} />
           </div>
         }
       />
@@ -174,12 +168,12 @@ export function MissionsScreen() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onClear={() => setQuery("")}
-        placeholder="Filtrer par objectif…"
-        className="mb-4 w-full rounded-[16px] border border-white/60 bg-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.04)] backdrop-blur-2xl tablet:hidden"
+        placeholder="Rechercher une mission…"
+        className="mb-3 w-full rounded-[14px] border border-white/60 bg-white/42 shadow-[0_5px_18px_-10px_rgba(0,0,0,0.16)] backdrop-blur-2xl tablet:hidden"
       />
 
       {filtered.length === 0 ? (
-        <div className="mt-1 overflow-hidden rounded-[28px] border border-white/60 bg-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] backdrop-blur-3xl tablet:mt-4 tablet:rounded-[32px]">
+        <div className="mt-1 overflow-hidden rounded-[24px] border border-white/60 bg-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] backdrop-blur-3xl tablet:mt-4 tablet:rounded-[32px]">
           <EmptyState
             icon={<Inbox className="size-6" />}
             title={source.length === 0 ? "Aucune mission" : "Aucun résultat"}
@@ -193,7 +187,7 @@ export function MissionsScreen() {
       ) : (
         <>
           <div className="flex min-h-0 flex-1 flex-col laptop:hidden">
-            <div className="scrollbar-none -mx-1 mb-4 flex shrink-0 gap-2 overflow-x-auto px-1 pb-1">
+            <div className="scrollbar-none -mx-1 mb-3 flex shrink-0 gap-1.5 overflow-x-auto px-1 pb-1">
               {MOBILE_FILTERS.map((filter) => {
                 const count = filter.id === "all" ? filtered.length : missionsByStatus[filter.id].length;
                 const active = mobileFilter === filter.id;
@@ -204,23 +198,22 @@ export function MissionsScreen() {
                     type="button"
                     onClick={() => setMobileFilter(filter.id)}
                     className={cn(
-                      "flex shrink-0 items-center gap-2 rounded-[14px] border border-white/50 bg-white/20 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-text-secondary",
+                      "flex min-h-10 shrink-0 items-center gap-2 rounded-[12px] border border-white/55 bg-white/18 px-3 text-[11px] font-bold tracking-[-0.01em] text-text-secondary",
                       TRANSITION_SPRING,
                       LIQUID_GLASS_HOVER,
                       "active:scale-[0.96]",
                       active && LIQUID_GLASS_ACTIVE,
+                      active && "text-text-primary",
                     )}
                   >
                     <span>{filter.title}</span>
-                    <span className="rounded-full bg-black/[0.05] px-1.5 py-0.5 text-[10px] leading-none text-text-muted">
-                      {count}
-                    </span>
+                    <span className="text-[10px] font-bold tabular-nums text-text-muted">{count}</span>
                   </button>
                 );
               })}
             </div>
 
-            <div className="flex flex-col gap-3 pb-2">
+            <div className="flex flex-col gap-2.5 pb-2">
               {mobileMissions.map((mission) => (
                 <MissionKanbanCard key={mission.id} mission={mission} />
               ))}
