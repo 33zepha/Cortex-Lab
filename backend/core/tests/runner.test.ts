@@ -65,22 +65,34 @@ describe("runMission", () => {
   it("annule réellement l'adapter via AbortSignal et ne clôture pas la mission deux fois", async () => {
     const controller = new AbortController();
     let adapterSawAbort = false;
+    let markAdapterStarted!: () => void;
+    const adapterStarted = new Promise<void>((resolve) => {
+      markAdapterStarted = resolve;
+    });
     const adapter: ModelAdapter = {
       version: "1.0.0",
       health: async () => ({ available: true }),
       estimateTokens: () => 10,
       execute: async (task) => new Promise<ModelResult>((resolve) => {
-        task.signal?.addEventListener("abort", () => {
+        const cancel = () => {
           adapterSawAbort = true;
           resolve({ success: false, output: "", filesModified: [], filesRead: [], error: "Mission annulée", metadata: { tokensUsed: 0, duration: 1 } });
-        }, { once: true });
+        };
+        if (task.signal?.aborted) {
+          cancel();
+          return;
+        }
+        task.signal?.addEventListener("abort", cancel, { once: true });
+        markAdapterStarted();
       }),
     };
     const planner: Planner = { version: "1.0.0", plan: async () => ["long-step"] };
     const d = deps(adapter, planner);
 
-    setTimeout(() => controller.abort(), 20);
-    const mission = await runMission({ objective: "Exécuter une mission annulable de test", model: "fake", sourceRoot, signal: controller.signal }, d);
+    const missionPromise = runMission({ objective: "Exécuter une mission annulable de test", model: "fake", sourceRoot, signal: controller.signal }, d);
+    await adapterStarted;
+    controller.abort();
+    const mission = await missionPromise;
     const events = await d.eventStore.readAll(mission.id);
 
     expect(adapterSawAbort).toBe(true);
