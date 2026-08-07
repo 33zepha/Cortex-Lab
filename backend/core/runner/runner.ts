@@ -8,8 +8,11 @@ import type { Planner } from "../contracts/planner";
 import type { Policy } from "../contracts/policy";
 import type { DomainEventEnvelope } from "../contracts/events";
 import type { MissionEntity } from "../contracts/mission";
+import type { MissionPlan, MissionTask } from "../contracts/mission-plan";
+import { planSteps } from "../contracts/mission-plan";
 import { WorkspaceManager, gitDiff } from "../workspace/workspace-manager";
 import { projectMission } from "../mission-projection";
+import { MissionScheduler } from "../scheduler/mission-scheduler";
 
 export type RunMissionInput = {
   missionId?: string;
@@ -45,11 +48,11 @@ export async function runMission(input: RunMissionInput, deps: RunnerDeps): Prom
   }));
   await persistProjection(missionId, eventStore, missionRepository);
 
-  let steps: string[];
+  let plan: MissionPlan;
   try {
     throwIfAborted(input.signal);
-    steps = await planner.plan(input.objective, input.constraints);
-    if (steps.length === 0) throw new Error("Le planificateur a retourné un plan vide");
+    plan = await planner.plan(input.objective, input.constraints);
+    if (plan.tasks.length === 0) throw new Error("Le planificateur a retourné un graphe vide");
   } catch (err) {
     const cancelled = isAbort(err, input.signal);
     await eventStore.append(makeEvent(
@@ -60,12 +63,14 @@ export async function runMission(input: RunMissionInput, deps: RunnerDeps): Prom
     return finalize(missionId, eventStore, missionRepository);
   }
 
-  await eventStore.append(makeEvent(missionId, "plan.ready", { steps }));
+  await eventStore.append(makeEvent(missionId, "plan.ready", { steps: planSteps(plan), plan }));
   await persistProjection(missionId, eventStore, missionRepository);
 
   const workspace = await workspaceManager.create(missionId, input.sourceRoot);
+  const scheduler = new MissionScheduler(plan);
   let totalTokens = 0;
-  const outputs: string[] = [];
+  let completedTasks = 0;
+  const outputs = new Map<string, string>();
   const fileFingerprints = new Map<string, string>();
 
   try {
@@ -78,25 +83,33 @@ export async function runMission(input: RunMissionInput, deps: RunnerDeps): Prom
       return finalize(missionId, eventStore, missionRepository);
     }
 
-    for (let index = 0; index < steps.length; index++) {
+    while (!scheduler.isComplete()) {
       throwIfAborted(input.signal);
-      const step = steps[index];
-      await eventStore.append(makeEvent(missionId, "step.started", { step, index, total: steps.length }));
+      const graphTask = scheduler.nextReady();
+      if (!graphTask) {
+        await closeFailed(missionId, eventStore, "Scheduler bloqué: aucune tâche exécutable malgré des tâches en attente", totalTokens);
+        return finalize(missionId, eventStore, missionRepository);
+      }
+
+      scheduler.markRunning(graphTask.id);
+      await eventStore.append(makeEvent(missionId, "step.started", {
+        step: graphTask.objective,
+        taskId: graphTask.id,
+        dependencies: graphTask.dependencies,
+        acceptanceCriteria: graphTask.acceptanceCriteria,
+        risk: graphTask.risk,
+        preferredCapabilities: graphTask.preferredCapabilities,
+        index: completedTasks,
+        total: plan.tasks.length,
+      }));
       await persistProjection(missionId, eventStore, missionRepository);
 
-      const task: RunnerTask = {
-        missionId,
-        step,
-        objective: input.objective,
-        context: outputs.join("\n\n"),
-        constraints: input.constraints ?? "",
-        workspace: { root: workspace.root, readOnly: [] },
-      };
-
+      const task = toRunnerTask(missionId, input, graphTask, outputs, workspace.root);
       const tokenBudget = policy.tokenBudgetFor(missionId);
       const estimated = modelAdapter.estimateTokens(task);
       if (totalTokens + estimated > tokenBudget) {
-        await closeFailed(missionId, eventStore, `Budget tokens dépassé avant l'étape ${index + 1}/${steps.length}`, totalTokens);
+        scheduler.markFailed(graphTask.id);
+        await closeFailed(missionId, eventStore, `Budget tokens dépassé avant la tâche ${graphTask.id}`, totalTokens);
         return finalize(missionId, eventStore, missionRepository);
       }
 
@@ -105,39 +118,46 @@ export async function runMission(input: RunMissionInput, deps: RunnerDeps): Prom
         task,
         policy.timeoutSecondsFor(missionId) * 1000,
         input.signal,
-        `Timeout sur l'étape ${index + 1}/${steps.length}`,
+        `Timeout sur la tâche ${graphTask.id}`,
       );
       totalTokens += result.metadata.tokensUsed;
 
       if (input.signal?.aborted) {
+        scheduler.markCancelled(graphTask.id);
+        scheduler.cancelQueued();
         await eventStore.append(makeEvent(missionId, "mission.cancelled", { reason: "Annulée pendant l'exécution" }));
         return finalize(missionId, eventStore, missionRepository);
       }
       if (totalTokens > tokenBudget) {
-        await closeFailed(missionId, eventStore, `Budget tokens dépassé après l'étape ${index + 1}/${steps.length}`, totalTokens);
+        scheduler.markFailed(graphTask.id);
+        await closeFailed(missionId, eventStore, `Budget tokens dépassé après la tâche ${graphTask.id}`, totalTokens);
         return finalize(missionId, eventStore, missionRepository);
       }
 
       const unauthorized = unauthorizedFiles(result.filesModified, workspace.root, policy, missionId);
       if (unauthorized.length > 0) {
+        scheduler.markFailed(graphTask.id);
         await closeFailed(missionId, eventStore, `Policy violation: modification interdite (${unauthorized.join(", ")})`, totalTokens);
         return finalize(missionId, eventStore, missionRepository);
       }
       const stepModifiedFiles = await changedFilesForStep(result.filesModified, workspace.root, fileFingerprints);
 
       for (const file of uniqueFiles(result.filesRead)) {
-        await eventStore.append(makeEvent(missionId, "file.read", { path: relativeFile(workspace.root, file), step }));
+        await eventStore.append(makeEvent(missionId, "file.read", { path: relativeFile(workspace.root, file), step: graphTask.objective, taskId: graphTask.id }));
       }
       for (const file of stepModifiedFiles) {
-        await eventStore.append(makeEvent(missionId, "file.modified", { path: relativeFile(workspace.root, file), step }));
+        await eventStore.append(makeEvent(missionId, "file.modified", { path: relativeFile(workspace.root, file), step: graphTask.objective, taskId: graphTask.id }));
       }
 
       if (!result.success) {
-        await closeFailed(missionId, eventStore, result.error ?? `Échec de l'étape ${index + 1}`, totalTokens);
+        scheduler.markFailed(graphTask.id);
+        await closeFailed(missionId, eventStore, result.error ?? `Échec de la tâche ${graphTask.id}`, totalTokens);
         return finalize(missionId, eventStore, missionRepository);
       }
 
-      outputs.push(`Étape ${index + 1}: ${step}\n${result.output}`);
+      outputs.set(graphTask.id, result.output);
+      scheduler.markCompleted(graphTask.id);
+      completedTasks += 1;
       await persistProjection(missionId, eventStore, missionRepository);
     }
 
@@ -149,13 +169,16 @@ export async function runMission(input: RunMissionInput, deps: RunnerDeps): Prom
       await eventStore.append(makeEvent(missionId, "evidence.recorded", { evidenceId: lastEvidence.id, kind: "diff" }));
     }
 
+    const finalTask = plan.tasks.find((task) => task.id === scheduler.snapshot().at(-1)?.id);
+    const finalOutput = finalTask ? outputs.get(finalTask.id) : undefined;
     await eventStore.append(makeEvent(missionId, "mission.closed", {
       status: "completed",
-      summary: outputs.at(-1)?.slice(0, 500) ?? "Mission terminée",
+      summary: finalOutput?.slice(0, 500) ?? "Mission terminée",
       tokensUsed: totalTokens,
     }));
   } catch (err) {
     if (isAbort(err, input.signal)) {
+      scheduler.cancelQueued();
       await eventStore.append(makeEvent(missionId, "mission.cancelled", { reason: "Annulée par l'utilisateur" }));
     } else {
       await closeFailed(missionId, eventStore, messageOf(err), totalTokens);
@@ -165,6 +188,35 @@ export async function runMission(input: RunMissionInput, deps: RunnerDeps): Prom
   }
 
   return finalize(missionId, eventStore, missionRepository);
+}
+
+function toRunnerTask(
+  missionId: string,
+  input: RunMissionInput,
+  graphTask: MissionTask,
+  outputs: Map<string, string>,
+  workspaceRoot: string,
+): RunnerTask {
+  const dependencyContext = graphTask.dependencies
+    .map((dependency) => {
+      const output = outputs.get(dependency);
+      return output ? `[${dependency}]\n${output}` : null;
+    })
+    .filter((value): value is string => value !== null)
+    .join("\n\n");
+
+  return {
+    missionId,
+    taskId: graphTask.id,
+    step: graphTask.objective,
+    objective: input.objective,
+    context: dependencyContext,
+    constraints: input.constraints ?? "",
+    acceptanceCriteria: graphTask.acceptanceCriteria,
+    preferredCapabilities: graphTask.preferredCapabilities,
+    risk: graphTask.risk,
+    workspace: { root: workspaceRoot, readOnly: [] },
+  };
 }
 
 async function executeStep(
