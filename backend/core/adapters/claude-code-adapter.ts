@@ -5,16 +5,11 @@ import { gitModifiedFiles } from "../workspace/workspace-manager";
 
 export type ClaudeCodeAdapterOptions = {
   vps: VpsConfig;
-  /** Répertoire distant de base sur le VPS, ex: /root/cortex-workspaces */
   remoteWorkspaceBase: string;
   permissionMode?: "acceptEdits" | "bypassPermissions";
 };
 
-/**
- * Seule implémentation réelle de ModelAdapter (DECISIONS.md #8). Exécute Claude Code
- * via SSH sur le VPS, dans une copie du workspace local uploadée puis synchronisée en
- * retour. Aucun fallback silencieux : une erreur SSH/CLI se traduit par `success: false`.
- */
+/** Exécute Claude Code sur le VPS dans le workspace isolé de la mission. */
 export class ClaudeCodeAdapter implements ModelAdapter {
   version = "1.0.0" as const;
 
@@ -33,7 +28,7 @@ export class ClaudeCodeAdapter implements ModelAdapter {
   }
 
   estimateTokens(task: RunnerTask): number {
-    return task.objective.length + task.context.length + task.constraints.length;
+    return task.objective.length + task.step.length + task.context.length + task.constraints.length;
   }
 
   async execute(task: RunnerTask): Promise<ModelResult> {
@@ -42,15 +37,24 @@ export class ClaudeCodeAdapter implements ModelAdapter {
     const startedAt = Date.now();
 
     try {
+      if (task.signal?.aborted) return cancelledResult(startedAt);
       await ssh.uploadDirectory(task.workspace.root, remoteDir);
+      if (task.signal?.aborted) return cancelledResult(startedAt);
 
-      const prompt = [task.objective, task.constraints && `Contraintes: ${task.constraints}`, task.context]
+      const prompt = [
+        `Objectif global: ${task.objective}`,
+        `Étape courante: ${task.step}`,
+        task.constraints && `Contraintes: ${task.constraints}`,
+        task.context && `Contexte des étapes précédentes:\n${task.context}`,
+      ]
         .filter(Boolean)
         .join("\n\n");
+
       const permissionMode = this.options.permissionMode ?? "acceptEdits";
       const command = `claude -p ${shellQuote(prompt)} --permission-mode ${permissionMode} --output-format json`;
+      const run = await ssh.exec(command, remoteDir, task.signal);
 
-      const run = await ssh.exec(command, remoteDir);
+      if (task.signal?.aborted) return cancelledResult(startedAt);
       await ssh.downloadDirectory(remoteDir, task.workspace.root);
 
       const filesModified = gitModifiedFiles(task.workspace.root);
@@ -74,11 +78,14 @@ export class ClaudeCodeAdapter implements ModelAdapter {
         success: run.code === 0 && !parsed.is_error,
         output: parsed.result ?? "",
         filesModified,
-        filesRead: [], // non exposé par le CLI, même en JSON ; nécessiterait --output-format stream-json
+        filesRead: [],
         error: parsed.is_error ? (parsed.result ?? "Claude Code a retourné une erreur") : undefined,
         metadata: { tokensUsed, duration: parsed.duration_ms ?? Date.now() - startedAt },
       };
     } catch (err) {
+      if (task.signal?.aborted || (err instanceof Error && err.name === "AbortError")) {
+        return cancelledResult(startedAt);
+      }
       return {
         success: false,
         output: "",
@@ -92,6 +99,17 @@ export class ClaudeCodeAdapter implements ModelAdapter {
       ssh.dispose();
     }
   }
+}
+
+function cancelledResult(startedAt: number): ModelResult {
+  return {
+    success: false,
+    output: "",
+    filesModified: [],
+    filesRead: [],
+    error: "Mission annulée",
+    metadata: { tokensUsed: 0, duration: Date.now() - startedAt },
+  };
 }
 
 function shellQuote(value: string): string {
@@ -110,7 +128,6 @@ type CliJsonResult = {
   };
 };
 
-/** `claude -p ... --output-format json` renvoie un unique objet JSON sur stdout. */
 function parseCliJson(stdout: string): CliJsonResult | null {
   try {
     const parsed = JSON.parse(stdout.trim());
