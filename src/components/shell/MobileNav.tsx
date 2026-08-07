@@ -11,26 +11,25 @@ const navItems = [
   { to: ROUTES.system, label: "System", icon: ServerStackIcon, end: false },
 ];
 
-
 export function MobileNav({ onOpenPalette }: { onOpenPalette: () => void }) {
   const location = useLocation();
 
   const baseButtonClasses = cn(
-    "relative flex size-11 mobile:size-12 items-center justify-center rounded-[14px] text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-indigo focus-visible:ring-offset-2",
+    "relative flex size-10 mobile:size-11 items-center justify-center rounded-[13px] text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-indigo focus-visible:ring-offset-2",
     TRANSITION_SPRING,
-    "hover:scale-[1.04] hover:text-text-primary",
+    "hover:scale-[1.03] hover:text-text-primary",
     LIQUID_GLASS_HOVER,
-    "active:scale-[0.94] active:duration-150 active:ease-out",
+    "active:scale-[0.93] active:duration-150 active:ease-out",
   );
 
   return (
     <nav
       aria-label="Navigation mobile"
       className="fixed left-1/2 z-sticky -translate-x-1/2 laptop:hidden"
-      style={{ bottom: "calc(12px + env(safe-area-inset-bottom))" }}
+      style={{ bottom: "calc(10px + env(safe-area-inset-bottom))" }}
     >
-      <div className="flex items-center gap-2 rounded-[24px] border border-white/60 bg-white/60 p-2.5 shadow-[0_8px_28px_rgba(0,0,0,0.09)] backdrop-blur-3xl">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 rounded-[22px] border border-white/65 bg-white/68 p-1.5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.18)] backdrop-blur-3xl">
+        <div className="flex items-center gap-1">
           {navItems.map(({ to, label, icon: Icon, end }) => {
             const isActive = end ? location.pathname === to : location.pathname.startsWith(to);
 
@@ -42,33 +41,32 @@ export function MobileNav({ onOpenPalette }: { onOpenPalette: () => void }) {
                 aria-label={label}
                 className="relative flex items-center justify-center focus-visible:outline-none"
               >
-                <div className={cn(baseButtonClasses, isActive && LIQUID_GLASS_ACTIVE)}>
-                  <Icon className="size-[22px]" aria-hidden />
+                <div
+                  className={cn(
+                    baseButtonClasses,
+                    isActive && LIQUID_GLASS_ACTIVE,
+                    isActive && "text-text-primary shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_5px_14px_-8px_rgba(0,0,0,0.3)]",
+                  )}
+                >
+                  <Icon className="size-[22px] mobile:size-[23px]" aria-hidden />
                 </div>
-                {isActive && (
-                  <span
-                    aria-hidden
-                    className="absolute -bottom-1.5 left-1/2 size-[5px] -translate-x-1/2 rounded-full bg-text-primary/80"
-                  />
-                )}
               </NavLink>
             );
           })}
         </div>
 
-        <div className="mx-0.5 h-8 w-px rounded-full bg-black/[0.08]" />
+        <div className="mx-0.5 h-7 w-px rounded-full bg-black/[0.08]" />
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onOpenPalette}
-            aria-label="Rechercher"
-            className={baseButtonClasses}
-          >
-            <Search strokeWidth={3} className="size-[22px]" aria-hidden />
+        <div className="flex items-center gap-1">
+          <button type="button" onClick={onOpenPalette} aria-label="Rechercher" className={baseButtonClasses}>
+            <Search strokeWidth={3.2} className="size-[22px]" aria-hidden />
           </button>
-          <NavLink to="/profile" aria-label="Profil" className={({ isActive }) => cn(baseButtonClasses, isActive && LIQUID_GLASS_ACTIVE)}>
-            <UserIcon className="size-[22px]" aria-hidden />
+          <NavLink
+            to="/profile"
+            aria-label="Profil"
+            className={({ isActive }) => cn(baseButtonClasses, isActive && LIQUID_GLASS_ACTIVE, isActive && "text-text-primary")}
+          >
+            <UserIcon className="size-[22px] mobile:size-[23px]" aria-hidden />
           </NavLink>
         </div>
       </div>
