@@ -100,9 +100,7 @@ export function AppShell() {
               "laptop:h-fit laptop:max-h-[calc(100vh-48px)] laptop:rounded-[32px] laptop:border laptop:border-white/40 laptop:bg-white/20 laptop:shadow-[0_8px_32px_rgba(0,0,0,0.04)] laptop:backdrop-blur-2xl",
             )}
           >
-            <div
-              className="mobile-content-scroll w-full flex-1 overflow-y-auto px-4 pt-[calc(20px+env(safe-area-inset-top))] pb-[calc(104px+env(safe-area-inset-bottom))] laptop:p-10 laptop:scrollbar-thin"
-            >
+            <div className="mobile-content-scroll w-full flex-1 overscroll-contain overflow-y-auto px-4 pt-[calc(14px+env(safe-area-inset-top))] pb-[calc(92px+env(safe-area-inset-bottom))] mobile:px-5 laptop:p-10 laptop:scrollbar-thin">
               <Outlet />
             </div>
           </motion.main>
