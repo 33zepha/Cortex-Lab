@@ -19,7 +19,7 @@ export function useMissions() {
 }
 
 export function useMission(id: string | undefined) {
-  const { data, error, isLoading } = useSWR<Mission>(
+  const { data, error, isLoading, mutate } = useSWR<Mission>(
     id ? `/api/missions/${id}` : null,
     apiFetch,
     { refreshInterval: 3000, revalidateOnFocus: true, shouldRetryOnError }
@@ -28,6 +28,7 @@ export function useMission(id: string | undefined) {
   return {
     mission: data ?? null,
     loading: isLoading,
-    error: error instanceof Error ? error.message : error ? String(error) : null
+    error: error instanceof Error ? error.message : error ? String(error) : null,
+    refetch: mutate,
   };
 }

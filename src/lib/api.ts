@@ -2,7 +2,7 @@
 const configuredApiBase = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "");
 
 // En local, le frontend parle directement à Fastify via l'IP actuelle (permet l'accès mobile sur le même WiFi).
-// En production/preview, on reste same-origin : /api est relayé vers l'API Cortex centrale.
+// En production/preview, on reste same-origin : /api est relayé vers l'API Cortex centrale par le proxy Vercel server-side.
 const hostname = typeof window !== "undefined" ? window.location.hostname : "localhost";
 const API_BASE_URL = configuredApiBase ?? (import.meta.env.DEV ? `http://${hostname}:4000` : "");
 
@@ -34,13 +34,7 @@ export function shouldRetryOnError(error: unknown): boolean {
 }
 
 export async function apiFetch<T>(path: string): Promise<T> {
-  const token = import.meta.env.VITE_CORTEX_API_TOKEN?.trim();
-  const headers: Record<string, string> = {};
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  const res = await fetch(apiUrl(path), { headers, cache: "no-store" });
+  const res = await fetch(apiUrl(path), { cache: "no-store" });
   if (!res.ok) {
     const payload = await res.json().catch(() => null);
     const message = payload?.error ?? `API ${path} → ${res.status}`;
@@ -50,15 +44,9 @@ export async function apiFetch<T>(path: string): Promise<T> {
 }
 
 export async function apiPost<T>(path: string, body: unknown): Promise<T> {
-  const token = import.meta.env.VITE_CORTEX_API_TOKEN?.trim();
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
   const res = await fetch(apiUrl(path), {
     method: "POST",
-    headers,
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!res.ok) {

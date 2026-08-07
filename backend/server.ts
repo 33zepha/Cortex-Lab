@@ -176,6 +176,60 @@ app.get<{ Params: { id: string } }>("/api/missions/:id", async (request, reply) 
   return toApiMission(mission, events, evidence);
 });
 
+app.post<{ Params: { id: string }; Body: { reason?: string } }>(
+  "/api/missions/:id/cancel",
+  async (request, reply) => {
+    const mission = await missionRepository.findById(request.params.id);
+    if (!mission) {
+      reply.code(404);
+      return { error: "Mission introuvable" };
+    }
+    const reason = request.body?.reason ?? "Annulée par l'utilisateur";
+    const existingEvents = await eventStore.readAll(mission.id);
+    await eventStore.append({
+      id: `evt_${Date.now()}`,
+      seq: existingEvents.length + 1,
+      missionId: mission.id,
+      ts: Date.now(),
+      actor: "api",
+      type: "mission.cancelled",
+      v: "1.0.0",
+      payload: { reason },
+    });
+    const updatedMission = await missionRepository.findById(mission.id);
+    const events = await eventStore.readAll(mission.id);
+    const evidenceList = await evidenceStore.list(mission.id);
+    return toApiMission(updatedMission ?? mission, events, evidenceList);
+  },
+);
+
+app.post<{ Params: { id: string }; Body: { decision?: "approve" | "reject"; detail?: string } }>(
+  "/api/missions/:id/decision",
+  async (request, reply) => {
+    const mission = await missionRepository.findById(request.params.id);
+    if (!mission) {
+      reply.code(404);
+      return { error: "Mission introuvable" };
+    }
+    const decision = request.body?.decision ?? "approve";
+    const existingEvents = await eventStore.readAll(mission.id);
+    await eventStore.append({
+      id: `evt_${Date.now()}`,
+      seq: existingEvents.length + 1,
+      missionId: mission.id,
+      ts: Date.now(),
+      actor: "api",
+      type: "decision.provided",
+      v: "1.0.0",
+      payload: { decision, detail: request.body?.detail },
+    });
+    const updatedMission = await missionRepository.findById(mission.id);
+    const events = await eventStore.readAll(mission.id);
+    const evidenceList = await evidenceStore.list(mission.id);
+    return toApiMission(updatedMission ?? mission, events, evidenceList);
+  },
+);
+
 const port = Number(process.env.API_PORT ?? 4000);
 app
   .listen({ port, host: "0.0.0.0" })

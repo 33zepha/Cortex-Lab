@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import handler from "../../../api/[...path]";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import handler from "../../../api/proxy";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import http from "node:http";
 
 function mockReq(options: Partial<VercelRequest>): VercelRequest {
   return {
     method: "GET",
-    url: "/api/health?path=health",
+    url: "/api/proxy?path=health",
     headers: { accept: "application/json" },
     query: { path: "health" },
     [Symbol.asyncIterator]: async function* () {},
@@ -67,7 +67,7 @@ function mockRes() {
   };
 }
 
-describe("Vercel Node Proxy Handler (api/[...path].ts)", () => {
+describe("Vercel Node Proxy Handler (api/proxy.ts)", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
@@ -91,7 +91,7 @@ describe("Vercel Node Proxy Handler (api/[...path].ts)", () => {
 
   it("retourne 502 si le VPS upstream n'est pas joignable", async () => {
     process.env.CORTEX_API_ORIGIN = "http://127.0.0.1:59999";
-    const req = mockReq({ url: "/api/health?path=health" });
+    const req = mockReq({ url: "/api/proxy?path=health", query: { path: "health" } });
     const { res, getStatus, getBody } = mockRes();
 
     await handler(req, res);
@@ -100,8 +100,7 @@ describe("Vercel Node Proxy Handler (api/[...path].ts)", () => {
     expect(JSON.parse(getBody())).toEqual({ error: "API Cortex centrale inaccessible (502 Bad Gateway)" });
   });
 
-  it("proxifie correctement une requête HTTP avec headers et stripped path query", async () => {
-    // Crée un mock serveur HTTP local
+  it("proxifie correctement une route 1-segment (/api/health)", async () => {
     let receivedUrl = "";
     let receivedAuth = "";
 
@@ -118,16 +117,43 @@ describe("Vercel Node Proxy Handler (api/[...path].ts)", () => {
     process.env.CORTEX_API_ORIGIN = `http://127.0.0.1:${address.port}`;
     process.env.CORTEX_API_TOKEN = "secret_token_123";
 
-    const req = mockReq({ url: "/api/missions?status=active&path=missions" });
+    const req = mockReq({ url: "/api/proxy?path=health", query: { path: "health" } });
     const { res, getStatus, getBody } = mockRes();
 
     await handler(req, res);
-
     server.close();
 
     expect(getStatus()).toBe(200);
-    expect(receivedUrl).toBe("/api/missions?status=active");
+    expect(receivedUrl).toBe("/api/health");
     expect(receivedAuth).toBe("Bearer secret_token_123");
     expect(JSON.parse(getBody())).toEqual({ status: "ok" });
+  });
+
+  it("proxifie correctement les routes multi-segments (/api/tokens/weekly et /api/missions/01ABC)", async () => {
+    let receivedUrl = "";
+
+    const server = http.createServer((sReq, sRes) => {
+      receivedUrl = sReq.url ?? "";
+      sRes.writeHead(200, { "content-type": "application/json" });
+      sRes.end(JSON.stringify({ days: [] }));
+    });
+
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address() as { port: number };
+
+    process.env.CORTEX_API_ORIGIN = `http://127.0.0.1:${address.port}`;
+
+    const req = mockReq({
+      url: "/api/proxy?path=tokens/weekly&foo=bar",
+      query: { path: ["tokens", "weekly"], foo: "bar" },
+    });
+    const { res, getStatus, getBody } = mockRes();
+
+    await handler(req, res);
+    server.close();
+
+    expect(getStatus()).toBe(200);
+    expect(receivedUrl).toBe("/api/tokens/weekly?foo=bar");
+    expect(JSON.parse(getBody())).toEqual({ days: [] });
   });
 });

@@ -30,6 +30,7 @@ import {
   Skeleton,
 } from "@/components/ui";
 import { useMission } from "@/lib/useMissions";
+import { apiPost } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
 import { missionStatusConfig, formatDuration, formatClock } from "@/lib/status";
 import { EvidenceDetail } from "@/screens/mission-detail/EvidenceDetail";
@@ -40,7 +41,7 @@ export function MissionDetailScreen() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { mission, loading, error } = useMission(id);
+  const { mission, loading, error, refetch } = useMission(id);
   const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
   const activeTab = searchParams.get("tab") ?? "timeline";
 
@@ -50,10 +51,43 @@ export function MissionDetailScreen() {
   const [copyStatus, setCopyStatus] = useState<"idle" | "copying" | "copied">("idle");
   const [downloading, setDownloading] = useState(false);
 
-  // Pas de backend réel derrière ces fixtures : on simule une latence pour exercer l'état "loading" du bouton.
-  function simulate(setLoading: (v: boolean) => void) {
-    setLoading(true);
-    window.setTimeout(() => setLoading(false), 700);
+  async function handleCancel() {
+    if (!id) return;
+    setCancelling(true);
+    try {
+      await apiPost(`/api/missions/${id}/cancel`, { reason: "Annulée depuis l'interface" });
+      refetch();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCancelling(false);
+    }
+  }
+
+  async function handleApprove() {
+    if (!id) return;
+    setApproving(true);
+    try {
+      await apiPost(`/api/missions/${id}/decision`, { decision: "approve" });
+      refetch();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setApproving(false);
+    }
+  }
+
+  async function handleReject() {
+    if (!id) return;
+    setRejecting(true);
+    try {
+      await apiPost(`/api/missions/${id}/decision`, { decision: "reject" });
+      refetch();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRejecting(false);
+    }
   }
 
   async function handleCopy(patch: string) {
@@ -161,7 +195,7 @@ export function MissionDetailScreen() {
               size="sm"
               className="w-full shrink-0 tablet:w-auto"
               loading={cancelling}
-              onClick={() => simulate(setCancelling)}
+              onClick={handleCancel}
             >
               <XCircle className="size-3.5" /> Annuler la mission
             </Button>
@@ -192,10 +226,10 @@ export function MissionDetailScreen() {
               <p className="text-body-text font-medium text-text-primary">Décision humaine requise</p>
               <p className="mt-0.5 text-body-text text-text-secondary">{mission.decisionPrompt}</p>
               <div className="mt-3 flex gap-2">
-                <Button size="sm" variant="primary" loading={approving} onClick={() => simulate(setApproving)}>
+                <Button size="sm" variant="primary" loading={approving} onClick={handleApprove}>
                   Approuver
                 </Button>
-                <Button size="sm" variant="secondary" loading={rejecting} onClick={() => simulate(setRejecting)}>
+                <Button size="sm" variant="secondary" loading={rejecting} onClick={handleReject}>
                   Rejeter
                 </Button>
               </div>
