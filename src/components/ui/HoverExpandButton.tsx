@@ -10,13 +10,14 @@ export interface HoverExpandButtonProps {
   label: string;
   onClick?: () => void;
   variant?: "default" | "primary" | "danger" | "success";
+  alwaysShowLabel?: boolean;
   className?: string;
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
 }
 
 export const HoverExpandButton = forwardRef<HTMLButtonElement, HoverExpandButtonProps>(
-  ({ icon: Icon, hoverIcon: HoverIcon, label, onClick, variant = "default", className, disabled, type = "button", ...props }, ref) => {
+  ({ icon: Icon, hoverIcon: HoverIcon, label, onClick, variant = "default", alwaysShowLabel, className, disabled, type = "button", ...props }, ref) => {
     const [isHovered, setIsHovered] = useState(false);
 
     const variantStyles = {
@@ -26,6 +27,8 @@ export const HoverExpandButton = forwardRef<HTMLButtonElement, HoverExpandButton
       success: "text-success hover:text-success/80",
     };
 
+    const showLabel = isHovered || alwaysShowLabel;
+
     return (
       <motion.button
         ref={ref}
@@ -33,17 +36,18 @@ export const HoverExpandButton = forwardRef<HTMLButtonElement, HoverExpandButton
         layout
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        onTouchStart={() => setIsHovered((v) => !v)}
         onClick={onClick}
         disabled={disabled}
         className={cn(
-          "flex h-[36px] items-center overflow-hidden rounded-[12px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-indigo",
+          "flex h-[36px] items-center overflow-hidden rounded-[12px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-indigo select-none",
           TRANSITION_SPRING,
           variantStyles[variant],
           LIQUID_GLASS_HOVER,
           "active:scale-[0.94] active:duration-150 active:ease-out disabled:opacity-50 disabled:pointer-events-none",
           className
         )}
-        style={{ paddingLeft: 8, paddingRight: isHovered ? 12 : 8 }}
+        style={{ paddingLeft: 8, paddingRight: showLabel ? 12 : 8 }}
         {...props}
       >
         <motion.div layout className="relative flex size-[24px] shrink-0 items-center justify-center">
@@ -74,7 +78,7 @@ export const HoverExpandButton = forwardRef<HTMLButtonElement, HoverExpandButton
           </AnimatePresence>
         </motion.div>
         <AnimatePresence>
-          {isHovered && (
+          {showLabel && (
             <motion.span
               layout
               initial={{ opacity: 0, width: 0, marginLeft: 0 }}
