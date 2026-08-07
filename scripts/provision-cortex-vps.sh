@@ -6,8 +6,10 @@ TUNNEL_NAME="${CORTEX_TUNNEL_NAME:-cortex-api}"
 API_PORT="${API_PORT:-4000}"
 STATE_DIR="/etc/cortex"
 ENV_FILE="$STATE_DIR/cortex-api.env"
+REPO_ROOT_FILE="$STATE_DIR/repo-root"
 TUNNEL_ID_FILE="$STATE_DIR/cloudflared-tunnel-id"
 CLOUDFLARED_CONFIG="/etc/cloudflared/config.yml"
+BACKUP_DIR="/var/backups/cortex"
 
 log() { printf '\n\033[1;36m[cortex]\033[0m %s\n' "$*"; }
 fail() { printf '\n\033[1;31m[cortex]\033[0m %s\n' "$*" >&2; exit 1; }
@@ -19,7 +21,15 @@ REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
 [[ -n "$REPO_ROOT" && -f "$REPO_ROOT/package.json" ]] || fail "Lance ce script depuis le checkout Cortex-Lab sur le VPS"
 
 log "Préparation du runtime Cortex dans $REPO_ROOT"
-install -d -m 700 "$STATE_DIR"
+install -d -m 700 "$STATE_DIR" "$BACKUP_DIR"
+printf '%s\n' "$REPO_ROOT" >"$REPO_ROOT_FILE"
+chmod 600 "$REPO_ROOT_FILE"
+
+# Minimal runtime prerequisites. Installing only when needed keeps reruns fast.
+if ! command -v curl >/dev/null || ! command -v openssl >/dev/null; then
+  apt-get update -qq
+  apt-get install -y -qq ca-certificates curl openssl
+fi
 
 # Keep the long-lived API secret outside the repository. Re-running the script keeps the same token.
 if [[ ! -f "$ENV_FILE" ]]; then
@@ -97,6 +107,42 @@ done
 curl -fsS --max-time 3 -H "Authorization: Bearer $API_TOKEN" "http://127.0.0.1:$API_PORT/api/health" >/dev/null \
   || { journalctl -u cortex-api.service -n 60 --no-pager >&2; fail "L'API Cortex locale ne répond pas"; }
 
+log "Installation de la sauvegarde quotidienne des données Cortex"
+cat >/usr/local/sbin/cortex-backup <<EOF
+#!/usr/bin/env bash
+set -Eeuo pipefail
+STAMP="\$(date -u +%Y%m%dT%H%M%SZ)"
+install -d -m 700 "$BACKUP_DIR"
+tar -czf "$BACKUP_DIR/cortex-data-\$STAMP.tar.gz" -C "$REPO_ROOT" data/missions data/ledger data/evidence
+find "$BACKUP_DIR" -type f -name 'cortex-data-*.tar.gz' -mtime +14 -delete
+EOF
+chmod 700 /usr/local/sbin/cortex-backup
+
+cat >/etc/systemd/system/cortex-backup.service <<EOF
+[Unit]
+Description=Backup Cortex mission data
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/cortex-backup
+UMask=0077
+EOF
+
+cat >/etc/systemd/system/cortex-backup.timer <<EOF
+[Unit]
+Description=Daily Cortex mission data backup
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=10m
+
+[Install]
+WantedBy=timers.target
+EOF
+systemctl daemon-reload
+systemctl enable --now cortex-backup.timer
+
 if ! command -v cloudflared >/dev/null; then
   log "Installation de cloudflared"
   apt-get update -qq
@@ -137,7 +183,6 @@ log "Configuration de $HOSTNAME -> http://127.0.0.1:$API_PORT"
 cat >"$CLOUDFLARED_CONFIG" <<EOF
 tunnel: $TUNNEL_ID
 credentials-file: $CREDENTIALS_FILE
-protocol: quic
 ingress:
   - hostname: $HOSTNAME
     service: http://127.0.0.1:$API_PORT
@@ -145,7 +190,7 @@ ingress:
 EOF
 chmod 600 "$CLOUDFLARED_CONFIG"
 
-# This command is safe to retry when the route already points at the same tunnel.
+# If the DNS route already exists Cloudflare can return a non-zero status; the HTTPS verification below is authoritative.
 cloudflared tunnel route dns "$TUNNEL_ID" "$HOSTNAME" || true
 
 if systemctl list-unit-files cloudflared.service >/dev/null 2>&1; then
@@ -176,6 +221,7 @@ printf '\n%-24s %s\n' "API origin:" "https://$HOSTNAME"
 printf '%-24s %s\n' "API local:" "http://127.0.0.1:$API_PORT"
 printf '%-24s %s\n' "cortex-api:" "$(systemctl is-active cortex-api.service)"
 printf '%-24s %s\n' "cloudflared:" "$(systemctl is-active cloudflared.service)"
+printf '%-24s %s\n' "backup timer:" "$(systemctl is-active cortex-backup.timer)"
 printf '\nAjoute maintenant dans Vercel (Preview + Production):\n'
 printf '  CORTEX_API_ORIGIN=https://%s\n' "$HOSTNAME"
 printf '  CORTEX_API_TOKEN=<valeur stockée dans %s>\n' "$ENV_FILE"
