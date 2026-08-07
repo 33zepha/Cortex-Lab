@@ -11,9 +11,6 @@ export default async function handler(request: Request): Promise<Response> {
   if (!UPSTREAM_ORIGIN) {
     return configError("CORTEX_API_ORIGIN manquant côté Vercel");
   }
-  if (!API_TOKEN) {
-    return configError("CORTEX_API_TOKEN manquant côté Vercel");
-  }
 
   let upstreamBase: URL;
   try {
@@ -27,7 +24,9 @@ export default async function handler(request: Request): Promise<Response> {
   const upstreamUrl = new URL(`${incoming.pathname}${incoming.search}`, `${upstreamBase.toString().replace(/\/$/, "")}/`);
 
   const headers = new Headers();
-  headers.set("Authorization", `Bearer ${API_TOKEN}`);
+  if (API_TOKEN) {
+    headers.set("Authorization", `Bearer ${API_TOKEN}`);
+  }
   headers.set("Accept", request.headers.get("accept") ?? "application/json");
   headers.set("ngrok-skip-browser-warning", "true");
   
