@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { RocketLaunchIcon } from "@heroicons/react/24/solid";
 import { Inbox } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { SearchInput, EmptyState, ErrorState, Skeleton } from "@/components/ui";
+import { SearchInput, EmptyState, ErrorState, Skeleton, GlassActionGroup } from "@/components/ui";
 import { emptyMissions } from "@/fixtures/missions";
 import { MissionKanbanCard } from "./missions/MissionKanbanCard";
 import { NewMissionDialog } from "./missions/NewMissionDialog";
@@ -163,7 +163,9 @@ export function MissionsScreen() {
               placeholder="Filtrer par objectif…"
               className="hidden w-64 rounded-[16px] border border-white/60 bg-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.04)] backdrop-blur-2xl tablet:block"
             />
-            <NewMissionDialog onCreated={refetch} />
+            <GlassActionGroup>
+              <NewMissionDialog onCreated={refetch} />
+            </GlassActionGroup>
           </div>
         }
       />

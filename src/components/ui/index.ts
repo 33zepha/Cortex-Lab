@@ -20,3 +20,5 @@ export * from "./ErrorState";
 export * from "./InspectorPanel";
 export * from "./TimelineItem";
 export * from "./DataRow";
+export * from "./HoverExpandButton";
+

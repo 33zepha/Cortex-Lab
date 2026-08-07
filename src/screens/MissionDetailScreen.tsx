@@ -12,6 +12,7 @@ import {
   Check,
   Download,
   XCircle,
+  X,
 } from "lucide-react";
 import {
   Badge,
@@ -28,6 +29,8 @@ import {
   Drawer,
   DrawerContent,
   Skeleton,
+  GlassActionGroup,
+  HoverExpandButton,
 } from "@/components/ui";
 import { useMission } from "@/lib/useMissions";
 import { apiPost } from "@/lib/api";
@@ -190,15 +193,15 @@ export function MissionDetailScreen() {
             )}
           </div>
           {(mission.status === "running" || mission.status === "needs_review") && (
-            <Button
-              variant="secondary"
-              size="sm"
-              className="w-full shrink-0 tablet:w-auto"
-              loading={cancelling}
-              onClick={handleCancel}
-            >
-              <XCircle className="size-3.5" /> Annuler la mission
-            </Button>
+            <GlassActionGroup>
+              <HoverExpandButton
+                icon={XCircle}
+                label="Annuler la mission"
+                variant="danger"
+                disabled={cancelling}
+                onClick={handleCancel}
+              />
+            </GlassActionGroup>
           )}
         </div>
 
@@ -225,14 +228,22 @@ export function MissionDetailScreen() {
             <div className="min-w-0 flex-1">
               <p className="text-body-text font-medium text-text-primary">Décision humaine requise</p>
               <p className="mt-0.5 text-body-text text-text-secondary">{mission.decisionPrompt}</p>
-              <div className="mt-3 flex gap-2">
-                <Button size="sm" variant="primary" loading={approving} onClick={handleApprove}>
-                  Approuver
-                </Button>
-                <Button size="sm" variant="secondary" loading={rejecting} onClick={handleReject}>
-                  Rejeter
-                </Button>
-              </div>
+              <GlassActionGroup className="mt-3">
+                <HoverExpandButton
+                  icon={Check}
+                  label="Approuver la modification"
+                  variant="success"
+                  disabled={approving}
+                  onClick={handleApprove}
+                />
+                <HoverExpandButton
+                  icon={X}
+                  label="Rejeter"
+                  variant="danger"
+                  disabled={rejecting}
+                  onClick={handleReject}
+                />
+              </GlassActionGroup>
             </div>
           </div>
         )}

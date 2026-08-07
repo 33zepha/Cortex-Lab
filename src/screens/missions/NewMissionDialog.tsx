@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Cpu, Gauge } from "lucide-react";
-import { Dialog, DialogTrigger, DialogContent, Button } from "@/components/ui";
+import { Sparkles, Cpu, Gauge, Plus } from "lucide-react";
+import { Dialog, DialogTrigger, DialogContent, Button, HoverExpandButton } from "@/components/ui";
 import { apiPost } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
 import type { Mission } from "@/lib/types";
@@ -78,9 +78,12 @@ export function NewMissionDialog({ onCreated }: { onCreated: () => void }) {
   return (
     <Dialog open={open} onOpenChange={(next) => !submitting && setOpen(next)}>
       <DialogTrigger asChild>
-        <Button variant="primary" size="sm" className="w-full tablet:w-auto">
-          <Sparkles className="size-3.5" /> Nouvelle mission
-        </Button>
+        <HoverExpandButton
+          icon={Sparkles}
+          hoverIcon={Plus}
+          label="Nouvelle mission"
+          variant="primary"
+        />
       </DialogTrigger>
       <DialogContent
         title="Nouvelle mission"

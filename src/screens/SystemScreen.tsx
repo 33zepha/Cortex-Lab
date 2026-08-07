@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 import { Server, ScrollText, HardDrive, Radio, AlertTriangle, Zap, Plus } from "lucide-react";
 import { ServerStackIcon, ExclamationTriangleIcon, PowerIcon, ServerIcon, SparklesIcon } from "@heroicons/react/24/solid";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { BentoCard, EmptyState, ErrorState, Button, Dialog, DialogTrigger, DialogContent, Input, Skeleton } from "@/components/ui";
+import { BentoCard, EmptyState, ErrorState, Button, Dialog, DialogTrigger, DialogContent, Input, Skeleton, HoverExpandButton, GlassActionGroup } from "@/components/ui";
 import { systemDisconnected } from "@/fixtures/system";
 import { formatRelativeTime } from "@/lib/status";
 import {
@@ -22,7 +22,7 @@ import { ClaudeMark } from "@/components/brand/ClaudeMark";
 import { OpenAiMark } from "@/components/brand/OpenAiMark";
 import { cn } from "@/lib/cn";
 import type { SystemHealth } from "@/lib/types";
-import { LIQUID_GLASS_HOVER, TRANSITION_SPRING } from "@/lib/ui-classes";
+
 
 const now = Date.now();
 
@@ -32,81 +32,7 @@ const sseLabelMap: Record<SseStatus, string> = { connected: "Connecté", reconne
 
 const ThickPlus = (props: any) => <Plus strokeWidth={3.5} {...props} />;
 
-function HoverExpandButton({
-  icon: Icon,
-  hoverIcon: HoverIcon,
-  label,
-  onClick,
-  className,
-}: {
-  icon: any;
-  hoverIcon?: any;
-  label: string;
-  onClick?: () => void;
-  className?: string;
-}) {
-  const [isHovered, setIsHovered] = useState(false);
 
-  return (
-    <motion.button
-      type="button"
-      layout
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={onClick}
-      className={cn(
-        "flex h-[36px] items-center overflow-hidden rounded-[12px] text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-indigo",
-        TRANSITION_SPRING,
-        "hover:text-text-primary",
-        LIQUID_GLASS_HOVER,
-        "active:scale-[0.94] active:duration-150 active:ease-out",
-        className
-      )}
-      style={{ paddingLeft: 8, paddingRight: isHovered ? 12 : 8 }}
-    >
-      <motion.div layout className="relative flex size-[24px] shrink-0 items-center justify-center">
-        <AnimatePresence mode="popLayout">
-          {isHovered && HoverIcon ? (
-            <motion.div
-              key="hover"
-              initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
-              animate={{ opacity: 1, rotate: 0, scale: 1 }}
-              exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 flex items-center justify-center text-text-primary"
-            >
-              <HoverIcon className="size-[22px]" />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="default"
-              initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
-              animate={{ opacity: 1, rotate: 0, scale: 1 }}
-              exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 flex items-center justify-center"
-            >
-              <Icon className="size-[22px]" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-      <AnimatePresence>
-        {isHovered && (
-          <motion.span
-            layout
-            initial={{ opacity: 0, width: 0, marginLeft: 0 }}
-            animate={{ opacity: 1, width: "auto", marginLeft: 6 }}
-            exit={{ opacity: 0, width: 0, marginLeft: 0 }}
-            className="whitespace-nowrap text-[12px] font-medium tracking-wide"
-          >
-            {label}
-          </motion.span>
-        )}
-      </AnimatePresence>
-    </motion.button>
-  );
-}
 
 function MetricTile({
   id,
@@ -186,7 +112,7 @@ export function SystemScreen() {
         title="System"
         icon={ServerStackIcon}
         action={
-          <div className="flex items-center gap-1 rounded-[16px] bg-white/50 backdrop-blur-3xl border border-white/60 p-1 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.05)]">
+          <GlassActionGroup>
             {vps && (
               <HoverExpandButton 
                 icon={PowerIcon}
@@ -233,7 +159,7 @@ export function SystemScreen() {
               hoverIcon={ThickPlus}
               label="Intégration Claude IA"
             />
-          </div>
+          </GlassActionGroup>
         }
       />
 
