@@ -9,10 +9,10 @@ export function Card({ className, interactive, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        "relative rounded-[24px] border border-white/60 bg-white/60 backdrop-blur-3xl laptop:rounded-[32px]",
-        "shadow-[0_7px_26px_-10px_rgba(0,0,0,0.08)] laptop:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.08)]",
+        "relative rounded-[18px] border border-black/[0.055] bg-white/44 laptop:rounded-[24px] laptop:bg-white/48",
+        "shadow-[0_1px_0_rgba(255,255,255,0.7),0_8px_30px_-26px_rgba(0,0,0,0.28)]",
         interactive &&
-          "transition-all duration-[400ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:scale-[1.01] hover:bg-white/80 hover:shadow-[0_1px_2px_rgba(24,35,54,0.04),0_16px_40px_rgba(42,62,90,0.07)] cursor-pointer active:scale-[0.98]",
+          "cursor-pointer transition-[background-color,border-color,box-shadow] duration-200 hover:border-black/[0.085] hover:bg-white/62 hover:shadow-[0_1px_0_rgba(255,255,255,0.8),0_10px_34px_-28px_rgba(0,0,0,0.32)] active:bg-white/70",
         className,
       )}
       {...props}
