@@ -13,6 +13,8 @@ import { ClaudeCodeAdapter } from "./core/adapters/claude-code-adapter";
 import { loadVpsConfigFromEnv } from "./core/infra/vps-config";
 import { WorkspaceManager } from "./core/workspace/workspace-manager";
 import { OpenAiPlanner } from "./core/planner/openai-planner";
+import { HeuristicPlanner } from "./core/planner/heuristic-planner";
+import type { Planner } from "./core/contracts/planner";
 import { runMission } from "./core/runner/runner";
 import { toApiMission } from "./api-adapters/to-api-mission";
 import { buildApiHealth } from "./api-adapters/to-api-health";
@@ -32,7 +34,7 @@ const modelAdapter = new ClaudeCodeAdapter({
   remoteWorkspaceBase: "/root/cortex-workspaces",
 });
 const openaiClient = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
-const planner = process.env.OPENAI_API_KEY ? new OpenAiPlanner(process.env.OPENAI_API_KEY) : null;
+const planner: Planner = process.env.OPENAI_API_KEY ? new OpenAiPlanner(process.env.OPENAI_API_KEY) : new HeuristicPlanner();
 const apiToken = process.env.CORTEX_API_TOKEN?.trim() || null;
 const allowedOrigins = (process.env.CORTEX_ALLOWED_ORIGINS ?? "")
   .split(",")
@@ -147,10 +149,6 @@ app.post<{ Body: { objective?: string; constraints?: string; sourceRoot?: string
     if (!objective || objective.trim().length < 10) {
       reply.code(400);
       return { error: "objective requis (10 caractères minimum)" };
-    }
-    if (!planner) {
-      reply.code(503);
-      return { error: "OPENAI_API_KEY manquant — le Planner en a besoin" };
     }
 
     const mission = await runMission(
