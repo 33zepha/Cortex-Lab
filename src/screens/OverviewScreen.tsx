@@ -99,17 +99,23 @@ export function OverviewScreen() {
               <div className="flex items-center justify-between mb-6">
                 <span className="text-xs font-bold uppercase tracking-widest text-text-primary">Journal</span>
               </div>
-              <ul className="relative space-y-5 before:absolute before:inset-y-1.5 before:left-[7px] before:w-[2px] before:bg-black/[0.04]">
-                {recentActivity.slice(0, 3).map((ev) => (
-                  <li key={ev.id} className="relative flex gap-4">
-                    <div className="mt-1 size-4 shrink-0 rounded-full bg-[#FAFAFA] border-[3px] border-black/5 shadow-sm z-10" />
-                    <div className="min-w-0 flex-1 pb-1">
-                      <p className="text-[12px] font-semibold leading-tight text-text-primary line-clamp-2">{ev.title}</p>
-                      <p className="text-[9px] font-bold text-text-muted uppercase tracking-wider mt-1.5">{formatRelativeTime(ev.ts, now)}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              {recentActivity.length === 0 ? (
+                <p className="text-xs font-medium text-text-muted">
+                  Aucune activité récente. Lancez votre première mission pour enregistrer les événements.
+                </p>
+              ) : (
+                <ul className="relative space-y-5 before:absolute before:inset-y-1.5 before:left-[7px] before:w-[2px] before:bg-black/[0.04]">
+                  {recentActivity.slice(0, 3).map((ev) => (
+                    <li key={ev.id} className="relative flex gap-4">
+                      <div className="mt-1 size-4 shrink-0 rounded-full bg-[#FAFAFA] border-[3px] border-black/5 shadow-sm z-10" />
+                      <div className="min-w-0 flex-1 pb-1">
+                        <p className="text-[12px] font-semibold leading-tight text-text-primary line-clamp-2">{ev.title}</p>
+                        <p className="text-[9px] font-bold text-text-muted uppercase tracking-wider mt-1.5">{formatRelativeTime(ev.ts, now)}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </BentoCard>
         </motion.div>
