@@ -25,7 +25,7 @@ export function MobileNav({ onOpenPalette }: { onOpenPalette: () => void }) {
   return (
     <nav
       aria-label="Navigation mobile"
-      className="fixed left-1/2 z-sticky -translate-x-1/2 laptop:hidden"
+      className="mobile-nav-dock fixed left-1/2 z-sticky -translate-x-1/2 transition-opacity duration-150 laptop:hidden"
       style={{ bottom: "calc(10px + env(safe-area-inset-bottom))" }}
     >
       <div className="flex items-center gap-1.5 rounded-[22px] border border-white/65 bg-white/68 p-1.5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.18)] backdrop-blur-3xl">
