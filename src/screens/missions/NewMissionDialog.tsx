@@ -83,46 +83,31 @@ export function NewMissionDialog({ onCreated }: { onCreated: () => void }) {
           hoverIcon={Plus}
           label="Nouvelle mission"
           variant="primary"
+          alwaysShowLabel
+          className="pr-1"
         />
       </DialogTrigger>
-      <DialogContent
-        title="Nouvelle mission"
-        description="Choisissez le modèle IA, le niveau d'effort et décrivez votre objectif."
-      >
+      <DialogContent title="Nouvelle mission" description="Choisissez le modèle IA, le niveau d'effort et décrivez votre objectif.">
         <div className="space-y-4">
-          <div className="grid grid-cols-1 tablet:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 tablet:grid-cols-2">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-text-secondary flex items-center gap-1.5">
+              <label className="flex items-center gap-1.5 text-xs font-medium text-text-secondary">
                 <Cpu className="size-3.5 text-accent-indigo" /> Modèle IA
               </label>
-              <select
-                className={selectClasses}
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                disabled={submitting}
-              >
+              <select className={selectClasses} value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} disabled={submitting}>
                 {MODEL_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-text-secondary flex items-center gap-1.5">
+              <label className="flex items-center gap-1.5 text-xs font-medium text-text-secondary">
                 <Gauge className="size-3.5 text-warning" /> Niveau d'effort
               </label>
-              <select
-                className={selectClasses}
-                value={effort}
-                onChange={(e) => setEffort(e.target.value)}
-                disabled={submitting}
-              >
+              <select className={selectClasses} value={effort} onChange={(e) => setEffort(e.target.value)} disabled={submitting}>
                 {EFFORT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
             </div>
@@ -168,18 +153,12 @@ export function NewMissionDialog({ onCreated }: { onCreated: () => void }) {
 
           {error && <p className="text-sm text-error">{error}</p>}
           {submitting && (
-            <p className="text-xs text-text-muted">
-              Planification ({selectedModel} • effort {effort}) puis exécution sur le VPS — jusqu'à une minute.
-            </p>
+            <p className="text-xs text-text-muted">Planification ({selectedModel} • effort {effort}) puis exécution sur le VPS — jusqu'à une minute.</p>
           )}
         </div>
         <div className="mt-6 flex items-center justify-end gap-3">
-          <Button variant="ghost" onClick={() => setOpen(false)} disabled={submitting}>
-            Annuler
-          </Button>
-          <Button variant="primary" onClick={handleSubmit} loading={submitting} disabled={!canSubmit}>
-            Lancer
-          </Button>
+          <Button variant="ghost" onClick={() => setOpen(false)} disabled={submitting}>Annuler</Button>
+          <Button variant="primary" onClick={handleSubmit} loading={submitting} disabled={!canSubmit}>Lancer</Button>
         </div>
       </DialogContent>
     </Dialog>
