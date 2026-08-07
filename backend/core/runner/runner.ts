@@ -118,12 +118,12 @@ export async function runMission(input: RunMissionInput, deps: RunnerDeps): Prom
         return finalize(missionId, eventStore, missionRepository);
       }
 
-      const stepModifiedFiles = await changedFilesForStep(result.filesModified, workspace.root, fileFingerprints);
-      const unauthorized = unauthorizedFiles(stepModifiedFiles, workspace.root, policy, missionId);
+      const unauthorized = unauthorizedFiles(result.filesModified, workspace.root, policy, missionId);
       if (unauthorized.length > 0) {
         await closeFailed(missionId, eventStore, `Policy violation: modification interdite (${unauthorized.join(", ")})`, totalTokens);
         return finalize(missionId, eventStore, missionRepository);
       }
+      const stepModifiedFiles = await changedFilesForStep(result.filesModified, workspace.root, fileFingerprints);
 
       for (const file of uniqueFiles(result.filesRead)) {
         await eventStore.append(makeEvent(missionId, "file.read", { path: relativeFile(workspace.root, file), step }));
