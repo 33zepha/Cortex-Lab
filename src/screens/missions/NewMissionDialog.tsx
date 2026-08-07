@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Cpu, Gauge, Plus } from "lucide-react";
-import { Dialog, DialogTrigger, DialogContent, Button, HoverExpandButton } from "@/components/ui";
+import { Cpu, Gauge, Plus } from "lucide-react";
+import { Dialog, DialogTrigger, DialogContent, Button } from "@/components/ui";
 import { apiPost } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
 import type { Mission } from "@/lib/types";
@@ -78,21 +78,22 @@ export function NewMissionDialog({ onCreated }: { onCreated: () => void }) {
   return (
     <Dialog open={open} onOpenChange={(next) => !submitting && setOpen(next)}>
       <DialogTrigger asChild>
-        <HoverExpandButton
-          icon={Sparkles}
-          hoverIcon={Plus}
-          label="Nouvelle mission"
-          variant="primary"
-          alwaysShowLabel
-          className="pr-1"
-        />
+        <button
+          type="button"
+          aria-label="Nouvelle mission"
+          className="group flex h-11 items-center justify-center gap-2 rounded-[14px] border border-white/70 bg-white/55 px-3 text-text-primary shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_5px_18px_-10px_rgba(0,0,0,0.3)] backdrop-blur-2xl transition-[transform,background-color,box-shadow] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:bg-white/78 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_8px_24px_-12px_rgba(0,0,0,0.32)] active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/20 laptop:h-10 laptop:px-3.5"
+        >
+          <Plus className="size-[21px] stroke-[3.3] transition-transform duration-300 group-hover:rotate-90" aria-hidden />
+          <span className="hidden text-[12px] font-bold tracking-[-0.01em] tablet:inline">Nouvelle mission</span>
+        </button>
       </DialogTrigger>
+
       <DialogContent title="Nouvelle mission" description="Choisissez le modèle IA, le niveau d'effort et décrivez votre objectif.">
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-3 tablet:grid-cols-2">
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 text-xs font-medium text-text-secondary">
-                <Cpu className="size-3.5 text-accent-indigo" /> Modèle IA
+                <Cpu className="size-3.5 text-text-primary" strokeWidth={2.8} /> Modèle IA
               </label>
               <select className={selectClasses} value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} disabled={submitting}>
                 {MODEL_OPTIONS.map((opt) => (
@@ -103,7 +104,7 @@ export function NewMissionDialog({ onCreated }: { onCreated: () => void }) {
 
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 text-xs font-medium text-text-secondary">
-                <Gauge className="size-3.5 text-warning" /> Niveau d'effort
+                <Gauge className="size-3.5 text-warning" strokeWidth={2.8} /> Niveau d'effort
               </label>
               <select className={selectClasses} value={effort} onChange={(e) => setEffort(e.target.value)} disabled={submitting}>
                 {EFFORT_OPTIONS.map((opt) => (
