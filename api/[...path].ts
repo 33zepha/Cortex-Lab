@@ -22,9 +22,6 @@ export default async function handler(request: Request): Promise<Response> {
     return configError("CORTEX_API_ORIGIN invalide");
   }
 
-  if (process.env.VERCEL && upstreamBase.protocol !== "https:") {
-    return configError("CORTEX_API_ORIGIN doit utiliser HTTPS en déploiement Vercel");
-  }
 
   const incoming = new URL(request.url);
   const upstreamUrl = new URL(`${incoming.pathname}${incoming.search}`, `${upstreamBase.toString().replace(/\/$/, "")}/`);
