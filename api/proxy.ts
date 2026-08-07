@@ -1,5 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { Readable } from "node:stream";
+
+const SESSION_COOKIE = "cortex_session";
+const SESSION_TTL_SECONDS = 60 * 60 * 24 * 14;
 
 async function getRawBody(req: VercelRequest): Promise<Buffer | undefined> {
   const method = (req.method ?? "GET").toUpperCase();
@@ -38,11 +42,46 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function fetchUpstream(
-  targetUrl: string,
-  init: RequestInit,
-  method: string,
-): Promise<Response> {
+function safeEqual(left: string, right: string): boolean {
+  const a = Buffer.from(left);
+  const b = Buffer.from(right);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+function parseCookies(cookieHeader: string | undefined): Record<string, string> {
+  if (!cookieHeader) return {};
+  return Object.fromEntries(cookieHeader.split(";").map((part) => {
+    const [name, ...value] = part.trim().split("=");
+    return [name, decodeURIComponent(value.join("="))];
+  }).filter(([name]) => Boolean(name)));
+}
+
+function signSession(username: string, expiresAt: number, secret: string): string {
+  const payload = `${username}.${expiresAt}`;
+  const signature = createHmac("sha256", secret).update(payload).digest("base64url");
+  return `${payload}.${signature}`;
+}
+
+function hasValidSession(req: VercelRequest, username: string, secret: string): boolean {
+  const token = parseCookies(req.headers.cookie)[SESSION_COOKIE];
+  if (!token) return false;
+  const parts = token.split(".");
+  if (parts.length !== 3) return false;
+  const [tokenUser, rawExpiresAt, signature] = parts;
+  const expiresAt = Number(rawExpiresAt);
+  if (tokenUser !== username || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) return false;
+  const expected = signSession(tokenUser, expiresAt, secret).split(".").at(-1) ?? "";
+  return safeEqual(signature, expected);
+}
+
+function setSessionCookie(res: VercelResponse, value: string, maxAge: number): void {
+  res.setHeader(
+    "Set-Cookie",
+    `${SESSION_COOKIE}=${encodeURIComponent(value)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`,
+  );
+}
+
+async function fetchUpstream(targetUrl: string, init: RequestInit, method: string): Promise<Response> {
   const safeToRetry = method === "GET" || method === "HEAD";
   const attempts = safeToRetry ? 2 : 1;
   let lastError: unknown;
@@ -64,14 +103,61 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   const startTime = Date.now();
   const upstreamOrigin = process.env.CORTEX_API_ORIGIN?.replace(/\/$/, "");
   const apiToken = process.env.CORTEX_API_TOKEN?.trim();
+  const accessUser = process.env.CORTEX_ACCESS_USER?.trim() || "boss";
+  const accessPassword = process.env.CORTEX_ACCESS_PASSWORD?.trim() || apiToken;
+  const sessionSecret = process.env.CORTEX_SESSION_SECRET?.trim() || apiToken || accessPassword;
   const method = (req.method ?? "GET").toUpperCase();
+  const requestedPath = extractTargetUrl(req, upstreamOrigin || "http://invalid.local").pathname;
+
+  if (requestedPath === "/api/auth/login") {
+    if (method !== "POST") {
+      res.status(405).json({ error: "Method not allowed" });
+      return;
+    }
+    if (!accessPassword || !sessionSecret) {
+      res.status(503).json({ error: "Cortex access is not configured" });
+      return;
+    }
+    const body = (req.body && typeof req.body === "object" ? req.body : {}) as { username?: unknown; password?: unknown };
+    const username = typeof body.username === "string" ? body.username.trim() : "";
+    const password = typeof body.password === "string" ? body.password : "";
+    if (!safeEqual(username, accessUser) || !safeEqual(password, accessPassword)) {
+      res.status(401).json({ error: "Invalid credentials" });
+      return;
+    }
+    const expiresAt = Date.now() + SESSION_TTL_SECONDS * 1000;
+    setSessionCookie(res, signSession(accessUser, expiresAt, sessionSecret), SESSION_TTL_SECONDS);
+    res.setHeader("Cache-Control", "no-store");
+    res.status(200).json({ authenticated: true, user: accessUser });
+    return;
+  }
+
+  if (requestedPath === "/api/auth/session") {
+    if (!accessPassword || !sessionSecret || !hasValidSession(req, accessUser, sessionSecret)) {
+      res.setHeader("Cache-Control", "no-store");
+      res.status(401).json({ authenticated: false });
+      return;
+    }
+    res.setHeader("Cache-Control", "no-store");
+    res.status(200).json({ authenticated: true, user: accessUser });
+    return;
+  }
+
+  if (requestedPath === "/api/auth/logout") {
+    setSessionCookie(res, "", 0);
+    res.setHeader("Cache-Control", "no-store");
+    res.status(200).json({ authenticated: false });
+    return;
+  }
+
+  if (!accessPassword || !sessionSecret || !hasValidSession(req, accessUser, sessionSecret)) {
+    res.setHeader("Cache-Control", "no-store");
+    res.status(401).json({ error: "Cortex session required" });
+    return;
+  }
 
   if (!upstreamOrigin) {
-    console.error(JSON.stringify({
-      event: "proxy_config_error",
-      error: "CORTEX_API_ORIGIN manquant côté Vercel",
-      timestamp: new Date().toISOString(),
-    }));
+    console.error(JSON.stringify({ event: "proxy_config_error", error: "CORTEX_API_ORIGIN manquant côté Vercel", timestamp: new Date().toISOString() }));
     res.status(503).json({ error: "CORTEX_API_ORIGIN manquant côté Vercel" });
     return;
   }
@@ -79,29 +165,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   try {
     new URL(upstreamOrigin);
   } catch {
-    console.error(JSON.stringify({
-      event: "proxy_config_error",
-      error: "CORTEX_API_ORIGIN invalide",
-      timestamp: new Date().toISOString(),
-    }));
+    console.error(JSON.stringify({ event: "proxy_config_error", error: "CORTEX_API_ORIGIN invalide", timestamp: new Date().toISOString() }));
     res.status(503).json({ error: "CORTEX_API_ORIGIN invalide" });
     return;
   }
 
   const { targetUrl, pathname, search } = extractTargetUrl(req, upstreamOrigin);
-  console.log(JSON.stringify({
-    event: "proxy_request",
-    method,
-    path: pathname,
-    search,
-    timestamp: new Date().toISOString(),
-  }));
+  console.log(JSON.stringify({ event: "proxy_request", method, path: pathname, search, timestamp: new Date().toISOString() }));
 
   const forwardHeaders: Record<string, string> = {};
   for (const [key, value] of Object.entries(req.headers)) {
     if (value === undefined) continue;
     const lowerKey = key.toLowerCase();
-    if (lowerKey === "host" || lowerKey === "authorization") continue;
+    if (lowerKey === "host" || lowerKey === "authorization" || lowerKey === "cookie") continue;
     forwardHeaders[key] = Array.isArray(value) ? value.join(", ") : value;
   }
 
@@ -117,19 +193,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       redirect: "manual",
     }, method);
 
-    console.log(JSON.stringify({
-      event: "proxy_response",
-      method,
-      path: pathname,
-      status: upstreamResponse.status,
-      durationMs: Date.now() - startTime,
-      timestamp: new Date().toISOString(),
-    }));
+    console.log(JSON.stringify({ event: "proxy_response", method, path: pathname, status: upstreamResponse.status, durationMs: Date.now() - startTime, timestamp: new Date().toISOString() }));
 
     res.status(upstreamResponse.status);
     upstreamResponse.headers.forEach((value, key) => {
       const lower = key.toLowerCase();
-      if (lower === "transfer-encoding" || lower === "content-length") return;
+      if (lower === "transfer-encoding" || lower === "content-length" || lower === "set-cookie") return;
       res.setHeader(key, value);
     });
 
@@ -155,15 +224,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       res.end();
     }
   } catch (error) {
-    console.error(JSON.stringify({
-      event: "proxy_error",
-      method,
-      path: pathname,
-      error: error instanceof Error ? error.message : String(error),
-      durationMs: Date.now() - startTime,
-      timestamp: new Date().toISOString(),
-    }));
-
+    console.error(JSON.stringify({ event: "proxy_error", method, path: pathname, error: error instanceof Error ? error.message : String(error), durationMs: Date.now() - startTime, timestamp: new Date().toISOString() }));
     if (!res.headersSent) res.status(502).json({ error: "API Cortex centrale inaccessible (502 Bad Gateway)" });
   }
 }
