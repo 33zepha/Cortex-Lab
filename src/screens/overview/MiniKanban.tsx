@@ -15,7 +15,15 @@ const KANBAN_COLUMNS: { id: MissionStatus; title: string; color: string }[] = [
   { id: "failed", title: "Échecs", color: "text-error" },
 ];
 
-const MOBILE_PRIORITY: MissionStatus[] = ["needs_review", "running", "failed", "completed"];
+const MOBILE_PRIORITY: MissionStatus[] = ["needs_review", "running", "failed", "completed", "cancelled"];
+
+const STATUS_LABELS: Record<MissionStatus, string> = {
+  running: "En cours",
+  needs_review: "Action",
+  completed: "Terminée",
+  failed: "Échec",
+  cancelled: "Annulée",
+};
 
 export function MiniKanban({ missions }: { missions: Mission[] }) {
   const navigate = useNavigate();
@@ -211,21 +219,21 @@ function MiniKanbanCard({ mission, onClick, mobile = false }: { mission: Mission
 
       <div className="relative z-10 flex w-full flex-col gap-1.5">
         <div className="flex items-start gap-2.5">
-          {mobile && <span className={cn("mt-1.5 size-2 shrink-0 rounded-full shadow-[0_0_8px_currentColor]", styles.dot)} />}
+          {mobile && <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", styles.dot)} />}
           <p className={cn("line-clamp-2 text-[13px] font-medium leading-tight text-text-primary", mobile && "text-sm font-semibold")}>
             {mission.objective}
           </p>
         </div>
-        <div className={cn("flex items-center justify-between text-[10px] text-text-muted", mobile && "pl-4.5") }>
+        <div className={cn("flex items-center justify-between text-[10px] text-text-muted", mobile && "pl-[18px]")}>
           <span className="rounded border border-white/5 bg-white/10 px-1 font-mono">{mission.model}</span>
           {mission.status === "running" ? (
             <span className="font-medium text-info">{mission.progress}%</span>
           ) : (
-            <span className="font-bold uppercase tracking-wider">{mission.status.replace("_", " ")}</span>
+            <span className="font-bold uppercase tracking-wider">{STATUS_LABELS[mission.status]}</span>
           )}
         </div>
         {mobile && mission.status === "running" && (
-          <div className="ml-4.5 mt-1 h-1 overflow-hidden rounded-full bg-black/10">
+          <div className="ml-[18px] mt-1 h-1 overflow-hidden rounded-full bg-black/10">
             <div className="h-full rounded-full bg-info" style={{ width: `${mission.progress}%` }} />
           </div>
         )}
