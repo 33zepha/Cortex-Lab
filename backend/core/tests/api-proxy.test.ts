@@ -67,6 +67,25 @@ function mockRes() {
   };
 }
 
+async function createSessionCookie(): Promise<string> {
+  process.env.CORTEX_ACCESS_USER = "boss";
+  process.env.CORTEX_ACCESS_PASSWORD = "test-password";
+  process.env.CORTEX_SESSION_SECRET = "test-session-secret";
+
+  const req = mockReq({
+    method: "POST",
+    url: "/api/proxy?path=auth/login",
+    query: { path: ["auth", "login"] },
+    body: { username: "boss", password: "test-password" },
+  });
+  const response = mockRes();
+  await handler(req, response.res);
+  expect(response.getStatus()).toBe(200);
+  const setCookie = response.getHeaders()["set-cookie"];
+  expect(setCookie).toBeTruthy();
+  return setCookie.split(";")[0];
+}
+
 describe("Vercel Node Proxy Handler (api/proxy.ts)", () => {
   const originalEnv = process.env;
 
@@ -78,9 +97,22 @@ describe("Vercel Node Proxy Handler (api/proxy.ts)", () => {
     process.env = originalEnv;
   });
 
-  it("retourne 503 si CORTEX_API_ORIGIN est manquant", async () => {
-    delete process.env.CORTEX_API_ORIGIN;
+  it("refuse le proxy sans session Cortex", async () => {
+    process.env.CORTEX_ACCESS_PASSWORD = "test-password";
+    process.env.CORTEX_SESSION_SECRET = "test-session-secret";
     const req = mockReq({});
+    const { res, getStatus, getBody } = mockRes();
+
+    await handler(req, res);
+
+    expect(getStatus()).toBe(401);
+    expect(JSON.parse(getBody())).toEqual({ error: "Cortex session required" });
+  });
+
+  it("retourne 503 si CORTEX_API_ORIGIN est manquant après authentification", async () => {
+    delete process.env.CORTEX_API_ORIGIN;
+    const cookie = await createSessionCookie();
+    const req = mockReq({ headers: { accept: "application/json", cookie } });
     const { res, getStatus, getBody } = mockRes();
 
     await handler(req, res);
@@ -91,7 +123,12 @@ describe("Vercel Node Proxy Handler (api/proxy.ts)", () => {
 
   it("retourne 502 si le VPS upstream n'est pas joignable", async () => {
     process.env.CORTEX_API_ORIGIN = "http://127.0.0.1:59999";
-    const req = mockReq({ url: "/api/proxy?path=health", query: { path: "health" } });
+    const cookie = await createSessionCookie();
+    const req = mockReq({
+      url: "/api/proxy?path=health",
+      query: { path: "health" },
+      headers: { accept: "application/json", cookie },
+    });
     const { res, getStatus, getBody } = mockRes();
 
     await handler(req, res);
@@ -116,8 +153,13 @@ describe("Vercel Node Proxy Handler (api/proxy.ts)", () => {
 
     process.env.CORTEX_API_ORIGIN = `http://127.0.0.1:${address.port}`;
     process.env.CORTEX_API_TOKEN = "secret_token_123";
+    const cookie = await createSessionCookie();
 
-    const req = mockReq({ url: "/api/proxy?path=health", query: { path: "health" } });
+    const req = mockReq({
+      url: "/api/proxy?path=health",
+      query: { path: "health" },
+      headers: { accept: "application/json", cookie },
+    });
     const { res, getStatus, getBody } = mockRes();
 
     await handler(req, res);
@@ -129,7 +171,7 @@ describe("Vercel Node Proxy Handler (api/proxy.ts)", () => {
     expect(JSON.parse(getBody())).toEqual({ status: "ok" });
   });
 
-  it("proxifie correctement les routes multi-segments (/api/tokens/weekly et /api/missions/01ABC)", async () => {
+  it("proxifie correctement les routes multi-segments (/api/tokens/weekly)", async () => {
     let receivedUrl = "";
 
     const server = http.createServer((sReq, sRes) => {
@@ -142,10 +184,12 @@ describe("Vercel Node Proxy Handler (api/proxy.ts)", () => {
     const address = server.address() as { port: number };
 
     process.env.CORTEX_API_ORIGIN = `http://127.0.0.1:${address.port}`;
+    const cookie = await createSessionCookie();
 
     const req = mockReq({
       url: "/api/proxy?path=tokens/weekly&foo=bar",
       query: { path: ["tokens", "weekly"], foo: "bar" },
+      headers: { accept: "application/json", cookie },
     });
     const { res, getStatus, getBody } = mockRes();
 
