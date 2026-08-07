@@ -62,7 +62,7 @@ describe("runMission", () => {
     expect(mission.tokensUsed).toBe(40);
   });
 
-  it("annule réellement l'adapter via AbortSignal", async () => {
+  it("annule réellement l'adapter via AbortSignal et ne clôture pas la mission deux fois", async () => {
     const controller = new AbortController();
     let adapterSawAbort = false;
     const adapter: ModelAdapter = {
@@ -81,9 +81,51 @@ describe("runMission", () => {
 
     setTimeout(() => controller.abort(), 20);
     const mission = await runMission({ objective: "Exécuter une mission annulable de test", model: "fake", sourceRoot, signal: controller.signal }, d);
+    const events = await d.eventStore.readAll(mission.id);
 
     expect(adapterSawAbort).toBe(true);
     expect(mission.status).toBe("cancelled");
+    expect(events.filter((event) => event.type === "mission.cancelled")).toHaveLength(1);
+    expect(events.filter((event) => event.type === "mission.closed")).toHaveLength(0);
+  });
+
+  it("n'émet file.modified que lorsque le contenu change réellement entre deux étapes", async () => {
+    const adapter: ModelAdapter = {
+      version: "1.0.0",
+      health: async () => ({ available: true }),
+      estimateTokens: () => 10,
+      execute: async (task): Promise<ModelResult> => {
+        if (task.step === "write") {
+          await fs.writeFile(path.join(task.workspace.root, "hello.txt"), "hello\n", "utf8");
+          return {
+            success: true,
+            output: "written",
+            filesModified: ["hello.txt"],
+            filesRead: ["README.md"],
+            metadata: { tokensUsed: 20, duration: 1 },
+          };
+        }
+        return {
+          success: true,
+          output: "verified",
+          filesModified: ["hello.txt"],
+          filesRead: ["hello.txt"],
+          metadata: { tokensUsed: 20, duration: 1 },
+        };
+      },
+    };
+    const planner: Planner = { version: "1.0.0", plan: async () => ["write", "verify"] };
+    const d = deps(adapter, planner);
+
+    const mission = await runMission({ objective: "Écrire puis vérifier un fichier de test", model: "fake", sourceRoot }, d);
+    const events = await d.eventStore.readAll(mission.id);
+    const modified = events.filter((event) => event.type === "file.modified");
+    const reads = events.filter((event) => event.type === "file.read");
+
+    expect(mission.status).toBe("completed");
+    expect(modified).toHaveLength(1);
+    expect(modified[0].payload.path).toBe("hello.txt");
+    expect(reads).toHaveLength(2);
   });
 
   it("bloque une écriture sensible signalée par l'adapter", async () => {
