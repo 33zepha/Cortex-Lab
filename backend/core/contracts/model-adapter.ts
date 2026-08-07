@@ -1,7 +1,6 @@
 /**
  * Interface vers les moteurs d'exécution (ARCHITECTURE.md).
- * Une seule implémentation réelle prévue : Claude Code (DECISIONS.md #8).
- * Aucun fallback silencieux si indisponible.
+ * Les adapters doivent respecter l'annulation du runtime et ne jamais masquer un échec.
  */
 export interface RunnerTask {
   missionId: string;
@@ -9,6 +8,7 @@ export interface RunnerTask {
   objective: string;
   context: string;
   constraints: string;
+  signal?: AbortSignal;
   workspace: {
     root: string;
     readOnly: string[];
