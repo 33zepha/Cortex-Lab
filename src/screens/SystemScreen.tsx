@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Server, ScrollText, HardDrive, Radio, AlertTriangle, Zap, Plus } from "lucide-react";
+import { Server, ScrollText, HardDrive, Radio, AlertTriangle, Plus } from "lucide-react";
 import { ServerStackIcon, ExclamationTriangleIcon, PowerIcon, ServerIcon, SparklesIcon } from "@heroicons/react/24/solid";
 import { PageHeader } from "@/components/shell/PageHeader";
 import {
@@ -213,7 +213,7 @@ export function SystemScreen() {
           <SectionTitle title="Moteurs" detail="Exécution & planification" />
           <BentoCard className="overflow-hidden" padding="none">
             <div className="grid grid-cols-1 laptop:grid-cols-2">
-              <div className="relative p-4.5 laptop:p-6">
+              <div className="relative p-4 laptop:p-6">
                 <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-[#D97757]/8 blur-[54px]" />
                 <div className="relative z-10">
                   <div className="flex items-start justify-between gap-4">
@@ -243,7 +243,7 @@ export function SystemScreen() {
                 </div>
               </div>
 
-              <div className="relative border-t border-black/[0.045] p-4.5 laptop:border-l laptop:border-t-0 laptop:p-6">
+              <div className="relative border-t border-black/[0.045] p-4 laptop:border-l laptop:border-t-0 laptop:p-6">
                 <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-[#10A37F]/7 blur-[54px]" />
                 <div className="relative z-10">
                   <div className="flex items-start justify-between gap-4">
