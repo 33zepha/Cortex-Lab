@@ -1,0 +1,22 @@
+.auth-scene__image,
+.auth-art__image {
+  filter: none;
+  will-change: auto;
+  image-rendering: auto;
+  backface-visibility: hidden;
+}
+
+.auth-scene__veil {
+  background:
+    linear-gradient(rgba(5,9,7,.14), rgba(5,9,7,.14)),
+    radial-gradient(ellipse 40% 52% at 79% 65%, rgba(3,6,5,.34), rgba(3,6,5,.16) 48%, transparent 78%),
+    linear-gradient(180deg, rgba(3,5,4,.08), transparent 36%, rgba(3,5,4,.12) 70%, rgba(3,5,4,.30));
+}
+
+@media (max-width: 900px), (pointer: coarse) {
+  .auth-scene__image,
+  .auth-art__image {
+    filter: none !important;
+    will-change: auto !important;
+  }
+}
