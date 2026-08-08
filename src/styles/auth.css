@@ -206,7 +206,7 @@
 .auth-password .auth-rail-input { padding-right: 42px !important; }
 .auth-password__toggle { position: absolute; top: 50%; right: 1px; transform: translateY(-50%); background: transparent !important; color: rgba(239,234,222,.50) !important; }
 .auth-password__toggle:hover { color: rgba(250,247,239,.86) !important; background: rgba(255,255,255,.055) !important; }
-.auth-password__toggle:focus-visible { box-shadow: 0 0 0 2px rgba(239,230,205,.12) !important; }
+.auth-password__toggle:focus-visible { outline: none !important; --tw-ring-color: rgba(239,230,205,.12) !important; box-shadow: 0 0 0 2px rgba(239,230,205,.12) !important; }
 
 .auth-action {
   min-width: 166px;
@@ -235,7 +235,7 @@
 .auth-signup-topbar { position: relative; z-index: 30; display: flex; align-items: center; justify-content: space-between; min-height: 36px; }
 .auth-back { margin-left: -8px; color: rgba(239,234,222,.62) !important; font-weight: 600 !important; background: transparent !important; }
 .auth-back:hover { color: rgba(250,247,239,.94) !important; background: rgba(255,255,255,.055) !important; }
-.auth-back:focus-visible { --tw-ring-color: rgba(239,230,205,.22) !important; }
+.auth-back:focus-visible { outline: none !important; --tw-ring-color: rgba(239,230,205,.22) !important; box-shadow: 0 0 0 2px rgba(239,230,205,.12) !important; }
 
 .auth-step-nav { position: relative; z-index: 40; display: grid; justify-items: end; }
 .auth-step-trigger { min-width: 122px; height: 34px; padding: 0 10px 0 12px; justify-content: space-between !important; gap: 13px; border-radius: 12px !important; color: rgba(243,238,226,.69) !important; font-size: 9.5px; font-weight: 650; text-transform: capitalize; }
