@@ -12,6 +12,7 @@
     { "source": "/signup", "destination": "/index.html" },
     { "source": "/missions", "destination": "/index.html" },
     { "source": "/missions/(.*)", "destination": "/index.html" },
+    { "source": "/console", "destination": "/index.html" },
     { "source": "/system", "destination": "/index.html" },
     { "source": "/profile", "destination": "/index.html" }
   ]
