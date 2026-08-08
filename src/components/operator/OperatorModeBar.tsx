@@ -10,6 +10,7 @@ import {
 export function OperatorModeBar() {
   const location = useLocation();
   const [enabled, setEnabled] = useState(() => isOperatorSimulatorEnabled());
+  const explicitlyRequested = new URLSearchParams(location.search).get("simulate") === "operator";
 
   useEffect(() => {
     setEnabled(isOperatorSimulatorEnabled());
@@ -17,7 +18,7 @@ export function OperatorModeBar() {
     return () => window.clearTimeout(timer);
   }, [location.key, location.search]);
 
-  if (!enabled) return null;
+  if (!explicitlyRequested && !enabled) return null;
 
   return (
     <aside
