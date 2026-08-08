@@ -1,29 +1,33 @@
-name: Auth UI Screens
+name: UI Screens
 
 on:
   pull_request:
     branches: [main]
     paths:
       - "index.html"
+      - "src/main.tsx"
       - "src/screens/AuthScreen.tsx"
       - "src/components/auth/**"
       - "src/components/effects/**"
+      - "src/components/shell/**"
       - "src/components/ui/LiquidSurface.tsx"
       - "src/styles/auth.css"
       - "src/styles/auth-actions.css"
       - "src/styles/auth-effects.css"
       - "src/styles/auth-hero.css"
+      - "src/styles/app-continuity.css"
       - "src/styles/liquid-surface.css"
       - "assets/auth/**"
       - "scripts/materialize-auth-hero.mjs"
       - "backend/scripts/screenshot-auth.ts"
+      - "backend/scripts/screenshot-app.ts"
       - ".github/workflows/auth-screens.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: auth-screens-${{ github.event.pull_request.number }}
+  group: ui-screens-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
@@ -66,14 +70,17 @@ jobs:
       - name: Capture auth UI
         run: npx tsx backend/scripts/screenshot-auth.ts
 
+      - name: Capture app continuity UI
+        run: npx tsx backend/scripts/screenshot-app.ts
+
       - name: Commit screenshots
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add artifacts/ui/auth-*.png
+          git add artifacts/ui/auth-*.png artifacts/ui/app-*.png artifacts/ui/app-*.jpg
           if git diff --cached --quiet; then
             echo "Screenshots unchanged"
             exit 0
           fi
-          git commit -m "chore(ui): refresh auth screenshots"
+          git commit -m "chore(ui): refresh UI screenshots"
           git push

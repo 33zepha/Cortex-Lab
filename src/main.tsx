@@ -16,14 +16,17 @@ const ConsoleScreen = lazy(() => import("@/screens/ConsoleScreen").then(({ Conso
 const SystemScreen = lazy(() => import("@/screens/SystemScreen").then(({ SystemScreen: component }) => ({ default: component })));
 const ProfileScreen = lazy(() => import("@/screens/ProfileScreen").then(({ ProfileScreen: component }) => ({ default: component })));
 
-function LoadingScreen({ dark = false }: { dark?: boolean }) {
+function LoadingScreen() {
   return (
     <div
-      className={`flex min-h-[100dvh] items-center justify-center text-[10px] font-semibold uppercase tracking-[0.16em] ${dark ? "bg-[#121713] text-[#d9d1bd]/55" : "bg-slate-50 text-slate-500"}`}
+      className="flex min-h-[100dvh] items-center justify-center bg-[#090c0b] text-[9px] font-bold uppercase tracking-[0.18em] text-[#efeee9]/45"
       role="status"
       aria-live="polite"
     >
-      Loading Cortex
+      <span className="inline-flex items-center gap-2.5">
+        <span className="size-[5px] rounded-full bg-[#efeee9]/55" aria-hidden />
+        Cortex
+      </span>
     </div>
   );
 }
@@ -37,8 +40,8 @@ createRoot(root).render(
       <BrowserRouter>
         <VpsProvider>
           <Routes>
-            <Route path="/login" element={<Suspense fallback={<LoadingScreen dark />}><AuthScreen initialMode="login" /></Suspense>} />
-            <Route path="/signup" element={<Suspense fallback={<LoadingScreen dark />}><AuthScreen initialMode="signup" /></Suspense>} />
+            <Route path="/login" element={<Suspense fallback={<LoadingScreen />}><AuthScreen initialMode="login" /></Suspense>} />
+            <Route path="/signup" element={<Suspense fallback={<LoadingScreen />}><AuthScreen initialMode="signup" /></Suspense>} />
             <Route element={<AuthGate />}>
               <Route element={<Suspense fallback={<LoadingScreen />}><AppShell /></Suspense>}>
                 <Route path="/" element={<Suspense fallback={<LoadingScreen />}><OverviewScreen /></Suspense>} />

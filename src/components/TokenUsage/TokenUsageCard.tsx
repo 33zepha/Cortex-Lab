@@ -19,20 +19,22 @@ export function TokenUsageCard({ className = "" }: TokenUsageCardProps) {
 
   return (
     <div className={cn("relative select-none", className)}>
-      <div className="group relative flex flex-col justify-between rounded-[22px] border border-white/80 bg-white/55 p-5 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_4px_20px_-4px_rgba(0,0,0,0.035)] backdrop-blur-2xl laptop:rounded-[26px] laptop:p-6">
+      <div className="group relative flex flex-col justify-between rounded-[20px] border border-black/[0.055] bg-[#f7f6f1]/76 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.58),0_18px_46px_-38px_rgba(0,0,0,0.32)] laptop:rounded-[23px] laptop:p-6">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Activity className="size-4 text-text-muted" strokeWidth={2.5} aria-hidden />
-            <span className="text-[13px] font-semibold text-text-secondary">Tokens consommés</span>
+          <div className="flex items-center gap-2.5">
+            <span className="flex size-7 items-center justify-center rounded-[9px] border border-white/[0.07] bg-[#141815] text-[#efeee9]">
+              <Activity className="size-3.5" strokeWidth={2.5} aria-hidden />
+            </span>
+            <span className="text-[12px] font-semibold text-text-secondary">Tokens consommés</span>
           </div>
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-text-muted">7 derniers jours</span>
+          <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-text-muted">7 derniers jours</span>
         </div>
 
         <div className="my-3.5 flex items-end justify-between gap-4">
           <div className="font-mono text-[30px] font-bold leading-none tabular-nums tracking-[-0.035em] text-text-primary laptop:text-[34px]">
             {loading ? "—" : numberFormatter.format(total)}
           </div>
-          <div className="text-right text-[11px] font-medium text-text-muted">
+          <div className="text-right text-[10px] font-medium text-text-muted">
             <span className="block font-mono font-semibold tabular-nums text-text-primary">
               {loading ? "—" : numberFormatter.format(today)}
             </span>
@@ -41,23 +43,23 @@ export function TokenUsageCard({ className = "" }: TokenUsageCardProps) {
         </div>
 
         {error ? (
-          <div className="flex h-[72px] items-center justify-center rounded-[12px] border border-dashed border-error/25 bg-error/[0.03] px-3 text-center text-[11px] font-medium text-text-muted">
+          <div className="flex h-[72px] items-center justify-center rounded-[12px] border border-dashed border-error/20 bg-error/[0.025] px-3 text-center text-[11px] font-medium text-text-muted">
             Données de consommation indisponibles.
           </div>
         ) : loading ? (
-          <div className="h-[72px] animate-pulse rounded-[12px] bg-black/[0.04]" aria-label="Chargement de la consommation" />
+          <div className="h-[72px] animate-pulse rounded-[12px] bg-black/[0.035]" aria-label="Chargement de la consommation" />
         ) : (
           <TokenUsageChart data={data} />
         )}
 
-        <div className="mt-3.5 flex items-center justify-between gap-3 border-t border-black/[0.05] pt-3">
-          <span className="text-[10px] font-medium text-text-muted">
+        <div className="mt-3.5 flex items-center justify-between gap-3 border-t border-black/[0.055] pt-3">
+          <span className="text-[9.5px] font-medium text-text-muted">
             {error ? "API Cortex" : "Source : runtime Cortex"}
           </span>
           <button
             type="button"
             onClick={() => setIsDetailOpen((previous) => !previous)}
-            className="flex items-center gap-1 rounded-[6px] border border-black/[0.06] bg-white/50 px-2 py-1 font-mono text-[11px] font-bold text-text-secondary transition-all hover:border-black/15 hover:bg-white hover:text-text-primary"
+            className="flex items-center gap-1 rounded-[7px] border border-black/[0.08] bg-[#efeee9]/65 px-2 py-1 font-mono text-[10px] font-bold text-text-secondary transition-[background-color,color,border-color] hover:border-black/[0.12] hover:bg-[#f8f7f2] hover:text-text-primary"
             aria-expanded={isDetailOpen}
           >
             <span>{isDetailOpen ? "Masquer" : "Détails"}</span>
@@ -74,12 +76,12 @@ export function TokenUsageCard({ className = "" }: TokenUsageCardProps) {
               transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
               className="overflow-hidden"
             >
-              <div className="mt-4 rounded-[16px] border border-white/80 bg-white/50 p-3.5 shadow-[inset_0_1px_1px_rgba(255,255,255,1)]">
-                <div className="mb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted">
+              <div className="mt-4 rounded-[15px] border border-black/[0.055] bg-[#efeee9]/52 p-3.5">
+                <div className="mb-2 flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.1em] text-text-muted">
                   <span>Journal quotidien</span>
                   <span>Tokens</span>
                 </div>
-                <div className="divide-y divide-black/[0.04]">
+                <div className="divide-y divide-black/[0.045]">
                   {data.length === 0 && !loading ? (
                     <p className="py-3 text-[11px] font-medium text-text-muted">Aucune consommation enregistrée.</p>
                   ) : data.map((point) => <UsageRow key={`${point.day}-${point.tokens}`} point={point} />)}

@@ -9,7 +9,7 @@ import {
 import { Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ROUTES } from "@/lib/routes";
-import { TRANSITION_SPRING, LIQUID_GLASS_HOVER, LIQUID_GLASS_ACTIVE } from "@/lib/ui-classes";
+import { TRANSITION_SPRING } from "@/lib/ui-classes";
 
 const navItems = [
   { to: ROUTES.home, label: "Overview", icon: Squares2X2Icon, end: true },
@@ -22,11 +22,9 @@ export function MobileNav({ onOpenPalette }: { onOpenPalette: () => void }) {
   const location = useLocation();
 
   const baseButtonClasses = cn(
-    "relative flex size-10 mobile:size-11 items-center justify-center rounded-[13px] text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-indigo focus-visible:ring-offset-2",
+    "cortex-nav-button relative flex size-10 mobile:size-11 items-center justify-center rounded-[12px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[#101411]",
     TRANSITION_SPRING,
-    "hover:scale-[1.03] hover:text-text-primary",
-    LIQUID_GLASS_HOVER,
-    "active:scale-[0.93] active:duration-150 active:ease-out",
+    "active:scale-[0.94] active:duration-150 active:ease-out",
   );
 
   return (
@@ -35,7 +33,7 @@ export function MobileNav({ onOpenPalette }: { onOpenPalette: () => void }) {
       className="mobile-nav-dock fixed left-1/2 z-sticky -translate-x-1/2 transition-opacity duration-150 laptop:hidden"
       style={{ bottom: "calc(10px + env(safe-area-inset-bottom))" }}
     >
-      <div className="flex items-center gap-1.5 rounded-[22px] border border-white/65 bg-white/68 p-1.5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.18)] backdrop-blur-3xl">
+      <div className="cortex-nav-surface flex items-center gap-1.5 rounded-[20px] p-1.5">
         <div className="flex items-center gap-1">
           {navItems.map(({ to, label, icon: Icon, end }) => {
             const isActive = end ? location.pathname === to : location.pathname.startsWith(to);
@@ -48,13 +46,7 @@ export function MobileNav({ onOpenPalette }: { onOpenPalette: () => void }) {
                 aria-label={label}
                 className="relative flex items-center justify-center focus-visible:outline-none"
               >
-                <div
-                  className={cn(
-                    baseButtonClasses,
-                    isActive && LIQUID_GLASS_ACTIVE,
-                    isActive && "text-text-primary shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_5px_14px_-8px_rgba(0,0,0,0.3)]",
-                  )}
-                >
+                <div className={baseButtonClasses} data-active={isActive ? "true" : "false"}>
                   <Icon className="size-[22px] mobile:size-[23px]" aria-hidden />
                 </div>
               </NavLink>
@@ -62,18 +54,28 @@ export function MobileNav({ onOpenPalette }: { onOpenPalette: () => void }) {
           })}
         </div>
 
-        <div className="mx-0.5 h-7 w-px rounded-full bg-black/[0.08]" />
+        <div className="cortex-nav-divider mx-0.5 h-7 w-px rounded-full" />
 
         <div className="flex items-center gap-1">
-          <button type="button" onClick={onOpenPalette} aria-label="Rechercher" className={baseButtonClasses}>
-            <Search strokeWidth={3.2} className="size-[22px]" aria-hidden />
+          <button
+            type="button"
+            onClick={onOpenPalette}
+            aria-label="Rechercher"
+            className={baseButtonClasses}
+            data-active="false"
+          >
+            <Search strokeWidth={2.7} className="size-[21px]" aria-hidden />
           </button>
           <NavLink
             to={ROUTES.profile}
             aria-label="Profil"
-            className={({ isActive }) => cn(baseButtonClasses, isActive && LIQUID_GLASS_ACTIVE, isActive && "text-text-primary")}
+            className="relative flex items-center justify-center focus-visible:outline-none"
           >
-            <UserIcon className="size-[22px] mobile:size-[23px]" aria-hidden />
+            {({ isActive }) => (
+              <div className={baseButtonClasses} data-active={isActive ? "true" : "false"}>
+                <UserIcon className="size-[22px] mobile:size-[23px]" aria-hidden />
+              </div>
+            )}
           </NavLink>
         </div>
       </div>
