@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -50,7 +50,14 @@ function matchesType(type: TimelineEventType, filter: ActivityFilter): boolean {
 }
 
 export function ConsoleScreen() {
-  const [filter, setFilter] = useState<ActivityFilter>("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filter = FILTERS.find(({ id }) => id === searchParams.get("filter"))?.id ?? "all";
+  const setFilter = (nextFilter: ActivityFilter) => {
+    const next = new URLSearchParams(searchParams);
+    if (nextFilter === "all") next.delete("filter");
+    else next.set("filter", nextFilter);
+    setSearchParams(next, { replace: true });
+  };
   const [windowFilter, setWindowFilter] = useState<ActivityWindow>("30m");
   const [query, setQuery] = useState("");
   const { missions, loading, error, refetch } = useMissions();
