@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Squares2X2Icon } from "@heroicons/react/24/solid";
 import {
-  AlertTriangle,
   ArrowUpRight,
   Clock3,
   Radio,
