@@ -1,6 +1,7 @@
 import { chromium, type BrowserContext, type Page } from "playwright";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
+import sharp from "sharp";
 
 const BASE_URL = process.env.CORTEX_SCREENSHOT_URL ?? "http://127.0.0.1:4173";
 const OUT_DIR = path.resolve(process.cwd(), "artifacts/ui");
@@ -75,6 +76,13 @@ async function captureOverview(context: BrowserContext, name: string) {
   return page;
 }
 
+async function writeReviewPreview(sourceName: string, targetName: string, width: number) {
+  await sharp(path.join(OUT_DIR, sourceName))
+    .resize({ width, withoutEnlargement: true })
+    .jpeg({ quality: 68, mozjpeg: true })
+    .toFile(path.join(OUT_DIR, targetName));
+}
+
 async function main() {
   const browser = await chromium.launch({ headless: true });
 
@@ -95,6 +103,13 @@ async function main() {
   await mobile.close();
 
   await browser.close();
+
+  await Promise.all([
+    writeReviewPreview("app-overview-desktop.png", "app-overview-desktop-review.jpg", 520),
+    writeReviewPreview("app-overview-desktop-wing.png", "app-overview-desktop-wing-review.jpg", 520),
+    writeReviewPreview("app-overview-mobile.png", "app-overview-mobile-review.jpg", 260),
+  ]);
+
   console.log("App continuity captures written to", OUT_DIR);
 }
 
