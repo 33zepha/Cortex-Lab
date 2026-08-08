@@ -104,9 +104,7 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
                 </Button>
               </form>
 
-              <div className="auth-divider"><span>or</span></div>
-              <Button className="auth-secondary" variant="secondary" type="button" onClick={() => switchMode("signup")}>Create a new account</Button>
-              <p className="auth-footnote">New account means a new isolated workspace and its own runtime connections.</p>
+              <div className="auth-account-link">New to Cortex? <button type="button" onClick={() => switchMode("signup")}>Create account</button></div>
             </>
           ) : (
             <>
