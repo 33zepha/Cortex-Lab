@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, useReducedMotion } from "framer-motion";
 import { CheckIcon } from "@heroicons/react/24/solid";
 import { LiquidButton, LiquidSurface } from "@/components/ui/LiquidSurface";
 import { SPRING_BOUNCY } from "@/lib/animations";
