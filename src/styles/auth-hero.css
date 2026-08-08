@@ -14,9 +14,33 @@
 }
 
 @media (max-width: 900px), (pointer: coarse) {
+  .auth-entry {
+    background: #090c0b;
+  }
+
+  /*
+   * iOS Safari can expose the hardware safe-area above a fixed 100svh layer.
+   * Keep the content rail on svh for stable controls, but let the photographic
+   * scene paint through the full dynamic viewport plus both safe areas.
+   */
   .auth-scene__image,
   .auth-art__image {
+    top: calc(-1 * env(safe-area-inset-top));
+    right: 0;
+    bottom: auto;
+    left: 0;
+    width: 100%;
+    height: calc(100dvh + env(safe-area-inset-top) + env(safe-area-inset-bottom));
     filter: none !important;
     will-change: auto !important;
+  }
+
+  .auth-scene__veil,
+  .auth-scene__grain {
+    top: calc(-1 * env(safe-area-inset-top));
+    right: 0;
+    bottom: auto;
+    left: 0;
+    height: calc(100dvh + env(safe-area-inset-top) + env(safe-area-inset-bottom));
   }
 }
