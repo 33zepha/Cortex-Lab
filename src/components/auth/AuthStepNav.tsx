@@ -35,6 +35,7 @@ export function AuthStepNav({
             key="trigger"
             layoutId="auth-step-nav-surface"
             variant="wing"
+            sheen={false}
             className="auth-step-trigger"
             type="button"
             transition={transition}
