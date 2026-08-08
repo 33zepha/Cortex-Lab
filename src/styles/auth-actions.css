@@ -1,0 +1,283 @@
+/* Cortex auth action language
+   Buttons are commands, not decorative glass objects. */
+
+.auth-entry .auth-action {
+  min-width: 0;
+  min-height: 42px;
+  width: fit-content;
+  padding: 4px 4px 4px 14px;
+  gap: 16px;
+  border-radius: 12px !important;
+  border-color: rgba(255,255,255,.075) !important;
+  background: rgba(12,15,14,.64) !important;
+  color: rgba(241,241,236,.93) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(16px) saturate(.94) !important;
+  backdrop-filter: blur(16px) saturate(.94) !important;
+  font-size: 10.8px;
+  font-weight: 650;
+  letter-spacing: -.004em;
+}
+
+.auth-entry .auth-action .liquid-surface__content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.auth-action__label {
+  display: block;
+  padding-left: 1px;
+  white-space: nowrap;
+}
+
+.auth-action__terminal {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 9px;
+  background: rgba(255,255,255,.055);
+  color: rgba(235,235,230,.82);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 180ms cubic-bezier(.2,.8,.2,1);
+}
+
+.auth-entry .auth-action:hover {
+  transform: none;
+  border-color: rgba(255,255,255,.105) !important;
+  background: rgba(15,18,17,.74) !important;
+  box-shadow: none !important;
+}
+
+.auth-entry .auth-action:hover .auth-action__terminal {
+  background: rgba(255,255,255,.075);
+  border-color: rgba(255,255,255,.08);
+  color: rgba(247,247,242,.95);
+  transform: translateX(1px);
+}
+
+.auth-entry .auth-action:active {
+  transform: translateY(1px) scale(.993);
+}
+
+.auth-entry .auth-action:focus-visible {
+  border-color: rgba(235,234,228,.19) !important;
+  box-shadow: 0 0 0 2px rgba(235,234,228,.055) !important;
+}
+
+.auth-entry .auth-action:disabled {
+  opacity: .45;
+}
+
+.auth-action--wide {
+  min-width: 0;
+}
+
+.auth-entry .auth-action--compact {
+  min-height: 36px;
+  padding: 3px 3px 3px 11px;
+  border-radius: 10px !important;
+  font-size: 9.8px;
+}
+
+.auth-action--compact .auth-action__terminal {
+  width: 28px;
+  height: 28px;
+  flex-basis: 28px;
+  border-radius: 8px;
+}
+
+/* Text navigation should not masquerade as a button. */
+.auth-entry .auth-nav-link,
+.auth-entry .auth-back,
+.auth-entry .auth-child-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  min-height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: rgba(220,220,215,.52) !important;
+  font: inherit;
+  font-size: 9.8px;
+  font-weight: 580 !important;
+  letter-spacing: -.003em;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.auth-entry .auth-nav-link svg {
+  color: rgba(218,218,213,.44);
+  transition: color 150ms ease, transform 170ms cubic-bezier(.2,.8,.2,1);
+}
+
+.auth-entry .auth-nav-link:hover,
+.auth-entry .auth-back:hover,
+.auth-entry .auth-child-back:hover {
+  background: transparent !important;
+  color: rgba(241,241,236,.84) !important;
+}
+
+.auth-entry .auth-nav-link:hover svg {
+  color: rgba(238,238,233,.72);
+  transform: translateX(-1px);
+}
+
+.auth-entry .auth-nav-link:focus-visible {
+  outline: 1px solid rgba(235,234,228,.16) !important;
+  outline-offset: 4px;
+  box-shadow: none !important;
+}
+
+/* Step trigger is an instrument readout, not a capsule CTA. */
+.auth-entry .auth-step-trigger {
+  min-width: 106px;
+  height: 30px;
+  padding: 0 9px 0 10px;
+  border-radius: 9px !important;
+  border-color: rgba(255,255,255,.06) !important;
+  background: rgba(14,17,16,.26) !important;
+  box-shadow: none !important;
+  color: rgba(225,225,220,.57) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(.94) !important;
+  backdrop-filter: blur(12px) saturate(.94) !important;
+  font-size: 8.8px;
+  font-weight: 600;
+}
+
+.auth-entry .auth-step-trigger:hover {
+  border-color: rgba(255,255,255,.085) !important;
+  background: rgba(16,19,18,.34) !important;
+  box-shadow: none !important;
+}
+
+.auth-step-trigger__count {
+  color: rgba(213,213,208,.29) !important;
+  font-size: 7.8px !important;
+}
+
+/* Add connection reads as a structural command row. */
+.auth-entry .auth-add-connection {
+  min-height: 48px;
+  padding: 0 12px;
+  gap: 10px;
+  border-radius: 12px !important;
+  border-color: rgba(255,255,255,.055) !important;
+  background: rgba(13,16,15,.25) !important;
+  box-shadow: none !important;
+  color: rgba(229,229,224,.72) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(.94) !important;
+  backdrop-filter: blur(14px) saturate(.94) !important;
+  font-size: 10.6px;
+  font-weight: 600;
+}
+
+.auth-command__icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border-right: 1px solid rgba(255,255,255,.055);
+  padding-right: 9px;
+  box-sizing: content-box;
+  color: rgba(215,215,210,.52);
+}
+
+.auth-entry .auth-add-connection:hover {
+  border-color: rgba(255,255,255,.075) !important;
+  background: rgba(15,18,17,.32) !important;
+  color: rgba(240,240,235,.84) !important;
+  box-shadow: none !important;
+}
+
+.auth-entry .auth-add-connection:hover .auth-command__icon {
+  color: rgba(235,235,230,.72);
+}
+
+/* Icon-only controls stay nearly invisible until needed. */
+.auth-icon-action {
+  display: grid;
+  place-items: center;
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  color: rgba(214,214,209,.40) !important;
+  cursor: pointer;
+  transition: color 140ms ease, background-color 140ms ease;
+}
+
+.auth-icon-action:hover {
+  background: rgba(255,255,255,.025) !important;
+  color: rgba(239,239,234,.76) !important;
+}
+
+.auth-icon-action:focus-visible {
+  outline: 1px solid rgba(235,234,228,.14);
+  outline-offset: 2px;
+}
+
+/* Child rows behave like list commands, not cards. */
+.auth-entry .auth-child-row {
+  border-radius: 8px;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.auth-entry .auth-child-row:hover {
+  transform: none;
+  background: rgba(255,255,255,.018);
+}
+
+.auth-entry .auth-child-row:hover .auth-child-row__icon {
+  color: rgba(230,230,225,.74);
+}
+
+.auth-entry .auth-child-save {
+  width: fit-content;
+  min-height: 36px;
+  padding: 3px 3px 3px 11px;
+  border-radius: 10px !important;
+  color: rgba(239,239,234,.91) !important;
+}
+
+.auth-entry .auth-skip,
+.auth-entry .auth-account-link {
+  letter-spacing: 0;
+}
+
+@media (max-width: 900px) {
+  .auth-entry .auth-action {
+    min-height: 42px;
+  }
+
+  .auth-action__terminal {
+    width: 32px;
+    height: 32px;
+  }
+
+  .auth-entry .auth-add-connection {
+    min-height: 46px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-action__terminal,
+  .auth-nav-link svg {
+    transition: none !important;
+  }
+}
