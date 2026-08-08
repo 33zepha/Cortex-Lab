@@ -66,7 +66,7 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
   };
 
   return (
-    <main className="auth-entry">
+    <main className="auth-entry" data-auth-revision="full-scene-v6">
       <img className="auth-art__image auth-scene__image" src="/cortex-auth-hero.jpg" alt="Monument sculptural représentant plusieurs intelligences coordonnées dans un même environnement." />
       <div className="auth-scene__veil" aria-hidden />
       <div className="auth-scene__grain" aria-hidden />
