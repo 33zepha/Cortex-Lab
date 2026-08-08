@@ -58,6 +58,41 @@
   background: linear-gradient(180deg, rgba(255,255,255,.13), transparent 19%);
 }
 
+/* Migration bridge: old bright-glass utilities are softened only inside the
+ * operational canvas. Dialog portals and auth are deliberately untouched. */
+.cortex-app-main [class*="bg-white/45"],
+.cortex-app-main [class*="bg-white/50"],
+.cortex-app-main [class*="bg-white/55"],
+.cortex-app-main [class*="bg-white/58"] {
+  background-color: rgba(247,246,241,.72) !important;
+}
+
+.cortex-app-main [class*="border-white/70"],
+.cortex-app-main [class*="border-white/72"],
+.cortex-app-main [class*="border-white/80"] {
+  border-color: rgba(26,31,27,.065) !important;
+}
+
+.cortex-app-main .backdrop-blur-2xl,
+.cortex-app-main .backdrop-blur-xl {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Indigo belonged to the pre-auth dashboard. Cortex now uses graphite/chalk
+ * for structural emphasis; warning/error/success remain semantic colors. */
+.cortex-app-main [class*="text-accent-indigo"] {
+  color: #58605a !important;
+}
+
+.cortex-app-main [class*="bg-accent-indigo"] {
+  background-color: rgba(20,24,21,.075) !important;
+}
+
+.cortex-app-main [class*="border-accent-indigo"] {
+  border-color: rgba(20,24,21,.16) !important;
+}
+
 .cortex-nav-surface,
 .cortex-wing-surface {
   border: 1px solid var(--app-edge-dark);
