@@ -1,13 +1,15 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, PointerEvent as ReactPointerEvent, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CheckIcon, GlobeAltIcon, ServerStackIcon } from "@heroicons/react/24/solid";
 import { ArrowLeft, ArrowRight, Eye, EyeOff, LockKeyhole, Plus, X } from "lucide-react";
 import { AuthStepNav } from "@/components/auth/AuthStepNav";
 import { CortexMark } from "@/components/brand/CortexMark";
+import { DitherAtmosphere } from "@/components/effects/DitherAtmosphere";
 import { IconButton, Input, LiquidButton, LiquidSurface } from "@/components/ui";
 import { login as authenticate } from "@/lib/auth";
 import "@/styles/auth.css";
 import "@/styles/auth-actions.css";
+import "@/styles/auth-effects.css";
 
 type AuthMode = "login" | "signup";
 type SignupStep = "account" | "workspace" | "runtime";
@@ -22,6 +24,7 @@ function ActionContent({ label }: { label: string }) {
 
 export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
   const reduceMotion = useReducedMotion();
+  const entryRef = useRef<HTMLElement>(null);
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [step, setStep] = useState<SignupStep>("account");
   const [furthestStep, setFurthestStep] = useState(0);
@@ -64,6 +67,14 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
     if (connectionLayer === "vps" || connectionLayer === "api") { setConnectionLayer("root"); return; }
     if (step === "runtime") navigateStep("workspace"); else if (step === "workspace") navigateStep("account"); else switchMode("login");
   }
+  function updateSceneLight(event: ReactPointerEvent<HTMLElement>) {
+    if (event.pointerType === "touch") return;
+    const node = entryRef.current;
+    if (!node) return;
+    const rect = node.getBoundingClientRect();
+    node.style.setProperty("--auth-pointer-x", `${event.clientX - rect.left}px`);
+    node.style.setProperty("--auth-pointer-y", `${event.clientY - rect.top}px`);
+  }
   const screenMotion = reduceMotion ? { initial: { opacity: 1 }, animate: { opacity: 1 }, exit: { opacity: 1 } } : {
     initial: { opacity: 0, x: direction * 11, y: 2, scale: .996 },
     animate: { opacity: 1, x: 0, y: 0, scale: 1 },
@@ -71,9 +82,10 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
   };
 
   return (
-    <main className="auth-entry" data-auth-revision="full-scene-v7-mirror">
+    <main ref={entryRef} className="auth-entry" data-auth-revision="full-scene-v8-effects" onPointerMove={updateSceneLight}>
       <img className="auth-art__image auth-scene__image" src="/cortex-auth-hero.jpg" alt="Monument sculptural représentant plusieurs intelligences coordonnées dans un même environnement." />
       <div className="auth-scene__veil" aria-hidden />
+      <DitherAtmosphere />
       <div className="auth-scene__grain" aria-hidden />
       <div className="auth-art__brand"><CortexMark className="auth-art__mark" /><span>CORTEX</span></div>
       <section className="auth-stage" aria-label={mode === "login" ? "Sign in to Cortex" : "Create a Cortex workspace"}>
