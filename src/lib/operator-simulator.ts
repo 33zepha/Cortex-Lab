@@ -767,8 +767,8 @@ export async function simulatorPost<T>(path: string, body: unknown): Promise<T> 
     });
     mission.model = model;
     if (mission.operator) {
-      const agent = agentProfiles[agentId] ?? agentProfiles.antigravity;
-      const runtime = runtimeProfiles[runtimeId] ?? runtimeProfiles.auto;
+      const agent = agentProfiles[agentId] ?? { name: "Antigravity", role: "Lead Engineer" };
+      const runtime = runtimeProfiles[runtimeId] ?? { name: "Routage Cortex", adapter: "Auto", location: "capacité disponible" };
       mission.operator.run.agent = {
         id: `agent:${agentId}`,
         name: agent.name,
