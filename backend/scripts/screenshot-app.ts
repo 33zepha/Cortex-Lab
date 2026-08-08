@@ -57,12 +57,16 @@ async function capture(
   }
   const screenshotPath = path.join(OUT_DIR, name);
   await page.screenshot({ path: screenshotPath });
+  const viewport = page.viewportSize();
+  if (!viewport) throw new Error(`Missing viewport for ${route}`);
+  const sampleLeft = Math.max(0, Math.floor(modeBarBox.x));
+  const sampleTop = Math.max(0, Math.floor(modeBarBox.y));
   const sample = await sharp(screenshotPath)
     .extract({
-      left: Math.max(0, Math.round(modeBarBox.x + 4)),
-      top: Math.max(0, Math.round(modeBarBox.y + 4)),
-      width: 8,
-      height: 8,
+      left: sampleLeft,
+      top: sampleTop,
+      width: Math.max(1, Math.min(viewport.width - sampleLeft, Math.floor(modeBarBox.width))),
+      height: Math.max(1, Math.min(viewport.height - sampleTop, Math.floor(modeBarBox.height))),
     })
     .stats();
   const modeBarLuminance = sample.channels
