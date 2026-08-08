@@ -55,7 +55,22 @@ async function capture(
   if (!modeBarBox || modeBarBox.y < 0) {
     throw new Error(`Simulator mode bar is outside the viewport for ${route}`);
   }
-  await page.screenshot({ path: path.join(OUT_DIR, name) });
+  const screenshotPath = path.join(OUT_DIR, name);
+  await page.screenshot({ path: screenshotPath });
+  const sample = await sharp(screenshotPath)
+    .extract({
+      left: Math.max(0, Math.round(modeBarBox.x + 4)),
+      top: Math.max(0, Math.round(modeBarBox.y + 4)),
+      width: 8,
+      height: 8,
+    })
+    .stats();
+  const modeBarLuminance = sample.channels
+    .slice(0, 3)
+    .reduce((total, channel) => total + channel.mean, 0) / 3;
+  if (modeBarLuminance > 100) {
+    throw new Error(`Simulator mode bar was not painted for ${route}`);
+  }
   await page.close();
 }
 
