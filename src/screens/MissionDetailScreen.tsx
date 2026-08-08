@@ -20,13 +20,11 @@ import {
   GitCompare,
   LoaderCircle,
   MessageSquareText,
-  Pause,
   Play,
   Route,
   Server,
   ShieldAlert,
   X,
-  XCircle,
 } from "lucide-react";
 import {
   Drawer,
