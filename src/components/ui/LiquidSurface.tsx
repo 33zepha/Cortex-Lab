@@ -1,19 +1,21 @@
-import { useRef, type PointerEvent as ReactPointerEvent } from "react";
+import { useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { motion, type HTMLMotionProps } from "framer-motion";
 import { cn } from "@/lib/cn";
 import "@/styles/liquid-surface.css";
 
 type LiquidVariant = "core" | "wing" | "control" | "popover";
 
-type LiquidSurfaceProps = HTMLMotionProps<"div"> & {
+type LiquidSurfaceProps = Omit<HTMLMotionProps<"div">, "children"> & {
   variant?: LiquidVariant;
   interactive?: boolean;
   sheen?: boolean;
+  children?: ReactNode;
 };
 
-type LiquidButtonProps = HTMLMotionProps<"button"> & {
+type LiquidButtonProps = Omit<HTMLMotionProps<"button">, "children"> & {
   variant?: Exclude<LiquidVariant, "popover">;
   sheen?: boolean;
+  children?: ReactNode;
 };
 
 function setLight(event: ReactPointerEvent<HTMLElement>, node: HTMLElement | null) {
