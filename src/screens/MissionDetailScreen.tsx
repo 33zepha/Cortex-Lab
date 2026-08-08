@@ -291,7 +291,7 @@ export function MissionDetailScreen() {
         </span>
       </div>
 
-      <header className="relative border-y border-black/[0.065] py-5 laptop:py-7">
+      <header data-status={view.status} className="cortex-mission-hero relative border-y border-black/[0.065] py-5 laptop:py-7">
         <Route className="pointer-events-none absolute -right-3 -top-7 size-[112px] -rotate-6 text-text-primary opacity-[0.022]" strokeWidth={2.7} aria-hidden />
         <div className="relative z-[1]">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -329,7 +329,7 @@ export function MissionDetailScreen() {
             </div>
           )}
 
-          <div className="mt-6 grid grid-cols-2 divide-x divide-y divide-black/[0.055] border-y border-black/[0.055] tablet:grid-cols-4 tablet:divide-y-0">
+          <div className="cortex-run-facts mt-6 grid grid-cols-2 divide-x divide-y divide-black/[0.055] border-y border-black/[0.055] tablet:grid-cols-4 tablet:divide-y-0">
             <div className="pr-3 tablet:pr-4">
               <RunFact icon={Bot} label="Agent" value={view.agentName} detail={view.agentRole} />
             </div>
@@ -344,7 +344,7 @@ export function MissionDetailScreen() {
             </div>
           </div>
 
-          <div className="mt-5">
+          <div className="cortex-progress-block mt-5">
             <div className="flex items-end justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-[8.5px] font-bold uppercase tracking-[0.11em] text-text-muted">Étape courante</p>
@@ -415,7 +415,7 @@ export function MissionDetailScreen() {
 
       <div className="mt-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6 border-b-black/[0.065]">
+          <TabsList className="cortex-detail-tabs mb-6 border-b-black/[0.065]">
             <TabsTrigger className="px-2 text-[11px] font-bold data-[state=active]:after:bg-text-primary" value="summary">Résumé</TabsTrigger>
             <TabsTrigger className="px-2 text-[11px] font-bold data-[state=active]:after:bg-text-primary" value="activity">Activité</TabsTrigger>
             <TabsTrigger className="px-2 text-[11px] font-bold data-[state=active]:after:bg-text-primary" value="details">Détails</TabsTrigger>

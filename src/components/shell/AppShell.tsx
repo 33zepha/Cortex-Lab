@@ -53,8 +53,8 @@ export function AppShell() {
 
   return (
     <div className="cortex-app-shell relative isolate flex h-full min-h-0 w-screen overflow-hidden">
-      <div className="relative z-10 flex h-full min-h-0 w-full items-stretch p-0 laptop:items-center laptop:p-6">
-        <div className="fixed left-4 top-1/2 z-sticky hidden -translate-y-1/2 laptop:block">
+      <div className="relative z-10 flex h-full min-h-0 w-full items-stretch p-0 laptop:items-center laptop:p-4">
+        <div className="fixed left-3 top-1/2 z-sticky hidden -translate-y-1/2 laptop:block">
           <motion.div
             ref={containerRef}
             layout
@@ -88,20 +88,20 @@ export function AppShell() {
         <div
           className={cn(
             "flex h-full min-h-0 w-full items-stretch justify-center transition-[padding] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] laptop:items-center",
-            "laptop:pl-[96px]",
+            "laptop:pl-[84px]",
           )}
         >
           <motion.main
             layout="position"
             transition={{ type: "spring", stiffness: 430, damping: 38, mass: 0.72 }}
             className={cn(
-              "cortex-app-main relative flex h-full min-h-0 w-full max-w-[1400px] flex-col overflow-hidden",
+              "cortex-app-main relative flex h-full min-h-0 w-full max-w-[1560px] flex-col overflow-hidden",
               "rounded-none border-0",
-              "laptop:h-fit laptop:max-h-[calc(100vh-48px)] laptop:rounded-[28px] laptop:border",
+              "laptop:h-fit laptop:max-h-[calc(100vh-32px)] laptop:rounded-[22px] laptop:border",
             )}
           >
             <OperatorModeBar />
-            <div className="mobile-content-scroll relative z-[1] w-full flex-1 overscroll-contain overflow-y-auto laptop:p-10 laptop:scrollbar-thin">
+            <div className="mobile-content-scroll relative z-[1] w-full flex-1 overscroll-contain overflow-y-auto laptop:p-8 desktop:p-9 laptop:scrollbar-thin">
               <Outlet />
             </div>
           </motion.main>

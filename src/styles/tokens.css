@@ -5,6 +5,14 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap");
 
+@font-face {
+  font-family: "Inter";
+  src: url("../fonts/inter/Inter-Variable.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 :root {
   /* ---- Couleur : surfaces (light — canvas / surface / surface-subtle) ---- */
   --color-background: #f6f7f9;
@@ -46,6 +54,7 @@
 
   /* ---- Typographie ---- */
   --font-sans: "Rubik", system-ui, -apple-system, sans-serif;
+  --font-ui: "Inter", system-ui, -apple-system, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   --text-xs: 0.6875rem;

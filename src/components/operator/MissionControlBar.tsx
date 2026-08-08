@@ -107,7 +107,7 @@ export function MissionControlBar({
   return (
     <>
       <div className="relative mt-5">
-        <div className="flex min-h-[58px] items-center gap-1.5 overflow-x-auto rounded-[17px] border border-white/[0.08] bg-[#131714]/95 p-1.5 text-[#efeee9] shadow-[0_20px_42px_-28px_rgba(0,0,0,0.95)] backdrop-blur-xl laptop:inline-flex laptop:min-h-0 laptop:rounded-[15px]">
+        <div className="cortex-control-bar flex min-h-[58px] items-center gap-1.5 overflow-x-auto rounded-[15px] border border-white/[0.08] bg-[#131714]/96 p-1.5 text-[#efeee9] shadow-[0_18px_38px_-26px_rgba(0,0,0,0.92)] laptop:inline-flex laptop:min-h-0 laptop:rounded-[13px]">
           {controls.map(({ id, label, icon: Icon, onClick }) => (
             <button
               key={id}

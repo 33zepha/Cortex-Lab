@@ -78,6 +78,13 @@ export function MissionsScreen() {
     ].filter((group) => group.missions.length > 0);
   }, [filter, matching]);
 
+  const attentionCount = source.filter(missionRequiresAttention).length;
+  const activeCount = source.filter((mission) => isMissionActive(mission) && !missionRequiresAttention(mission)).length;
+  const closedCount = source.filter((mission) => !isMissionActive(mission)).length;
+  const pageDescription = source.length === 0
+    ? "Aucune exécution enregistrée."
+    : `${source.length} missions · ${attentionCount} à traiter · ${activeCount} active${activeCount > 1 ? "s" : ""} · ${closedCount} clôturée${closedCount > 1 ? "s" : ""}`;
+
   if (loading) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -104,6 +111,7 @@ export function MissionsScreen() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18 }} className="w-full">
       <PageHeader
         title="Missions"
+        description={pageDescription}
         icon={RocketLaunchIcon}
         action={
           <div className="flex shrink-0 items-center gap-2">
@@ -140,7 +148,8 @@ export function MissionsScreen() {
         />
       )}
 
-      <div className="scrollbar-none mb-6 flex gap-1 overflow-x-auto border-b border-black/[0.06]">
+      <div className="cortex-mission-filterbar scrollbar-none mb-7 flex items-center gap-1 overflow-x-auto border-b border-black/[0.07]" aria-label="Vues des missions">
+        <span className="mr-2 hidden shrink-0 text-[8.5px] font-[680] uppercase tracking-[0.13em] text-text-muted tablet:inline">Vue</span>
         {FILTERS.map((item) => {
           const active = filter === item.id;
           const count = item.id === "all"
@@ -164,7 +173,7 @@ export function MissionsScreen() {
                 }, { replace: true });
               }}
               className={cn(
-                "relative flex min-h-11 shrink-0 items-center gap-2 px-3 text-[11px] font-bold text-text-muted transition-colors hover:text-text-primary",
+                "relative flex min-h-10 shrink-0 items-center gap-2 px-2.5 text-[10.5px] font-[650] text-text-muted transition-colors hover:text-text-primary tablet:px-3",
                 active && "text-text-primary after:absolute after:inset-x-2 after:bottom-0 after:h-[2px] after:bg-text-primary",
               )}
             >
@@ -186,12 +195,18 @@ export function MissionsScreen() {
       ) : (
         <div className="space-y-8">
           {groups.map((group) => (
-            <section key={group.id} aria-labelledby={`mission-group-${group.id}`}>
-              <div className="mb-2 flex items-center justify-between gap-4">
-                <h2 id={`mission-group-${group.id}`} className="text-[10px] font-bold uppercase tracking-[0.12em] text-text-secondary">
-                  {group.label}
-                </h2>
-                <span className="font-mono text-[10px] font-semibold text-text-muted">{group.missions.length}</span>
+            <section key={group.id} aria-label={group.label}>
+              <div className="mb-2 flex items-baseline gap-2.5 tablet:grid tablet:grid-cols-[32px_minmax(0,1.25fr)_minmax(180px,0.46fr)_88px_18px] tablet:items-baseline tablet:gap-x-3 tablet:px-3">
+                <span className="hidden tablet:block" />
+                <div className="flex items-baseline gap-2.5">
+                  <h2 className="text-[10px] font-[680] uppercase tracking-[0.13em] text-text-secondary">
+                    {group.label}
+                  </h2>
+                  <span className="font-mono text-[9px] font-medium tabular-nums text-text-muted">{group.missions.length}</span>
+                </div>
+                <span className="hidden text-[8px] font-[650] uppercase tracking-[0.12em] text-text-muted tablet:block">Responsabilité</span>
+                <span className="hidden text-right text-[8px] font-[650] uppercase tracking-[0.12em] text-text-muted tablet:block">Temps</span>
+                <span className="hidden tablet:block" />
               </div>
               <div className="divide-y divide-black/[0.055] border-y border-black/[0.065]">
                 {group.missions.map((mission) => (

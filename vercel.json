@@ -1,19 +1,37 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "git": {
-    "deploymentEnabled": {
-      "**": false,
-      "main": true
-    }
-  },
   "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/proxy?path=:path*" },
-    { "source": "/login", "destination": "/index.html" },
-    { "source": "/signup", "destination": "/index.html" },
-    { "source": "/missions", "destination": "/index.html" },
-    { "source": "/missions/(.*)", "destination": "/index.html" },
-    { "source": "/console", "destination": "/index.html" },
-    { "source": "/system", "destination": "/index.html" },
-    { "source": "/profile", "destination": "/index.html" }
+    {
+      "source": "/api/:path*",
+      "destination": "/api/proxy?path=:path*"
+    },
+    {
+      "source": "/login",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/signup",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/missions",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/missions/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/console",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/system",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/profile",
+      "destination": "/index.html"
+    }
   ]
 }

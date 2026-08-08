@@ -13,10 +13,12 @@ export function PageHeader({
   icon?: ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="relative mb-5 mt-0 laptop:mb-8 laptop:mt-0">
+    <header className="relative mt-0">
       <div className="mb-2.5 flex items-center gap-2 text-text-muted" aria-hidden>
-        <CortexMark className="h-[14px] w-[11px] shrink-0" />
-        <span className="text-[8.5px] font-bold uppercase tracking-[0.15em]">Cortex</span>
+        <CortexMark className="h-[13px] w-[10px] shrink-0" />
+        <span className="text-[8px] font-[680] uppercase tracking-[0.17em]">Cortex</span>
+        <span className="text-[9px] font-mono font-medium text-text-muted/55">/</span>
+        <span className="text-[8px] font-[620] uppercase tracking-[0.13em] text-text-secondary">{title}</span>
         {Icon && (
           <>
             <span className="h-3 w-px bg-black/[0.08]" />
@@ -25,19 +27,19 @@ export function PageHeader({
         )}
       </div>
 
-      <div className="flex items-start justify-between gap-4 laptop:flex-wrap laptop:gap-x-5 laptop:gap-y-3">
+      <div className="flex items-start justify-between gap-4 laptop:flex-wrap laptop:gap-x-6 laptop:gap-y-3">
         <div className="min-w-0">
-          <h1 className="truncate text-[29px] font-extrabold leading-[0.98] tracking-[-0.052em] text-text-primary laptop:text-[31px] laptop:leading-[0.98]">
+          <h1 className="truncate text-[30px] font-[680] leading-none tracking-[-0.047em] text-text-primary laptop:text-[35px]">
             {title}
           </h1>
           {description && (
-            <p className="mt-2 max-w-2xl text-[12px] font-medium leading-relaxed text-text-secondary laptop:text-[13px]">
+            <p className="mt-2 max-w-2xl text-[11.5px] font-medium leading-[1.45] text-text-secondary laptop:text-[12px]">
               {description}
             </p>
           )}
         </div>
-        {action && <div className="relative z-10 shrink-0">{action}</div>}
+        {action && <div className="relative z-10 shrink-0 pt-0.5">{action}</div>}
       </div>
-    </div>
+    </header>
   );
 }
