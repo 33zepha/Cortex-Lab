@@ -5,7 +5,7 @@ import { ROUTES } from "@/lib/routes";
 export type OrbitTransitionType = "vertical" | "horizontal";
 
 /**
- * Dérive la section Orbit active (Overview / Missions / System, profondeur "détail mission")
+ * Dérive la section Orbit active (Maintenant / Missions / Activité / Système, profondeur "détail mission")
  * à partir de la route, et calcule la direction/le type de transition en comparant à l'état précédent :
  * changement de section → glissement vertical, changement de profondeur (liste ↔ détail) → horizontal.
  */
@@ -18,6 +18,9 @@ export function useOrbitNavigation() {
   let depth = 0;
 
   if (location.pathname === ROUTES.system) {
+    currentIndex = 3;
+    depth = 0;
+  } else if (location.pathname === ROUTES.console) {
     currentIndex = 2;
     depth = 0;
   } else if (id) {
