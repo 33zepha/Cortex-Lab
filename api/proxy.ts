@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { timingSafeEqual } from "node:crypto";
 import { Readable } from "node:stream";
-import { MemoryRateLimiter } from "../backend/core/security/rate-limit";
+import { MemoryRateLimiter } from "../backend/core/security/rate-limit.js";
 import {
   buildSessionCookie,
   createSessionToken,
@@ -11,7 +11,7 @@ import {
   SESSION_COOKIE,
   resolveSessionSecret,
   SESSION_TTL_SECONDS,
-} from "../backend/core/auth/session";
+} from "../backend/core/auth/session.js";
 
 const authRateLimiter = new MemoryRateLimiter({ maxAttempts: 12, windowMs: 60_000 });
 
