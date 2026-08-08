@@ -132,16 +132,17 @@ export function DitherAtmosphere({ className }: { className?: string }) {
     const buffer = gl.createBuffer();
     if (!buffer) return;
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([-1, -1, 3, -1, -1, 3]),
-      gl.STATIC_DRAW,
-    );
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
 
     const positionLocation = gl.getAttribLocation(program, "a_position");
     const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
     const pointerLocation = gl.getUniformLocation(program, "u_pointer");
     const timeLocation = gl.getUniformLocation(program, "u_time");
+    if (positionLocation < 0 || !resolutionLocation || !pointerLocation || !timeLocation) {
+      gl.deleteBuffer(buffer);
+      gl.deleteProgram(program);
+      return;
+    }
 
     gl.useProgram(program);
     gl.enableVertexAttribArray(positionLocation);
@@ -150,14 +151,16 @@ export function DitherAtmosphere({ className }: { className?: string }) {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+    const staticMode = reducedMotion || coarsePointer;
     const targetPointer = { x: 0.68, y: 0.62 };
     const pointer = { ...targetPointer };
     let raf = 0;
-    let start = performance.now();
     let active = true;
 
     const resize = () => {
-      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+      const maxRatio = coarsePointer ? 1 : 1.5;
+      const ratio = Math.min(window.devicePixelRatio || 1, maxRatio);
       const width = Math.max(1, Math.floor(canvas.clientWidth * ratio));
       const height = Math.max(1, Math.floor(canvas.clientHeight * ratio));
       if (canvas.width !== width || canvas.height !== height) {
@@ -168,7 +171,7 @@ export function DitherAtmosphere({ className }: { className?: string }) {
     };
 
     const onPointerMove = (event: PointerEvent) => {
-      if (event.pointerType === "touch") return;
+      if (staticMode || event.pointerType === "touch") return;
       targetPointer.x = event.clientX / Math.max(window.innerWidth, 1);
       targetPointer.y = 1 - event.clientY / Math.max(window.innerHeight, 1);
     };
@@ -181,21 +184,18 @@ export function DitherAtmosphere({ className }: { className?: string }) {
       gl.useProgram(program);
       gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
       gl.uniform2f(pointerLocation, pointer.x, pointer.y);
-      gl.uniform1f(timeLocation, reducedMotion ? 0 : (now - start) / 1000);
+      gl.uniform1f(timeLocation, staticMode ? 0 : now / 1000);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
-      if (!reducedMotion && !document.hidden) raf = requestAnimationFrame(render);
+      if (!staticMode && !document.hidden) raf = requestAnimationFrame(render);
     };
 
     const onVisibility = () => {
       cancelAnimationFrame(raf);
-      if (!document.hidden && !reducedMotion) {
-        start = performance.now();
-        raf = requestAnimationFrame(render);
-      }
+      if (!document.hidden && !staticMode) raf = requestAnimationFrame(render);
     };
 
     window.addEventListener("resize", resize, { passive: true });
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    if (!staticMode) window.addEventListener("pointermove", onPointerMove, { passive: true });
     document.addEventListener("visibilitychange", onVisibility);
     render(performance.now());
 
