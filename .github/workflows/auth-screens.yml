@@ -11,6 +11,7 @@ on:
       - "src/styles/auth.css"
       - "src/styles/auth-actions.css"
       - "src/styles/auth-effects.css"
+      - "src/styles/auth-hero.css"
       - "src/styles/liquid-surface.css"
       - "assets/auth/**"
       - "scripts/materialize-auth-hero.mjs"

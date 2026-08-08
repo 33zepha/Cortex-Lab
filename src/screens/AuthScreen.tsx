@@ -10,6 +10,7 @@ import { login as authenticate } from "@/lib/auth";
 import "@/styles/auth.css";
 import "@/styles/auth-actions.css";
 import "@/styles/auth-effects.css";
+import "@/styles/auth-hero.css";
 
 type AuthMode = "login" | "signup";
 type SignupStep = "account" | "workspace" | "runtime";
@@ -88,8 +89,18 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
   };
 
   return (
-    <main ref={entryRef} className="auth-entry" data-auth-revision="mobile-stable-v9" onPointerMove={updateSceneLight}>
-      <img className="auth-art__image auth-scene__image" src="/cortex-auth-hero.jpg" alt="Monument sculptural représentant plusieurs intelligences coordonnées dans un même environnement." />
+    <main ref={entryRef} className="auth-entry" data-auth-revision="hero-hq-v10" onPointerMove={updateSceneLight}>
+      <img
+        className="auth-art__image auth-scene__image"
+        src="/cortex-auth-hero-2560.webp"
+        srcSet="/cortex-auth-hero-1920.webp 1920w, /cortex-auth-hero-2560.webp 2560w, /cortex-auth-hero-3840.webp 3840w"
+        sizes="100vw"
+        fetchPriority="high"
+        loading="eager"
+        decoding="async"
+        draggable={false}
+        alt="Monument sculptural représentant plusieurs intelligences coordonnées dans un même environnement."
+      />
       <div className="auth-scene__veil" aria-hidden />
       <DitherAtmosphere />
       <div className="auth-scene__grain" aria-hidden />

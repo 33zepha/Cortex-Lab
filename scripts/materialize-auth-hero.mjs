@@ -6,7 +6,6 @@ import sharp from "sharp";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sourceDir = path.join(repoRoot, "assets", "auth");
 const outputDir = path.join(repoRoot, "public");
-const outputPath = path.join(outputDir, "cortex-auth-hero.jpg");
 
 const sourcePaths = [0, 1, 2].map((index) => path.join(sourceDir, `cortex-auth-hero.part${index}.b64`));
 const parts = await Promise.all(sourcePaths.map((sourcePath) => readFile(sourcePath, "utf8")));
@@ -26,14 +25,35 @@ if (metadata.format !== "webp" || metadata.width !== 1024 || metadata.height !==
   throw new Error(`Invalid Cortex auth hero payload: ${metadata.format} ${metadata.width}x${metadata.height}`);
 }
 
-const jpeg = await sharp(bytes)
-  .jpeg({ quality: 88, mozjpeg: true, chromaSubsampling: "4:4:4" })
-  .toBuffer();
-const jpegMetadata = await sharp(jpeg).metadata();
-if (jpegMetadata.format !== "jpeg" || jpegMetadata.width !== 1024 || jpegMetadata.height !== 576) {
-  throw new Error(`Invalid generated Cortex auth hero: ${jpegMetadata.format} ${jpegMetadata.width}x${jpegMetadata.height}`);
-}
-
 await mkdir(outputDir, { recursive: true });
-await writeFile(outputPath, jpeg);
-console.log(`[auth-art] materialized ${path.relative(repoRoot, outputPath)} (${jpegMetadata.width}x${jpegMetadata.height}, ${jpeg.length} bytes)`);
+
+const derivatives = [
+  { width: 1920, height: 1080 },
+  { width: 2560, height: 1440 },
+  { width: 3840, height: 2160 },
+];
+
+for (const { width, height } of derivatives) {
+  const outputPath = path.join(outputDir, `cortex-auth-hero-${width}.webp`);
+  const image = await sharp(bytes)
+    .resize(width, height, {
+      fit: "fill",
+      kernel: sharp.kernel.lanczos3,
+      withoutEnlargement: false,
+    })
+    .sharpen({ sigma: 1.05 })
+    .webp({
+      quality: 95,
+      effort: 6,
+      smartSubsample: true,
+    })
+    .toBuffer();
+
+  const outputMetadata = await sharp(image).metadata();
+  if (outputMetadata.format !== "webp" || outputMetadata.width !== width || outputMetadata.height !== height) {
+    throw new Error(`Invalid generated Cortex auth hero: ${outputMetadata.format} ${outputMetadata.width}x${outputMetadata.height}`);
+  }
+
+  await writeFile(outputPath, image);
+  console.log(`[auth-art] materialized ${path.relative(repoRoot, outputPath)} (${width}x${height}, ${image.length} bytes)`);
+}
