@@ -53,9 +53,12 @@ function rememberLastEventId(raw: MessageEvent): void {
  * EventSource se reconnecte automatiquement et le serveur reprend après Last-Event-ID.
  * Le cursor session évite aussi de rejouer tout le ledger après un remount de l'UI.
  */
-export function useCortexStream(onEvent: (event: CortexStreamEvent) => void): void {
+export function useCortexStream(
+  onEvent: (event: CortexStreamEvent) => void,
+  enabled = true,
+): void {
   useEffect(() => {
-    if (typeof EventSource === "undefined") return;
+    if (!enabled || typeof EventSource === "undefined") return;
     const cursor = readInitialCursor();
     const source = new EventSource(apiUrl(`/api/stream?cursor=${cursor}`));
 
@@ -78,5 +81,5 @@ export function useCortexStream(onEvent: (event: CortexStreamEvent) => void): vo
       for (const { type, listener } of listeners) source.removeEventListener(type, listener);
       source.close();
     };
-  }, [onEvent]);
+  }, [enabled, onEvent]);
 }
