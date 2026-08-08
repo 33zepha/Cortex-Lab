@@ -16,7 +16,7 @@ async function advanceAccount(page: Page) {
   await page.getByLabel("Email").fill("preview@cortex.local");
   await page.getByLabel("Password").fill("cortex-preview-password");
   await page.getByRole("button", { name: "Continue" }).click();
-  await page.getByLabel("Workspace").waitFor({ state: "visible" });
+  await page.getByRole("textbox", { name: "Workspace", exact: true }).waitFor({ state: "visible" });
   await page.waitForTimeout(420);
 }
 
