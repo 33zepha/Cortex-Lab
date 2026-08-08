@@ -12,6 +12,46 @@ async function settle(page: Page) {
   await page.waitForTimeout(380);
 }
 
+async function assertMobileRenderingContract(page: Page) {
+  const state = await page.evaluate(() => {
+    const entry = document.querySelector<HTMLElement>(".auth-entry");
+    const image = document.querySelector<HTMLElement>(".auth-art__image");
+    const core = document.querySelector<HTMLElement>('.liquid-surface[data-liquid-variant="core"]');
+    const action = document.querySelector<HTMLElement>(".auth-action");
+    const dither = document.querySelector<HTMLElement>(".auth-dither-atmosphere");
+    const title = document.querySelector<HTMLElement>(".auth-heading h1");
+    if (!entry || !image || !core || !action || !dither || !title) return null;
+    const entryStyle = getComputedStyle(entry);
+    const imageStyle = getComputedStyle(image);
+    const coreStyle = getComputedStyle(core);
+    const actionStyle = getComputedStyle(action);
+    const ditherStyle = getComputedStyle(dither);
+    const titleStyle = getComputedStyle(title);
+    return {
+      overflowY: entryStyle.overflowY,
+      imagePosition: imageStyle.position,
+      imageFilter: imageStyle.filter,
+      imageWillChange: imageStyle.willChange,
+      coreBackdrop: coreStyle.backdropFilter,
+      actionBackdrop: actionStyle.backdropFilter,
+      ditherDisplay: ditherStyle.display,
+      titleAnimation: titleStyle.animationName,
+    };
+  });
+
+  if (!state) throw new Error("Mobile auth rendering contract could not inspect required elements");
+  const violations: string[] = [];
+  if (!['auto', 'scroll'].includes(state.overflowY)) violations.push(`entry overflow-y=${state.overflowY}`);
+  if (state.imagePosition !== "fixed") violations.push(`background position=${state.imagePosition}`);
+  if (state.imageFilter !== "none") violations.push(`background filter=${state.imageFilter}`);
+  if (state.imageWillChange !== "auto") violations.push(`background will-change=${state.imageWillChange}`);
+  if (state.coreBackdrop !== "none") violations.push(`core backdrop-filter=${state.coreBackdrop}`);
+  if (state.actionBackdrop !== "none") violations.push(`action backdrop-filter=${state.actionBackdrop}`);
+  if (state.ditherDisplay !== "none") violations.push(`dither display=${state.ditherDisplay}`);
+  if (!state.titleAnimation.includes("auth-title-reveal-mobile")) violations.push(`title animation=${state.titleAnimation}`);
+  if (violations.length) throw new Error(`Mobile auth rendering contract failed: ${violations.join(", ")}`);
+}
+
 async function advanceAccount(page: Page) {
   await page.getByLabel("Email").fill("preview@cortex.local");
   await page.getByLabel("Password").fill("cortex-preview-password");
@@ -31,6 +71,7 @@ async function captureLogin(browser: Browser, width: number, height: number, nam
   const page = await context.newPage();
   await page.goto(`${BASE_URL}/login`);
   await settle(page);
+  await assertMobileRenderingContract(page);
   await page.screenshot({ path: path.join(OUT_DIR, name), fullPage: true });
   await context.close();
 }
@@ -82,6 +123,7 @@ async function main() {
   const flowMobile = await mobile.newPage();
   await flowMobile.goto(`${BASE_URL}/signup`);
   await settle(flowMobile);
+  await assertMobileRenderingContract(flowMobile);
   await flowMobile.screenshot({ path: path.join(OUT_DIR, "auth-signup-mobile.png"), fullPage: true });
 
   await advanceAccount(flowMobile);
