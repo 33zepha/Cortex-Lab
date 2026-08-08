@@ -730,6 +730,19 @@ export async function simulatorPost<T>(path: string, body: unknown): Promise<T> 
     const objective = typeof commandBody.objective === "string" ? commandBody.objective.trim() : "Nouvelle mission Cortex";
     const constraints = typeof commandBody.constraints === "string" ? commandBody.constraints.trim() : undefined;
     const model = typeof commandBody.model === "string" ? commandBody.model : "claude-code";
+    const agentId = typeof commandBody.agentId === "string" ? commandBody.agentId : "antigravity";
+    const runtimeId = typeof commandBody.runtimeId === "string" ? commandBody.runtimeId : "auto";
+    const agentProfiles: Record<string, { name: string; role: string }> = {
+      antigravity: { name: "Antigravity", role: "Lead Engineer" },
+      claude: { name: "Claude", role: "Research & Reasoning" },
+      codex: { name: "Codex", role: "Implementation" },
+      kimi: { name: "Kimi", role: "Context & Exploration" },
+    };
+    const runtimeProfiles: Record<string, { name: string; adapter: string; location: string }> = {
+      auto: { name: "Routage Cortex", adapter: "Auto", location: "capacité disponible" },
+      "cortex-vps": { name: "Cortex VPS", adapter: "Claude Code", location: "eu-west · Tailscale" },
+      "local-worker": { name: "Worker local", adapter: "Kimi CLI", location: "Tailscale" },
+    };
     const stages: OperatorStage[] = [
       { id: "understand", label: "Comprendre l'objectif", status: "pending" },
       { id: "execute", label: "Exécuter le plan", status: "pending" },
@@ -754,6 +767,21 @@ export async function simulatorPost<T>(path: string, body: unknown): Promise<T> 
     });
     mission.model = model;
     if (mission.operator) {
+      const agent = agentProfiles[agentId] ?? agentProfiles.antigravity;
+      const runtime = runtimeProfiles[runtimeId] ?? runtimeProfiles.auto;
+      mission.operator.run.agent = {
+        id: `agent:${agentId}`,
+        name: agent.name,
+        role: agent.role,
+        status: "working",
+      };
+      mission.operator.run.runtime = {
+        id: `runtime:${runtimeId}`,
+        name: runtime.name,
+        adapter: runtime.adapter,
+        location: runtime.location,
+        status: "online",
+      };
       mission.operator.run.model = {
         id: `model:${model}`,
         name: model,
