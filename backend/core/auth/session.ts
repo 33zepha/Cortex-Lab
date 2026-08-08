@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
 export const SESSION_COOKIE = "cortex_session";
 export const SESSION_TTL_SECONDS = 60 * 60 * 24 * 14;
@@ -8,7 +8,15 @@ export const DEVELOPMENT_SESSION_SECRET = "local-development-session-secret";
 export function resolveSessionSecret(raw: string | undefined, production: boolean): string {
   const configured = raw?.trim() ?? "";
   if (configured) return configured;
-  return production ? "" : DEVELOPMENT_SESSION_SECRET;
+  if (!production) return DEVELOPMENT_SESSION_SECRET;
+
+  // Production prefers a dedicated CORTEX_SESSION_SECRET. For existing Cortex
+  // deployments that predate that variable, derive an isolated signing key from
+  // another server-only secret instead of taking auth offline. The source secret
+  // is never exposed to the browser or persisted in the repository.
+  const fallbackMaterial = process.env.CORTEX_API_TOKEN?.trim() || process.env.CORTEX_ACCESS_PASSWORD?.trim() || "";
+  if (!fallbackMaterial) return "";
+  return createHash("sha256").update(`cortex-session:v1:${fallbackMaterial}`).digest("hex");
 }
 
 export function isAcceptableSessionSecret(secret: string, production: boolean): boolean {
