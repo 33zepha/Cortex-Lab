@@ -2,7 +2,6 @@ import { useState } from "react";
 import { AnimatePresence, useReducedMotion } from "framer-motion";
 import { CheckIcon } from "@heroicons/react/24/solid";
 import { LiquidButton, LiquidSurface } from "@/components/ui/LiquidSurface";
-import { SPRING_BOUNCY } from "@/lib/animations";
 import { cn } from "@/lib/cn";
 
 type StepId = "account" | "workspace" | "runtime";
@@ -12,6 +11,7 @@ const ITEMS: Array<{ id: StepId; label: string }> = [
   { id: "workspace", label: "Workspace" },
   { id: "runtime", label: "Connect" },
 ];
+const NAV_SPRING = { type: "spring" as const, stiffness: 430, damping: 32, mass: .72 };
 
 export function AuthStepNav({
   step,
@@ -25,7 +25,7 @@ export function AuthStepNav({
   const [open, setOpen] = useState(false);
   const reduceMotion = useReducedMotion();
   const currentIndex = ITEMS.findIndex((item) => item.id === step);
-  const transition = reduceMotion ? { duration: 0 } : SPRING_BOUNCY;
+  const transition = reduceMotion ? { duration: 0 } : NAV_SPRING;
 
   return (
     <div className="auth-step-nav">
@@ -38,6 +38,7 @@ export function AuthStepNav({
             className="auth-step-trigger"
             type="button"
             transition={transition}
+            whileTap={reduceMotion ? undefined : { scale: .97 }}
             onClick={() => setOpen(true)}
             aria-label={`Onboarding step ${currentIndex + 1} of ${ITEMS.length}: ${ITEMS[currentIndex]?.label}`}
           >
