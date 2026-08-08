@@ -62,10 +62,10 @@ function fallbackStatus(mission: Mission): OperatorRunStatus {
 function fallbackCapabilities(status: OperatorRunStatus): MissionControlCapabilities {
   return {
     canPause: false,
-    canResume: status === "paused",
-    canCancel: ["queued", "planning", "running", "waiting_for_human", "paused"].includes(status),
-    canRetry: status === "failed" || status === "cancelled",
-    canAddInstruction: ["running", "waiting_for_human", "paused"].includes(status),
+    canResume: false,
+    canCancel: ["running", "waiting_for_human"].includes(status),
+    canRetry: false,
+    canAddInstruction: false,
     canApprove: status === "waiting_for_human",
     canReject: status === "waiting_for_human",
   };
