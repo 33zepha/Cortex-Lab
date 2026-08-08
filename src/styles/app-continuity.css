@@ -89,6 +89,10 @@
   background-color: rgba(20,24,21,.075) !important;
 }
 
+.cortex-app-main .bg-accent-indigo {
+  background-color: #141815 !important;
+}
+
 .cortex-app-main [class*="border-accent-indigo"] {
   border-color: rgba(20,24,21,.16) !important;
 }
