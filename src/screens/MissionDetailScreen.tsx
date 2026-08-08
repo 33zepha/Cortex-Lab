@@ -1,74 +1,197 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangle,
+  Bot,
   Check,
+  CheckCircle2,
   ChevronLeft,
+  CircleStop,
   Clock3,
   Copy,
+  Cpu,
   Download,
   FileEdit,
-  Files,
   FileText,
+  Files,
   FlaskConical,
   GitCompare,
+  LoaderCircle,
+  MessageSquareText,
+  Pause,
+  Play,
   Route,
+  Server,
+  ShieldAlert,
   X,
   XCircle,
 } from "lucide-react";
 import {
-  Button,
   Drawer,
   DrawerContent,
   EmptyState,
   ErrorState,
-  InspectorPanel,
-  Progress,
   Skeleton,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-  TimelineItem,
 } from "@/components/ui";
+import { MissionControlBar } from "@/components/operator/MissionControlBar";
 import { useMission } from "@/lib/useMissions";
 import { apiPost } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
-import { getMissionDisplay } from "@/lib/mission-naming";
-import { formatClock, formatDuration, missionStatusConfig } from "@/lib/status";
+import { formatClock, formatDuration } from "@/lib/status";
+import { getOperationalMission } from "@/lib/operator-contract";
 import { EvidenceDetail } from "@/screens/mission-detail/EvidenceDetail";
 import { DiffView } from "@/screens/mission-detail/DiffView";
 import { cn } from "@/lib/cn";
-import type { Mission } from "@/lib/types";
+import type {
+  Mission,
+  OperatorRunStatus,
+  OperatorStage,
+  TimelineEventType,
+} from "@/lib/types";
 
-const statusTextClass: Record<Mission["status"], string> = {
-  running: "text-accent-indigo",
-  needs_review: "text-warning",
-  completed: "text-success",
-  failed: "text-error",
+const statusClasses: Record<OperatorRunStatus, string> = {
+  queued: "text-text-muted",
+  planning: "text-text-secondary",
+  running: "text-text-primary",
+  waiting_for_human: "text-warning",
+  paused: "text-text-secondary",
+  cancelling: "text-text-muted",
   cancelled: "text-text-muted",
+  failed: "text-error",
+  succeeded: "text-success",
 };
 
-function SectionHeading({ title, detail }: { title: string; detail?: string }) {
+const eventMeta: Record<TimelineEventType, { label: string; icon: LucideIcon; className: string }> = {
+  plan: { label: "Plan", icon: Route, className: "text-text-secondary" },
+  step: { label: "Étape", icon: Play, className: "text-text-primary" },
+  file_read: { label: "Lecture", icon: FileText, className: "text-text-muted" },
+  file_modified: { label: "Modification", icon: FileEdit, className: "text-text-primary" },
+  test: { label: "Test", icon: FlaskConical, className: "text-success" },
+  decision: { label: "Décision", icon: AlertTriangle, className: "text-warning" },
+  closure: { label: "Clôture", icon: CheckCircle2, className: "text-success" },
+  error: { label: "Erreur", icon: ShieldAlert, className: "text-error" },
+};
+
+function SectionHeading({
+  eyebrow,
+  title,
+  detail,
+}: {
+  eyebrow?: string;
+  title: string;
+  detail?: string;
+}) {
   return (
-    <div className="mb-3 flex items-baseline justify-between gap-4">
-      <h2 className="text-[13px] font-bold tracking-[-0.015em] text-text-primary laptop:text-[14px]">{title}</h2>
-      {detail && <span className="text-[10px] font-semibold text-text-muted laptop:text-[11px]">{detail}</span>}
+    <div className="mb-3 flex items-end justify-between gap-4">
+      <div>
+        {eyebrow && <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-text-muted">{eyebrow}</p>}
+        <h2 className={cn("text-[15px] font-bold tracking-[-0.022em] text-text-primary", eyebrow && "mt-1")}>{title}</h2>
+      </div>
+      {detail && <span className="font-mono text-[9.5px] font-semibold text-text-muted">{detail}</span>}
     </div>
   );
 }
 
-function Metric({ label, value, icon }: { label: string; value: React.ReactNode; icon: React.ReactNode }) {
+function RunFact({
+  icon: Icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  detail?: string;
+}) {
   return (
-    <div className="min-w-0">
+    <div className="min-w-0 py-3">
       <div className="flex items-center gap-1.5 text-text-muted">
-        {icon}
-        <span className="text-[9px] font-bold uppercase tracking-[0.1em]">{label}</span>
+        <Icon className="size-3.5" strokeWidth={2.8} aria-hidden />
+        <span className="text-[8.5px] font-bold uppercase tracking-[0.11em]">{label}</span>
       </div>
-      <p className="mt-1 truncate text-[18px] font-bold leading-none tracking-[-0.035em] text-text-primary laptop:text-[20px]">{value}</p>
+      <p className="mt-1.5 truncate text-[12px] font-bold text-text-primary">{value}</p>
+      {detail && <p className="mt-0.5 truncate font-mono text-[9px] font-semibold text-text-muted">{detail}</p>}
     </div>
   );
+}
+
+function StageIcon({ stage }: { stage: OperatorStage }) {
+  if (stage.status === "completed") return <Check className="size-4 text-success" strokeWidth={3} aria-hidden />;
+  if (stage.status === "failed") return <X className="size-4 text-error" strokeWidth={3} aria-hidden />;
+  if (stage.status === "running") return <LoaderCircle className="size-4 animate-pulse text-text-primary" strokeWidth={2.8} aria-hidden />;
+  if (stage.status === "skipped") return <CircleStop className="size-4 text-text-muted" strokeWidth={2.6} aria-hidden />;
+  return <Clock3 className="size-4 text-text-muted/55" strokeWidth={2.5} aria-hidden />;
+}
+
+function StageList({ stages, currentStageId }: { stages: OperatorStage[]; currentStageId: string | null }) {
+  return (
+    <ol className="divide-y divide-black/[0.05] border-y border-black/[0.065]">
+      {stages.map((stage, index) => (
+        <li key={stage.id} className="grid min-h-[58px] grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-3 py-2.5">
+          <span className="flex size-8 items-center justify-center">
+            <StageIcon stage={stage} />
+          </span>
+          <span className="min-w-0">
+            <span className={cn(
+              "block text-[11.5px] font-bold text-text-primary",
+              stage.status === "pending" && "text-text-muted",
+            )}>
+              {stage.label}
+            </span>
+            {stage.detail && <span className="mt-0.5 block line-clamp-1 text-[9.5px] font-medium text-text-muted">{stage.detail}</span>}
+          </span>
+          <span className={cn(
+            "font-mono text-[8.5px] font-bold uppercase tracking-[0.08em] text-text-muted",
+            stage.id === currentStageId && "text-text-primary",
+          )}>
+            {stage.status === "completed"
+              ? "Fait"
+              : stage.status === "running"
+                ? "En cours"
+                : stage.status === "failed"
+                  ? "Échec"
+                  : stage.status === "skipped"
+                    ? "Ignoré"
+                    : `${index + 1}`}
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function FileList({ title, files, modified = false }: { title: string; files: string[]; modified?: boolean }) {
+  const Icon = modified ? FileEdit : FileText;
+  return (
+    <div>
+      <div className="mb-2 flex items-baseline justify-between gap-3">
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-secondary">{title}</h3>
+        <span className="font-mono text-[9px] font-semibold text-text-muted">{files.length}</span>
+      </div>
+      <ul className="divide-y divide-black/[0.05] border-y border-black/[0.06]">
+        {files.length === 0 ? (
+          <li className="py-3 text-[10.5px] font-medium text-text-muted">Aucun fichier.</li>
+        ) : files.map((file) => (
+          <li key={file} className="flex min-h-10 items-center gap-2 py-2 font-mono text-[10px] font-semibold text-text-secondary">
+            <Icon className="size-3.5 shrink-0" strokeWidth={2.7} aria-hidden />
+            <span className="truncate">{file}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function parseTab(value: string | null): "summary" | "activity" | "details" {
+  if (value === "timeline" || value === "activity") return "activity";
+  if (["files", "tests", "evidence", "patch", "errors", "details"].includes(value ?? "")) return "details";
+  return "summary";
 }
 
 export function MissionDetailScreen() {
@@ -77,61 +200,48 @@ export function MissionDetailScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { mission, loading, error, refetch } = useMission(id);
   const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
-  const [cancelling, setCancelling] = useState(false);
-  const [approving, setApproving] = useState(false);
-  const [rejecting, setRejecting] = useState(false);
-  const [copyStatus, setCopyStatus] = useState<"idle" | "copying" | "copied">("idle");
-  const [downloading, setDownloading] = useState(false);
-  const activeTab = searchParams.get("tab") ?? "timeline";
+  const [decisionBusy, setDecisionBusy] = useState<"approve" | "reject" | null>(null);
+  const [decisionError, setDecisionError] = useState<string | null>(null);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
+  const activeTab = parseTab(searchParams.get("tab"));
 
-  const evidenceIdByFile = useMemo(
-    () => new Map((mission?.evidence ?? []).map((evidence) => [evidence.title, evidence.id])),
-    [mission],
+  const selectedEvidence = useMemo(
+    () => mission?.evidence.find((evidence) => evidence.id === selectedEvidenceId) ?? null,
+    [mission, selectedEvidenceId],
   );
 
   function setActiveTab(next: string) {
     const params = new URLSearchParams(searchParams);
-    if (next === "timeline") params.delete("tab");
+    if (next === "summary") params.delete("tab");
     else params.set("tab", next);
     setSearchParams(params, { replace: true });
   }
 
-  async function handleCancel() {
-    if (!id) return;
-    setCancelling(true);
-    try {
-      await apiPost(`/api/missions/${id}/cancel`, { reason: "Annulée depuis l'interface" });
-      refetch();
-    } finally {
-      setCancelling(false);
-    }
-  }
-
   async function handleDecision(decision: "approve" | "reject") {
-    if (!id) return;
-    const setter = decision === "approve" ? setApproving : setRejecting;
-    setter(true);
+    if (!mission) return;
+    setDecisionBusy(decision);
+    setDecisionError(null);
     try {
-      await apiPost(`/api/missions/${id}/decision`, { decision });
-      refetch();
+      await apiPost<Mission>(`/api/missions/${mission.id}/decision`, { decision });
+      await refetch();
+    } catch (commandError) {
+      setDecisionError(commandError instanceof Error ? commandError.message : String(commandError));
     } finally {
-      setter(false);
+      setDecisionBusy(null);
     }
   }
 
-  async function handleCopy(patch: string) {
-    setCopyStatus("copying");
+  async function copyPatch(patch: string) {
     try {
       await navigator.clipboard.writeText(patch);
       setCopyStatus("copied");
-      window.setTimeout(() => setCopyStatus("idle"), 1500);
+      window.setTimeout(() => setCopyStatus("idle"), 1_500);
     } catch {
       setCopyStatus("idle");
     }
   }
 
-  function handleDownload(patch: string, missionId: string) {
-    setDownloading(true);
+  function downloadPatch(patch: string, missionId: string) {
     const blob = new Blob([patch], { type: "text/x-diff" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
@@ -139,14 +249,13 @@ export function MissionDetailScreen() {
     anchor.download = `${missionId}.patch`;
     anchor.click();
     URL.revokeObjectURL(url);
-    window.setTimeout(() => setDownloading(false), 400);
   }
 
   if (loading) {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18 }}>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <Skeleton className="mb-5 h-10 w-28 rounded-[12px]" />
-        <Skeleton className="mb-8 h-52 w-full rounded-[18px]" />
+        <Skeleton className="mb-5 h-64 w-full rounded-[18px]" />
         <Skeleton className="h-72 w-full rounded-[18px]" />
       </motion.div>
     );
@@ -155,277 +264,352 @@ export function MissionDetailScreen() {
   if (error || !mission) {
     return (
       <ErrorState
-        title={error ? "Impossible de joindre l'API Cortex" : "Mission introuvable"}
-        description={error ?? "Cette mission n'existe pas ou a été supprimée."}
+        title={error ? "Impossible de charger la mission" : "Mission introuvable"}
+        description={error ?? "Cette mission n'existe pas ou n'est plus accessible."}
         onRetry={() => navigate(ROUTES.missions)}
       />
     );
   }
 
-  const status = missionStatusConfig[mission.status];
-  const selectedEvidence = mission.evidence.find((evidence) => evidence.id === selectedEvidenceId) ?? null;
+  const view = getOperationalMission(mission);
+  const duration = ["queued", "planning", "running", "waiting_for_human", "paused", "cancelling"].includes(view.status)
+    ? Date.now() - mission.createdAt
+    : mission.durationMs;
+  const failedStage = view.stages.find((stage) => stage.status === "failed") ?? null;
   const testsValue = mission.tests.total > 0 ? `${mission.tests.passed}/${mission.tests.total}` : "—";
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <Link to={ROUTES.missions} className="inline-flex min-h-11 items-center gap-1.5 text-[12px] font-bold text-text-muted hover:text-text-primary laptop:min-h-0 laptop:text-sm">
-          <ChevronLeft className="size-[18px]" strokeWidth={3} /> Missions
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18 }} className="w-full">
+      <div className="mb-4 flex min-h-10 items-center justify-between gap-4">
+        <Link
+          to={ROUTES.missions}
+          className="inline-flex min-h-10 items-center gap-1.5 text-[11px] font-bold text-text-muted transition-colors hover:text-text-primary"
+        >
+          <ChevronLeft className="size-[17px]" strokeWidth={3} aria-hidden />
+          Missions
         </Link>
-        <span className="max-w-[45%] truncate font-mono text-[9px] font-semibold text-text-muted/65 laptop:text-[10px]">{mission.id}</span>
+        <span className="max-w-[56%] truncate font-mono text-[8.5px] font-semibold text-text-muted">
+          {view.runId} · tentative {view.attempt}
+        </span>
       </div>
 
       <header className="relative border-y border-black/[0.065] py-5 laptop:py-7">
-        <Route className="pointer-events-none absolute -right-2 -top-6 size-[110px] -rotate-6 text-text-primary opacity-[0.025]" strokeWidth={2.7} aria-hidden />
-        <div className="relative z-10 flex items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <span className={cn("text-[10px] font-bold uppercase tracking-[0.11em]", statusTextClass[mission.status])}>{status.label}</span>
-              <span className="font-mono text-[10px] font-semibold text-text-muted">{mission.model}</span>
+        <Route className="pointer-events-none absolute -right-3 -top-7 size-[112px] -rotate-6 text-text-primary opacity-[0.022]" strokeWidth={2.7} aria-hidden />
+        <div className="relative z-[1]">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className={cn("text-[9.5px] font-bold uppercase tracking-[0.12em]", statusClasses[view.status])}>
+              {view.statusLabel}
+            </span>
+            <span className="font-mono text-[9px] font-semibold text-text-muted">{view.stageLabel}</span>
+          </div>
+
+          <h1 className="mt-3 max-w-4xl text-[25px] font-extrabold leading-[1.05] tracking-[-0.045em] text-text-primary laptop:text-[34px]">
+            {mission.title ?? mission.objective}
+          </h1>
+          {mission.title && mission.title !== mission.objective && (
+            <p className="mt-3 max-w-3xl text-[12px] font-semibold leading-relaxed text-text-secondary">{mission.objective}</p>
+          )}
+          {mission.constraints && (
+            <p className="mt-3 max-w-3xl text-[10.5px] font-medium leading-relaxed text-text-muted">
+              <strong className="font-bold text-text-secondary">Contrainte</strong> · {mission.constraints}
+            </p>
+          )}
+
+          {view.attention && (
+            <div className={cn(
+              "mt-5 grid grid-cols-[auto_minmax(0,1fr)] gap-3 border-l-2 py-1 pl-3",
+              view.attention.kind === "failure" ? "border-error/65" : view.attention.kind === "decision" ? "border-warning/70" : "border-text-primary/28",
+            )}>
+              <AlertTriangle className={cn(
+                "mt-0.5 size-4",
+                view.attention.kind === "failure" ? "text-error" : view.attention.kind === "decision" ? "text-warning" : "text-text-secondary",
+              )} strokeWidth={2.8} aria-hidden />
+              <div>
+                <p className="text-[11.5px] font-bold text-text-primary">{view.attention.title}</p>
+                <p className="mt-0.5 text-[10.5px] font-medium leading-relaxed text-text-secondary">{view.attention.summary}</p>
+              </div>
             </div>
-            <h1 className="mt-3 max-w-4xl text-[26px] font-bold leading-[1.06] tracking-[-0.045em] text-text-primary laptop:text-[32px]">
-              {getMissionDisplay(mission, { preset: "hero" }).title}
-            </h1>
-            {getMissionDisplay(mission, { preset: "hero" }).isSummarized && (
-              <div className="mt-3 max-w-3xl rounded-xl border border-border/80 bg-surface-1/70 p-3.5 shadow-sm">
-                <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted">
-                  Objectif complet
-                </p>
-                <p className="text-[12px] font-medium leading-relaxed text-text-primary">
-                  {getMissionDisplay(mission, { preset: "hero" }).fullObjective}
-                </p>
+          )}
+
+          <div className="mt-6 grid grid-cols-2 divide-x divide-y divide-black/[0.055] border-y border-black/[0.055] tablet:grid-cols-4 tablet:divide-y-0">
+            <div className="pr-3 tablet:pr-4">
+              <RunFact icon={Bot} label="Agent" value={view.agentName} detail={view.agentRole} />
+            </div>
+            <div className="pl-3 tablet:px-4">
+              <RunFact icon={Server} label="Runtime" value={view.runtimeName} detail={view.runtimeDetail} />
+            </div>
+            <div className="pr-3 tablet:px-4">
+              <RunFact icon={Cpu} label="Modèle" value={view.modelName} detail={view.modelProvider} />
+            </div>
+            <div className="pl-3 tablet:pl-4">
+              <RunFact icon={Clock3} label="Durée" value={formatDuration(duration)} detail={view.runtimeStatus} />
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <div className="flex items-end justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-[8.5px] font-bold uppercase tracking-[0.11em] text-text-muted">Étape courante</p>
+                <p className="mt-1 truncate text-[12px] font-bold text-text-primary">{view.stageLabel}</p>
+              </div>
+              {view.progress !== null && (
+                <span className="font-mono text-[10px] font-bold tabular-nums text-text-secondary">
+                  {view.progress}% mesuré
+                </span>
+              )}
+            </div>
+            {view.progress !== null && (
+              <div className="mt-2 h-[3px] overflow-hidden bg-black/[0.07]" aria-label={`Progression mesurée : ${view.progress}%`}>
+                <div className="h-full bg-[#252b26]" style={{ width: `${view.progress}%` }} />
               </div>
             )}
-            {mission.summary && mission.status === "completed" && (
-              <p className="mt-4 max-w-3xl text-[12px] font-semibold leading-relaxed text-text-secondary laptop:text-[13px]">{mission.summary}</p>
-            )}
-            {mission.constraints && (
-              <p className="mt-3 max-w-3xl text-[11px] font-medium leading-relaxed text-text-muted">
-                <span className="font-bold text-text-secondary">Contrainte</span> · {mission.constraints}
-              </p>
-            )}
-          </div>
-
-          {(mission.status === "running" || mission.status === "needs_review") && (
-            <button
-              type="button"
-              onClick={handleCancel}
-              disabled={cancelling}
-              aria-label="Annuler la mission"
-              className="flex size-11 shrink-0 items-center justify-center rounded-[12px] border border-error/18 text-error hover:bg-error-muted/25 active:opacity-70 disabled:opacity-45 laptop:size-10"
-            >
-              <XCircle className="size-[19px]" strokeWidth={2.9} />
-            </button>
-          )}
-        </div>
-
-        <div className="relative z-10 mt-6 grid grid-cols-3 gap-5 border-t border-black/[0.055] pt-4 laptop:max-w-2xl laptop:gap-10 laptop:pt-5">
-          <Metric label="Durée" value={formatDuration(mission.durationMs)} icon={<Clock3 className="size-3.5" strokeWidth={2.8} />} />
-          <Metric label="Fichiers" value={mission.filesModified.length} icon={<Files className="size-3.5" strokeWidth={2.8} />} />
-          <Metric label="Tests" value={testsValue} icon={<FlaskConical className="size-3.5" strokeWidth={2.8} />} />
-        </div>
-
-        <div className="relative z-10 mt-5 flex items-end justify-between gap-5">
-          <div className="min-w-0">
-            <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-text-muted">Étape</p>
-            <p className="mt-1 truncate text-[12px] font-bold text-text-primary">{mission.step}</p>
-          </div>
-          <div className="shrink-0 text-right">
-            <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-text-muted">Preuves</p>
-            <p className="mt-1 text-[12px] font-bold text-text-primary">{mission.evidence.length}</p>
           </div>
         </div>
-
-        {mission.status === "running" && (
-          <div className="relative z-10 mt-4">
-            <Progress value={mission.progress} />
-            <div className="mt-1.5 flex justify-between text-[9px] font-semibold text-text-muted"><span>Exécution</span><span>{mission.progress}%</span></div>
-          </div>
-        )}
       </header>
 
-      {mission.decisionRequired && (
-        <section className="border-b border-warning/25 py-5">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 size-[18px] shrink-0 text-warning" strokeWidth={2.8} />
-            <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-bold text-text-primary">Décision humaine requise</p>
-              <p className="mt-1 text-[12px] font-medium leading-relaxed text-text-secondary">{mission.decisionPrompt}</p>
-              <div className="mt-4 flex gap-2.5">
-                <button type="button" disabled={approving} onClick={() => handleDecision("approve")} className="min-h-11 rounded-[11px] bg-text-primary px-4 text-[12px] font-bold text-white active:opacity-80 disabled:opacity-45">
-                  <span className="inline-flex items-center gap-2"><Check className="size-4" strokeWidth={3} /> Approuver</span>
+      <MissionControlBar mission={mission} onChanged={() => void refetch()} />
+
+      {view.decision && view.status === "waiting_for_human" && (
+        <section className="mt-6 border-y border-warning/25 py-5" aria-labelledby="decision-heading">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-3">
+            <AlertTriangle className="mt-0.5 size-[18px] text-warning" strokeWidth={2.9} aria-hidden />
+            <div className="min-w-0">
+              <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-warning">Décision humaine</p>
+              <h2 id="decision-heading" className="mt-1 text-[16px] font-bold tracking-[-0.025em] text-text-primary">{view.decision.title}</h2>
+              <p className="mt-2 text-[12px] font-semibold leading-relaxed text-text-primary">{view.decision.question}</p>
+
+              <dl className="mt-4 grid grid-cols-1 gap-3 tablet:grid-cols-2">
+                <div className="border-l border-black/[0.08] pl-3">
+                  <dt className="text-[8.5px] font-bold uppercase tracking-[0.1em] text-text-muted">Pourquoi</dt>
+                  <dd className="mt-1 text-[10.5px] font-medium leading-relaxed text-text-secondary">{view.decision.rationale}</dd>
+                </div>
+                <div className="border-l border-black/[0.08] pl-3">
+                  <dt className="text-[8.5px] font-bold uppercase tracking-[0.1em] text-text-muted">Conséquence</dt>
+                  <dd className="mt-1 text-[10.5px] font-medium leading-relaxed text-text-secondary">{view.decision.impact}</dd>
+                </div>
+              </dl>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={decisionBusy !== null}
+                  onClick={() => handleDecision("approve")}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-[11px] bg-[#141815] px-4 text-[11.5px] font-bold text-[#efeee9] active:opacity-80 disabled:opacity-40"
+                >
+                  <Check className="size-4" strokeWidth={3} aria-hidden />
+                  {decisionBusy === "approve" ? "Validation…" : "Approuver et continuer"}
                 </button>
-                <button type="button" disabled={rejecting} onClick={() => handleDecision("reject")} className="min-h-11 rounded-[11px] border border-black/[0.08] px-4 text-[12px] font-bold text-text-primary active:opacity-70 disabled:opacity-45">
-                  <span className="inline-flex items-center gap-2"><X className="size-4" strokeWidth={3} /> Rejeter</span>
+                <button
+                  type="button"
+                  disabled={decisionBusy !== null}
+                  onClick={() => handleDecision("reject")}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-[11px] border border-black/[0.09] px-4 text-[11.5px] font-bold text-text-primary active:bg-black/[0.035] disabled:opacity-40"
+                >
+                  <X className="size-4" strokeWidth={3} aria-hidden />
+                  {decisionBusy === "reject" ? "Refus…" : "Refuser"}
                 </button>
               </div>
+              {decisionError && <p role="alert" className="mt-3 text-[10.5px] font-bold text-error">{decisionError}</p>}
             </div>
           </div>
         </section>
       )}
 
-      <div className="mt-8 grid grid-cols-1 gap-8 laptop:grid-cols-[minmax(0,1fr)_320px] laptop:gap-10">
-        <div className="min-w-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <SectionHeading title="Exécution" detail={`${mission.timeline.length} événements`} />
-            <TabsList className="mb-5 border-b-black/[0.065]">
-              <TabsTrigger className="px-2 text-[12px] font-bold data-[state=active]:after:bg-text-primary" value="timeline">Journal</TabsTrigger>
-              <TabsTrigger className="px-2 text-[12px] font-bold data-[state=active]:after:bg-text-primary" value="files">Fichiers</TabsTrigger>
-              <TabsTrigger className="px-2 text-[12px] font-bold data-[state=active]:after:bg-text-primary" value="tests">Tests</TabsTrigger>
-              <TabsTrigger className="px-2 text-[12px] font-bold data-[state=active]:after:bg-text-primary" value="evidence">Preuves</TabsTrigger>
-              <TabsTrigger className="px-2 text-[12px] font-bold data-[state=active]:after:bg-text-primary" value="patch">Patch</TabsTrigger>
-              <TabsTrigger className="px-2 text-[12px] font-bold data-[state=active]:after:bg-text-primary" value="errors">Signal</TabsTrigger>
-            </TabsList>
+      <div className="mt-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-6 border-b-black/[0.065]">
+            <TabsTrigger className="px-2 text-[11px] font-bold data-[state=active]:after:bg-text-primary" value="summary">Résumé</TabsTrigger>
+            <TabsTrigger className="px-2 text-[11px] font-bold data-[state=active]:after:bg-text-primary" value="activity">Activité</TabsTrigger>
+            <TabsTrigger className="px-2 text-[11px] font-bold data-[state=active]:after:bg-text-primary" value="details">Détails</TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="timeline">
-              {mission.timeline.length === 0 ? (
-                <EmptyState icon={<Route className="size-5" />} title="Aucun événement pour l'instant" compact />
-              ) : (
-                <div className="border-y border-black/[0.06] py-2">
-                  {mission.timeline.map((event, index) => (
-                    <TimelineItem
-                      key={event.id}
-                      type={event.type}
-                      title={event.title}
-                      detail={event.detail}
-                      ts={event.ts}
-                      children={event.children}
-                      isLast={index === mission.timeline.length - 1}
-                      hasEvidence={Boolean(event.evidenceId)}
-                      onOpenEvidence={() => event.evidenceId && setSelectedEvidenceId(event.evidenceId)}
-                    />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
+          <TabsContent value="summary">
+            <div className="grid grid-cols-1 gap-8 laptop:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)] laptop:gap-10">
+              <section>
+                <SectionHeading eyebrow="Run" title="Progression par étapes" detail={`${view.stages.length} étapes`} />
+                <StageList stages={view.stages} currentStageId={mission.operator?.run.currentStageId ?? null} />
+              </section>
 
-            <TabsContent value="files">
-              <div className="grid grid-cols-1 gap-6 tablet:grid-cols-2">
-                <FileList title="Consultés" files={mission.filesRead} icon="read" />
-                <div>
-                  <div className="mb-2 flex items-baseline justify-between"><h3 className="text-[11px] font-bold text-text-primary">Modifiés</h3><span className="text-[10px] font-semibold text-text-muted">{mission.filesModified.length}</span></div>
-                  <ul className="border-y border-black/[0.06] divide-y divide-black/[0.05]">
-                    {mission.filesModified.length === 0 ? (
-                      <li className="py-3 text-[11px] font-medium text-text-muted">Aucun fichier modifié.</li>
-                    ) : mission.filesModified.map((file) => {
-                      const evidenceId = evidenceIdByFile.get(file) ?? null;
-                      return (
-                        <li key={file}>
-                          <button type="button" disabled={!evidenceId} onClick={() => evidenceId && setSelectedEvidenceId(evidenceId)} className="flex min-h-10 w-full items-center gap-2 py-2 text-left font-mono text-[11px] font-semibold text-text-secondary hover:text-text-primary disabled:cursor-default">
-                            <FileEdit className="size-3.5 shrink-0" strokeWidth={2.7} /><span className="truncate">{file}</span>
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="tests">
-              {mission.tests.total === 0 ? (
-                <EmptyState icon={<FlaskConical className="size-5" />} title="Aucun test exécuté" compact />
-              ) : (
-                <div>
-                  <div className="grid grid-cols-3 gap-5 border-y border-black/[0.06] py-4">
-                    <Metric label="Total" value={mission.tests.total} icon={<FlaskConical className="size-3.5" strokeWidth={2.8} />} />
-                    <Metric label="Passés" value={mission.tests.passed} icon={<Check className="size-3.5" strokeWidth={3} />} />
-                    <Metric label="Échecs" value={mission.tests.failed} icon={<X className="size-3.5" strokeWidth={3} />} />
+              <section>
+                <SectionHeading eyebrow="État" title={view.status === "failed" ? "Diagnostic" : view.status === "succeeded" ? "Résultat" : "Situation actuelle"} />
+                {view.status === "failed" ? (
+                  <dl className="divide-y divide-black/[0.05] border-y border-black/[0.065]">
+                    <div className="py-3">
+                      <dt className="text-[8.5px] font-bold uppercase tracking-[0.1em] text-text-muted">Cause</dt>
+                      <dd className="mt-1 text-[10.5px] font-semibold leading-relaxed text-error">{mission.error ?? "Cause non exposée par le runtime."}</dd>
+                    </div>
+                    <div className="py-3">
+                      <dt className="text-[8.5px] font-bold uppercase tracking-[0.1em] text-text-muted">Où</dt>
+                      <dd className="mt-1 text-[10.5px] font-semibold text-text-primary">{failedStage?.label ?? view.stageLabel}</dd>
+                    </div>
+                    <div className="py-3">
+                      <dt className="text-[8.5px] font-bold uppercase tracking-[0.1em] text-text-muted">Conséquence</dt>
+                      <dd className="mt-1 text-[10.5px] font-medium leading-relaxed text-text-secondary">Le run est arrêté. Les événements et preuves déjà produits restent conservés.</dd>
+                    </div>
+                    <div className="py-3">
+                      <dt className="text-[8.5px] font-bold uppercase tracking-[0.1em] text-text-muted">Action recommandée</dt>
+                      <dd className="mt-1 text-[10.5px] font-semibold leading-relaxed text-text-primary">
+                        {view.capabilities.canRetry ? "Relancer depuis le dernier checkpoint durable." : "Inspecter le signal puis corriger le runtime concerné."}
+                      </dd>
+                    </div>
+                  </dl>
+                ) : view.status === "succeeded" ? (
+                  <div className="border-y border-black/[0.065] py-4">
+                    <p className="text-[12px] font-semibold leading-relaxed text-text-primary">
+                      {mission.summary ?? "La mission s'est terminée sans erreur signalée."}
+                    </p>
+                    <div className="mt-4 grid grid-cols-3 gap-4 border-t border-black/[0.05] pt-3">
+                      <RunFact icon={Files} label="Fichiers" value={String(mission.filesModified.length)} />
+                      <RunFact icon={FlaskConical} label="Tests" value={testsValue} />
+                      <RunFact icon={GitCompare} label="Preuves" value={String(mission.evidence.length)} />
+                    </div>
                   </div>
-                  <div className="mt-5 divide-y divide-black/[0.05] border-y border-black/[0.06]">
-                    {mission.evidence.filter((evidence) => evidence.kind === "test").map((evidence) => (
-                      <button key={evidence.id} type="button" onClick={() => setSelectedEvidenceId(evidence.id)} className="flex min-h-11 w-full items-center gap-3 py-2.5 text-left font-mono text-[11px] font-semibold text-text-secondary hover:text-text-primary">
-                        <FlaskConical className="size-4 shrink-0" strokeWidth={2.8} /><span className="truncate">{evidence.title}</span>
+                ) : (
+                  <div className="divide-y divide-black/[0.05] border-y border-black/[0.065]">
+                    <div className="py-3">
+                      <p className="text-[8.5px] font-bold uppercase tracking-[0.1em] text-text-muted">Dernier événement</p>
+                      <p className="mt-1 text-[11px] font-bold text-text-primary">{view.lastEvent?.title ?? "Aucun événement reçu"}</p>
+                      {view.lastEvent?.detail && <p className="mt-1 text-[10px] font-medium leading-relaxed text-text-muted">{view.lastEvent.detail}</p>}
+                    </div>
+                    <div className="py-3">
+                      <p className="text-[8.5px] font-bold uppercase tracking-[0.1em] text-text-muted">Prochaine action</p>
+                      <p className="mt-1 text-[10.5px] font-semibold leading-relaxed text-text-primary">
+                        {view.attention?.summary ?? "Aucune intervention humaine requise pour l'instant."}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </section>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <SectionHeading eyebrow="Chronologie" title="Trace d'exécution" detail={`${mission.timeline.length} événements`} />
+            {mission.timeline.length === 0 ? (
+              <EmptyState icon={<Route className="size-5" />} title="Aucun événement reçu" compact />
+            ) : (
+              <ol className="border-y border-black/[0.065]">
+                {[...mission.timeline].sort((a, b) => b.ts - a.ts).map((event) => {
+                  const meta = eventMeta[event.type];
+                  const EventIcon = meta.icon;
+                  return (
+                    <li key={event.id} className="grid min-h-[68px] grid-cols-[54px_auto_minmax(0,1fr)] items-start gap-3 border-b border-black/[0.05] py-3.5 last:border-b-0">
+                      <time className="pt-0.5 font-mono text-[9px] font-semibold text-text-muted">{formatClock(event.ts)}</time>
+                      <span className={cn("flex size-7 items-center justify-center", meta.className)}>
+                        <EventIcon className="size-3.5" strokeWidth={2.8} aria-hidden />
+                      </span>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                          <span className="text-[8.5px] font-bold uppercase tracking-[0.09em] text-text-muted">{meta.label}</span>
+                          <p className="text-[11.5px] font-bold text-text-primary">{event.title}</p>
+                        </div>
+                        {event.detail && <p className="mt-1 text-[10px] font-medium leading-relaxed text-text-muted">{event.detail}</p>}
+                        {event.evidenceId && (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedEvidenceId(event.evidenceId ?? null)}
+                            className="mt-2 min-h-8 text-[9.5px] font-bold text-text-secondary underline decoration-black/20 underline-offset-4 hover:text-text-primary"
+                          >
+                            Ouvrir la preuve
+                          </button>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </TabsContent>
+
+          <TabsContent value="details">
+            <div className="space-y-8">
+              <section>
+                <SectionHeading eyebrow="Consommation" title="Usage du run" />
+                <div className="grid grid-cols-2 divide-x divide-y divide-black/[0.055] border-y border-black/[0.065] tablet:grid-cols-4 tablet:divide-y-0">
+                  <div className="pr-3 tablet:pr-4"><RunFact icon={MessageSquareText} label="Entrée" value={view.inputTokens.toLocaleString("fr-FR")} detail="tokens" /></div>
+                  <div className="pl-3 tablet:px-4"><RunFact icon={MessageSquareText} label="Sortie" value={view.outputTokens.toLocaleString("fr-FR")} detail="tokens" /></div>
+                  <div className="pr-3 tablet:px-4"><RunFact icon={Cpu} label="Cache" value={view.cachedTokens.toLocaleString("fr-FR")} detail="tokens" /></div>
+                  <div className="pl-3 tablet:pl-4"><RunFact icon={Clock3} label="Durée" value={formatDuration(duration)} detail={view.estimatedCost === null ? "coût non exposé" : `${view.estimatedCost.toFixed(2)} €`} /></div>
+                </div>
+              </section>
+
+              <section>
+                <SectionHeading eyebrow="Sorties" title="Fichiers et validation" />
+                <div className="grid grid-cols-1 gap-6 tablet:grid-cols-2">
+                  <FileList title="Consultés" files={mission.filesRead} />
+                  <FileList title="Modifiés" files={mission.filesModified} modified />
+                </div>
+                <div className="mt-6 grid grid-cols-3 gap-4 border-y border-black/[0.065] py-4">
+                  <RunFact icon={FlaskConical} label="Total" value={String(mission.tests.total)} />
+                  <RunFact icon={Check} label="Passés" value={String(mission.tests.passed)} />
+                  <RunFact icon={X} label="Échecs" value={String(mission.tests.failed)} />
+                </div>
+              </section>
+
+              <section>
+                <SectionHeading eyebrow="Preuves" title="Artifacts vérifiables" detail={String(mission.evidence.length)} />
+                {mission.evidence.length === 0 ? (
+                  <EmptyState icon={<GitCompare className="size-5" />} title="Aucune preuve enregistrée" compact />
+                ) : (
+                  <div className="divide-y divide-black/[0.05] border-y border-black/[0.065]">
+                    {mission.evidence.map((evidence) => (
+                      <button
+                        key={evidence.id}
+                        type="button"
+                        onClick={() => setSelectedEvidenceId(evidence.id)}
+                        className="grid min-h-[52px] w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-2.5 text-left transition-colors hover:bg-black/[0.018]"
+                      >
+                        <span className="truncate font-mono text-[10px] font-semibold text-text-primary">{evidence.title}</span>
+                        <span className="text-[8.5px] font-bold uppercase tracking-[0.09em] text-text-muted">{evidence.kind}</span>
                       </button>
                     ))}
                   </div>
-                </div>
-              )}
-            </TabsContent>
+                )}
+              </section>
 
-            <TabsContent value="evidence">
-              {mission.evidence.length === 0 ? (
-                <EmptyState icon={<GitCompare className="size-5" />} title="Aucune preuve enregistrée" compact />
-              ) : (
-                <div className="divide-y divide-black/[0.05] border-y border-black/[0.06]">
-                  {mission.evidence.map((evidence) => (
-                    <button key={evidence.id} type="button" onClick={() => setSelectedEvidenceId(evidence.id)} className="grid min-h-[52px] w-full grid-cols-[1fr_auto] items-center gap-4 py-2.5 text-left hover:text-text-primary">
-                      <span className="min-w-0 truncate font-mono text-[11px] font-semibold text-text-primary">{evidence.title}</span>
-                      <span className="text-[9px] font-bold uppercase tracking-[0.09em] text-text-muted">{evidence.kind}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
+              <section>
+                <SectionHeading eyebrow="Patch" title="Modification produite" />
+                {mission.patch ? (
+                  <>
+                    <div className="mb-3 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => copyPatch(mission.patch ?? "")}
+                        className="inline-flex min-h-10 items-center gap-2 rounded-[10px] border border-black/[0.08] px-3 text-[10.5px] font-bold text-text-primary hover:bg-black/[0.025]"
+                      >
+                        {copyStatus === "copied" ? <Check className="size-3.5" strokeWidth={3} /> : <Copy className="size-3.5" strokeWidth={2.8} />}
+                        {copyStatus === "copied" ? "Copié" : "Copier"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => downloadPatch(mission.patch ?? "", mission.id)}
+                        className="inline-flex min-h-10 items-center gap-2 rounded-[10px] border border-black/[0.08] px-3 text-[10.5px] font-bold text-text-primary hover:bg-black/[0.025]"
+                      >
+                        <Download className="size-3.5" strokeWidth={2.8} /> Télécharger
+                      </button>
+                    </div>
+                    <DiffView content={mission.patch} />
+                  </>
+                ) : (
+                  <EmptyState icon={<GitCompare className="size-5" />} title="Aucun patch disponible" compact />
+                )}
+              </section>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
 
-            <TabsContent value="patch">
-              {mission.patch ? (
-                <div>
-                  <div className="mb-3 flex justify-end gap-2">
-                    <Button size="sm" variant="secondary" loading={copyStatus === "copying"} onClick={() => handleCopy(mission.patch!)}>
-                      {copyStatus === "copied" ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                      {copyStatus === "copied" ? "Copié" : "Copier"}
-                    </Button>
-                    <Button size="sm" variant="secondary" loading={downloading} onClick={() => handleDownload(mission.patch!, mission.id)}>
-                      <Download className="size-3.5" /> Télécharger
-                    </Button>
-                  </div>
-                  <DiffView content={mission.patch} />
-                </div>
-              ) : (
-                <EmptyState icon={<GitCompare className="size-5" />} title="Aucun patch disponible" compact />
-              )}
-            </TabsContent>
-
-            <TabsContent value="errors">
-              {mission.error ? (
-                <ErrorState title="La mission a échoué" description={mission.error} compact />
-              ) : mission.decisionRequired ? (
-                <div className="border-y border-warning/25 py-4"><p className="text-[12px] font-bold text-text-primary">Décision requise</p><p className="mt-1 text-[12px] font-medium text-text-secondary">{mission.decisionPrompt}</p></div>
-              ) : (
-                <div className="border-y border-black/[0.06] py-4 text-[12px] font-semibold text-text-muted">Aucun signal à traiter.</div>
-              )}
-            </TabsContent>
-          </Tabs>
-
-          <div className="mt-6 flex flex-wrap gap-x-3 gap-y-1 border-t border-black/[0.05] pt-4 text-[10px] font-semibold text-text-muted">
-            <span>Créée {formatClock(mission.createdAt)}</span>
-            {mission.closedAt && <span>Clôturée {formatClock(mission.closedAt)}</span>}
-          </div>
-        </div>
-
-        <aside className="hidden laptop:block">
-          <div className="sticky top-6 h-[calc(100vh-6rem)] overflow-hidden border-l border-black/[0.065] pl-5">
-            <InspectorPanel title={selectedEvidence ? "Preuve" : "Inspection"} onClose={selectedEvidence ? () => setSelectedEvidenceId(null) : undefined}>
-              {selectedEvidence ? <EvidenceDetail evidence={selectedEvidence} /> : <div className="p-4 text-[12px] font-medium leading-relaxed text-text-muted">Sélectionnez une preuve, un test ou un fichier modifié.</div>}
-            </InspectorPanel>
-          </div>
-        </aside>
+      <div className="mt-8 flex flex-wrap gap-x-4 gap-y-1 border-t border-black/[0.05] pt-4 text-[9.5px] font-semibold text-text-muted">
+        <span>Créée {formatClock(mission.createdAt)}</span>
+        <span>Run {view.attempt}</span>
+        {mission.closedAt && <span>Clôturée {formatClock(mission.closedAt)}</span>}
       </div>
 
       <Drawer open={Boolean(selectedEvidence)} onOpenChange={(open) => !open && setSelectedEvidenceId(null)}>
-        <DrawerContent side="bottom" title="Preuve" className="laptop:hidden">
+        <DrawerContent side="bottom" title="Preuve" className="laptop:max-w-[720px]">
           {selectedEvidence && <EvidenceDetail evidence={selectedEvidence} />}
         </DrawerContent>
       </Drawer>
     </motion.div>
-  );
-}
-
-function FileList({ title, files, icon }: { title: string; files: string[]; icon: "read" }) {
-  return (
-    <div>
-      <div className="mb-2 flex items-baseline justify-between"><h3 className="text-[11px] font-bold text-text-primary">{title}</h3><span className="text-[10px] font-semibold text-text-muted">{files.length}</span></div>
-      <ul className="divide-y divide-black/[0.05] border-y border-black/[0.06]">
-        {files.length === 0 ? (
-          <li className="py-3 text-[11px] font-medium text-text-muted">Aucun fichier consulté.</li>
-        ) : files.map((file) => (
-          <li key={file} className="flex min-h-10 items-center gap-2 py-2 font-mono text-[11px] font-medium text-text-secondary">
-            {icon === "read" && <FileText className="size-3.5 shrink-0" strokeWidth={2.6} />}
-            <span className="truncate">{file}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }
