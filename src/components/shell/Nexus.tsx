@@ -12,10 +12,10 @@ import { ROUTES } from "@/lib/routes";
 import { TRANSITION_SPRING } from "@/lib/ui-classes";
 
 const navItems = [
-  { to: ROUTES.home, label: "Accueil", icon: Squares2X2Icon, end: true },
+  { to: ROUTES.home, label: "Maintenant", icon: Squares2X2Icon, end: true },
   { to: ROUTES.missions, label: "Missions", icon: RocketLaunchIcon, end: false },
-  { to: ROUTES.console, label: "Console", icon: CommandLineIcon, end: false },
-  { to: ROUTES.system, label: "System", icon: ServerStackIcon, end: false },
+  { to: ROUTES.console, label: "Activité", icon: CommandLineIcon, end: false },
+  { to: ROUTES.system, label: "Système", icon: ServerStackIcon, end: false },
 ];
 
 export function Nexus({

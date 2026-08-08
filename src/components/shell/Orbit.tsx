@@ -5,9 +5,9 @@ import { cn } from "@/lib/cn";
 import { ROUTES } from "@/lib/routes";
 import { TRANSITION_SPRING } from "@/lib/ui-classes";
 import { FADE_UP_VARIANTS, ORBIT_CONTAINER_VARIANTS } from "@/lib/animations";
+import { useMissions } from "@/lib/useMissions";
+import { isMissionActive, missionRequiresAttention } from "@/lib/operator-contract";
 import { useOrbitNavigation, type OrbitTransitionType } from "./useOrbitNavigation";
-import { allMissions, missionActive } from "@/fixtures/missions";
-import type { MissionFilter } from "@/lib/types";
 
 export function Orbit({ isOpen }: { isOpen: boolean }) {
   const { id, currentIndex, direction, type } = useOrbitNavigation();
@@ -17,7 +17,8 @@ export function Orbit({ isOpen }: { isOpen: boolean }) {
     if (id) content = <MissionDetailOrbit key={`mission-${id}`} id={id} direction={direction} type={type} />;
     else if (currentIndex === 0) content = <OverviewOrbit key="overview" direction={direction} type={type} />;
     else if (currentIndex === 1) content = <MissionsOrbit key="missions" direction={direction} type={type} />;
-    else if (currentIndex === 2) content = <SystemOrbit key="system" direction={direction} type={type} />;
+    else if (currentIndex === 2) content = <ActivityOrbit key="activity" direction={direction} type={type} />;
+    else if (currentIndex === 3) content = <SystemOrbit key="system" direction={direction} type={type} />;
   }
 
   return (
@@ -98,44 +99,62 @@ function OrbitLink({
 }
 
 function OverviewOrbit({ direction, type }: { direction: number; type: OrbitTransitionType }) {
-  const needsReview = allMissions.filter((m) => m.decisionRequired);
+  const { missions } = useMissions();
+  const source = missions ?? [];
+  const active = source.find((mission) => isMissionActive(mission) && !missionRequiresAttention(mission));
+  const attention = source.filter(missionRequiresAttention);
 
   return (
-    <OrbitShell title="Général" direction={direction} type={type}>
-      <OrbitLink to={ROUTES.missionDetail(missionActive.id)} active={false}>Mission active</OrbitLink>
-      {needsReview.length > 0 && (
-        <OrbitLink to={`${ROUTES.missions}?filter=needs_review`} active={false} badge={needsReview.length}>
-          À réviser
+    <OrbitShell title="Maintenant" direction={direction} type={type}>
+      {attention.length > 0 && (
+        <OrbitLink to={`${ROUTES.missions}?filter=attention`} active={false} badge={attention.length}>
+          À traiter
         </OrbitLink>
       )}
+      {active ? (
+        <OrbitLink to={ROUTES.missionDetail(active.id)} active={false}>Mission active</OrbitLink>
+      ) : (
+        <OrbitLink to={ROUTES.missions} active={false}>Toutes les missions</OrbitLink>
+      )}
+      <OrbitLink to={ROUTES.console} active={false}>Activité récente</OrbitLink>
     </OrbitShell>
   );
 }
 
-const missionFilters: { value: MissionFilter; label: string }[] = [
+type OrbitMissionFilter = "all" | "attention" | "active" | "closed";
+
+const missionFilters: { value: OrbitMissionFilter; label: string }[] = [
   { value: "all", label: "Toutes" },
+  { value: "attention", label: "À traiter" },
   { value: "active", label: "Actives" },
-  { value: "needs_review", label: "À réviser" },
-  { value: "completed", label: "Terminées" },
-  { value: "failed", label: "Échouées" },
+  { value: "closed", label: "Clôturées" },
 ];
 
 function MissionsOrbit({ direction, type }: { direction: number; type: OrbitTransitionType }) {
   const [searchParams] = useSearchParams();
-  const active = (searchParams.get("filter") as MissionFilter | null) ?? "all";
-  const counts: Record<MissionFilter, number> = {
-    all: allMissions.length,
-    active: allMissions.filter((m) => m.status === "running").length,
-    needs_review: allMissions.filter((m) => m.decisionRequired).length,
-    completed: allMissions.filter((m) => m.status === "completed").length,
-    failed: allMissions.filter((m) => m.status === "failed").length,
+  const { missions } = useMissions();
+  const source = missions ?? [];
+  const requested = searchParams.get("filter");
+  const active = missionFilters.some((filter) => filter.value === requested)
+    ? requested as OrbitMissionFilter
+    : "all";
+  const counts: Record<OrbitMissionFilter, number> = {
+    all: source.length,
+    attention: source.filter(missionRequiresAttention).length,
+    active: source.filter((mission) => isMissionActive(mission) && !missionRequiresAttention(mission)).length,
+    closed: source.filter((mission) => !isMissionActive(mission)).length,
   };
 
   return (
     <OrbitShell title="Vues" direction={direction} type={type}>
-      {missionFilters.map((f) => (
-        <OrbitLink key={f.value} to={`${ROUTES.missions}?filter=${f.value}`} active={active === f.value} badge={counts[f.value]}>
-          {f.label}
+      {missionFilters.map((filter) => (
+        <OrbitLink
+          key={filter.value}
+          to={filter.value === "all" ? ROUTES.missions : `${ROUTES.missions}?filter=${filter.value}`}
+          active={active === filter.value}
+          badge={counts[filter.value]}
+        >
+          {filter.label}
         </OrbitLink>
       ))}
     </OrbitShell>
@@ -143,25 +162,42 @@ function MissionsOrbit({ direction, type }: { direction: number; type: OrbitTran
 }
 
 const missionTabs = [
-  { value: "timeline", label: "Timeline" },
-  { value: "files", label: "Fichiers" },
-  { value: "tests", label: "Tests" },
-  { value: "evidence", label: "Preuves" },
-  { value: "patch", label: "Patch" },
-  { value: "errors", label: "Erreurs" },
-];
+  { value: "summary", label: "Résumé" },
+  { value: "activity", label: "Activité" },
+  { value: "details", label: "Détails" },
+] as const;
 
 function MissionDetailOrbit({ id, direction, type }: { id: string; direction: number; type: OrbitTransitionType }) {
   const [searchParams] = useSearchParams();
-  const activeTab = searchParams.get("tab") ?? "timeline";
+  const requested = searchParams.get("tab");
+  const activeTab = requested === "activity" || requested === "details" ? requested : "summary";
 
   return (
-    <OrbitShell title="Détails" direction={direction} type={type}>
-      {missionTabs.map((t) => (
-        <OrbitLink key={t.value} to={`${ROUTES.missionDetail(id)}?tab=${t.value}`} active={activeTab === t.value}>
-          {t.label}
+    <OrbitShell title="Mission" direction={direction} type={type}>
+      {missionTabs.map((tab) => (
+        <OrbitLink
+          key={tab.value}
+          to={tab.value === "summary" ? ROUTES.missionDetail(id) : `${ROUTES.missionDetail(id)}?tab=${tab.value}`}
+          active={activeTab === tab.value}
+        >
+          {tab.label}
         </OrbitLink>
       ))}
+    </OrbitShell>
+  );
+}
+
+function ActivityOrbit({ direction, type }: { direction: number; type: OrbitTransitionType }) {
+  const [searchParams] = useSearchParams();
+  const filter = searchParams.get("filter") ?? "all";
+
+  return (
+    <OrbitShell title="Activité" direction={direction} type={type}>
+      <OrbitLink to={ROUTES.console} active={filter === "all"}>30 dernières min</OrbitLink>
+      <OrbitLink to={`${ROUTES.console}?filter=decision`} active={filter === "decision"}>Décisions</OrbitLink>
+      <OrbitLink to={`${ROUTES.console}?filter=error`} active={filter === "error"}>Erreurs</OrbitLink>
+      <OrbitLink to={`${ROUTES.console}?filter=change`} active={filter === "change"}>Fichiers</OrbitLink>
+      <OrbitLink to={`${ROUTES.console}?filter=test`} active={filter === "test"}>Tests</OrbitLink>
     </OrbitShell>
   );
 }
@@ -184,12 +220,12 @@ function SystemOrbit({ direction, type }: { direction: number; type: OrbitTransi
 
   return (
     <OrbitShell title="Système" direction={direction} type={type}>
-      {systemSections.map((s) => (
+      {systemSections.map((section) => (
         <MotionButton
-          key={s.id}
+          key={section.id}
           variants={FADE_UP_VARIANTS}
           type="button"
-          onClick={() => handleAnchorClick(s.id)}
+          onClick={() => handleAnchorClick(section.id)}
           data-active="false"
           className={cn(
             "cortex-orbit-link group flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left text-[12px] tracking-tight",
@@ -198,7 +234,7 @@ function SystemOrbit({ direction, type }: { direction: number; type: OrbitTransi
             "active:scale-[0.98] active:duration-150 active:ease-out",
           )}
         >
-          <span className="truncate">{s.label}</span>
+          <span className="truncate">{section.label}</span>
         </MotionButton>
       ))}
     </OrbitShell>

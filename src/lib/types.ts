@@ -3,6 +3,113 @@
 export type MissionStatus = "running" | "needs_review" | "completed" | "failed" | "cancelled";
 export type MissionFilter = "all" | "active" | "needs_review" | "completed" | "failed";
 
+export type OperatorRunStatus =
+  | "queued"
+  | "planning"
+  | "running"
+  | "waiting_for_human"
+  | "paused"
+  | "cancelling"
+  | "cancelled"
+  | "failed"
+  | "succeeded";
+
+export type OperatorEntityStatus = "online" | "degraded" | "offline";
+
+export type MissionControlCapabilities = {
+  canPause: boolean;
+  canResume: boolean;
+  canCancel: boolean;
+  canRetry: boolean;
+  canAddInstruction: boolean;
+  canApprove: boolean;
+  canReject: boolean;
+};
+
+export type OperatorAgent = {
+  id: string;
+  name: string;
+  role: string;
+  status: "idle" | "working" | "waiting" | "blocked" | "offline";
+};
+
+export type OperatorRuntime = {
+  id: string;
+  name: string;
+  adapter: string;
+  location: string;
+  status: OperatorEntityStatus;
+};
+
+export type OperatorModel = {
+  id: string;
+  name: string;
+  provider: string;
+};
+
+export type OperatorStage = {
+  id: string;
+  label: string;
+  status: "pending" | "running" | "completed" | "failed" | "skipped";
+  detail?: string;
+  startedAt?: number | null;
+  completedAt?: number | null;
+};
+
+export type OperatorDecision = {
+  id: string;
+  title: string;
+  question: string;
+  rationale: string;
+  impact: string;
+  requestedAt: number;
+};
+
+export type OperatorUsage = {
+  inputTokens: number;
+  outputTokens: number;
+  cachedTokens: number;
+  estimatedCost: number | null;
+};
+
+export type OperatorAttention = {
+  kind: "decision" | "incident" | "failure" | "instruction";
+  severity: "critical" | "high" | "medium";
+  title: string;
+  summary: string;
+};
+
+export type OperatorIncident = {
+  id: string;
+  title: string;
+  detail: string;
+  severity: "critical" | "high" | "medium";
+  status: "open" | "monitoring" | "resolved";
+  runtimeId?: string;
+  createdAt: number;
+};
+
+export type OperatorRun = {
+  id: string;
+  attempt: number;
+  status: OperatorRunStatus;
+  startedAt: number | null;
+  updatedAt: number;
+  agent: OperatorAgent;
+  runtime: OperatorRuntime;
+  model: OperatorModel;
+  stages: OperatorStage[];
+  currentStageId: string | null;
+  decision?: OperatorDecision | null;
+  usage: OperatorUsage;
+};
+
+export type OperatorMissionData = {
+  run: OperatorRun;
+  capabilities: MissionControlCapabilities;
+  attention?: OperatorAttention | null;
+};
+
 export type TestsSummary = {
   status: "passing" | "failing" | "none";
   passed: number;
@@ -58,6 +165,7 @@ export type Mission = {
   decisionRequired: boolean;
   decisionPrompt?: string;
   timeline: TimelineEvent[];
+  operator?: OperatorMissionData;
 };
 
 export type SystemHealth = {

@@ -5,6 +5,7 @@ import { Orbit } from "./Orbit";
 import { motion, AnimatePresence } from "framer-motion";
 import { MobileNav } from "./MobileNav";
 import { CommandPalette } from "@/components/ui";
+import { OperatorModeBar } from "@/components/operator/OperatorModeBar";
 import { cn } from "@/lib/cn";
 import { ROUTES } from "@/lib/routes";
 import "@/styles/app-continuity.css";
@@ -99,6 +100,7 @@ export function AppShell() {
               "laptop:h-fit laptop:max-h-[calc(100vh-48px)] laptop:rounded-[28px] laptop:border",
             )}
           >
+            <OperatorModeBar />
             <div className="mobile-content-scroll relative z-[1] w-full flex-1 overscroll-contain overflow-y-auto laptop:p-10 laptop:scrollbar-thin">
               <Outlet />
             </div>

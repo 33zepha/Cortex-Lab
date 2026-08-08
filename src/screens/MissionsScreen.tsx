@@ -1,157 +1,107 @@
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { RocketLaunchIcon } from "@heroicons/react/24/solid";
 import { Inbox, Search, X } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { SearchInput, EmptyState, ErrorState, Skeleton } from "@/components/ui";
-import { emptyMissions } from "@/fixtures/missions";
-import { MissionKanbanCard } from "./missions/MissionKanbanCard";
-import { NewMissionDialog } from "./missions/NewMissionDialog";
-import { EASE_SPRING_ARRAY } from "@/lib/animations";
+import { OperatorMissionRow } from "@/components/operator/OperatorMissionRow";
+import { EmptyState, ErrorState, SearchInput, Skeleton } from "@/components/ui";
+import { NewMissionDialog } from "@/screens/missions/NewMissionDialog";
+import {
+  getOperationalMission,
+  isMissionActive,
+  missionRequiresAttention,
+} from "@/lib/operator-contract";
 import { useMissions } from "@/lib/useMissions";
 import { cn } from "@/lib/cn";
-import { LIQUID_GLASS_ACTIVE, LIQUID_GLASS_HOVER, TRANSITION_SPRING } from "@/lib/ui-classes";
-import type { Mission, MissionStatus } from "@/lib/types";
+import type { Mission } from "@/lib/types";
 
-const KANBAN_COLUMNS: { id: MissionStatus; title: string; color: string }[] = [
-  { id: "running", title: "En cours", color: "text-info" },
-  { id: "needs_review", title: "Action requise", color: "text-warning" },
-  { id: "completed", title: "Complétées", color: "text-success" },
-  { id: "failed", title: "Échouées", color: "text-error" },
-  { id: "cancelled", title: "Annulées", color: "text-text-muted" },
+type MissionViewFilter = "all" | "attention" | "active" | "closed";
+
+const FILTERS: { id: MissionViewFilter; label: string }[] = [
+  { id: "all", label: "Toutes" },
+  { id: "attention", label: "À traiter" },
+  { id: "active", label: "Actives" },
+  { id: "closed", label: "Clôturées" },
 ];
 
-type MobileFilter = "all" | MissionStatus;
-
-const MOBILE_FILTERS: { id: MobileFilter; title: string }[] = [
-  { id: "all", title: "Toutes" },
-  { id: "running", title: "En cours" },
-  { id: "needs_review", title: "Revue" },
-  { id: "completed", title: "Finies" },
-  { id: "failed", title: "Échecs" },
-  { id: "cancelled", title: "Annulées" },
-];
-
-function parseFilter(value: string | null): MobileFilter {
-  if (value === "active") return "running";
-  return MOBILE_FILTERS.some((filter) => filter.id === value) ? (value as MobileFilter) : "all";
+function parseFilter(value: string | null): MissionViewFilter {
+  if (value === "needs_review" || value === "attention") return "attention";
+  if (value === "active") return "active";
+  if (value === "completed" || value === "failed" || value === "closed") return "closed";
+  return "all";
 }
 
-function matchesFilter(mission: Mission, filter: MobileFilter): boolean {
-  if (filter === "all") return true;
-  return mission.status === filter;
+function sortByLastActivity(missions: Mission[]): Mission[] {
+  return [...missions].sort((a, b) => {
+    const aTime = getOperationalMission(a).lastEvent?.ts ?? a.createdAt;
+    const bTime = getOperationalMission(b).lastEvent?.ts ?? b.createdAt;
+    return bTime - aTime;
+  });
 }
 
 export function MissionsScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const demoState = searchParams.get("state");
-  const urlFilter = parseFilter(searchParams.get("filter"));
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [mobileFilter, setMobileFilter] = useState<MobileFilter>(urlFilter);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    let scrollTimeout: NodeJS.Timeout;
-    const handleScroll = () => {
-      el.classList.add("is-scrolling");
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => el.classList.remove("is-scrolling"), 600);
-    };
-
-    const onWheel = (e: WheelEvent) => {
-      if (e.deltaY !== 0 && e.deltaX === 0) {
-        e.preventDefault();
-        el.scrollLeft += e.deltaY;
-        handleScroll();
-      }
-    };
-
-    el.addEventListener("wheel", onWheel, { passive: false });
-    el.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      el.removeEventListener("wheel", onWheel);
-      el.removeEventListener("scroll", handleScroll);
-      clearTimeout(scrollTimeout);
-    };
-  }, []);
-
+  const filter = parseFilter(searchParams.get("filter"));
   const { missions, loading, error, refetch } = useMissions();
-  const source = demoState === "empty" ? emptyMissions : (missions ?? []);
+  const source = missions ?? [];
 
-  useEffect(() => {
-    setMobileFilter(urlFilter);
-  }, [urlFilter]);
+  const matching = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return source.filter((mission) => {
+      const view = getOperationalMission(mission);
+      const matchesQuery = !normalizedQuery || [
+        mission.title,
+        mission.objective,
+        mission.constraints,
+        view.agentName,
+        view.runtimeName,
+        view.modelName,
+      ].some((value) => value?.toLowerCase().includes(normalizedQuery));
 
-  const filtered = useMemo(
-    () =>
-      source.filter((m) => {
-        const q = query.toLowerCase().trim();
-        const matchesQuery = !q || (
-          (m.title && m.title.toLowerCase().includes(q)) ||
-          m.objective.toLowerCase().includes(q) ||
-          m.model.toLowerCase().includes(q)
-        );
-        return matchesQuery && matchesFilter(m, urlFilter);
-      }),
-    [source, query, urlFilter],
-  );
-
-  const missionsByStatus = useMemo(() => {
-    const grouped: Record<MissionStatus, Mission[]> = {
-      running: [],
-      needs_review: [],
-      completed: [],
-      failed: [],
-      cancelled: [],
-    };
-    filtered.forEach((m) => {
-      if (grouped[m.status]) grouped[m.status].push(m);
+      if (!matchesQuery) return false;
+      if (filter === "attention") return missionRequiresAttention(mission);
+      if (filter === "active") return isMissionActive(mission) && !missionRequiresAttention(mission);
+      if (filter === "closed") return !isMissionActive(mission);
+      return true;
     });
-    return grouped;
-  }, [filtered]);
+  }, [filter, query, source]);
 
-  const mobileMissions = useMemo(
-    () => (mobileFilter === "all" ? filtered : missionsByStatus[mobileFilter]),
-    [filtered, mobileFilter, missionsByStatus],
-  );
+  const groups = useMemo(() => {
+    if (filter !== "all") return [{ id: filter, label: FILTERS.find((item) => item.id === filter)?.label ?? "", missions: sortByLastActivity(matching) }];
+    return [
+      { id: "attention", label: "À traiter", missions: sortByLastActivity(matching.filter(missionRequiresAttention)) },
+      { id: "active", label: "Actives", missions: sortByLastActivity(matching.filter((mission) => isMissionActive(mission) && !missionRequiresAttention(mission))) },
+      { id: "closed", label: "Clôturées", missions: sortByLastActivity(matching.filter((mission) => !isMissionActive(mission) && !missionRequiresAttention(mission))) },
+    ].filter((group) => group.missions.length > 0);
+  }, [filter, matching]);
 
-  if (demoState === "loading" || (loading && demoState !== "empty")) {
+  if (loading) {
     return (
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }} className="flex h-full flex-col">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <PageHeader title="Missions" icon={RocketLaunchIcon} />
-        <div className="space-y-2.5 laptop:hidden">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[96px] w-full rounded-[20px]" />)}
-        </div>
-        <div className="hidden flex-1 gap-6 overflow-hidden laptop:flex">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex h-full w-[320px] shrink-0 flex-col gap-4">
-              <Skeleton className="h-6 w-32 rounded-md" />
-              <div className="flex flex-col gap-3">
-                {Array.from({ length: 3 }).map((_, j) => <Skeleton key={j} className="h-[120px] w-full rounded-2xl" />)}
-              </div>
-            </div>
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Skeleton key={index} className="h-[92px] w-full rounded-[14px]" />
           ))}
         </div>
       </motion.div>
     );
   }
 
-  if (error && demoState !== "empty") {
+  if (error) {
     return (
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <PageHeader title="Missions" icon={RocketLaunchIcon} />
-        <ErrorState title="Impossible de joindre l'API Cortex" description={error} onRetry={() => window.location.reload()} />
+        <ErrorState title="Impossible de joindre l'API Cortex" description={error} onRetry={() => void refetch()} />
       </motion.div>
     );
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }} className="flex h-full flex-col">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18 }} className="w-full">
       <PageHeader
         title="Missions"
         icon={RocketLaunchIcon}
@@ -163,106 +113,94 @@ export function MissionsScreen() {
               aria-pressed={searchOpen}
               onClick={() => {
                 if (searchOpen && query) setQuery("");
-                setSearchOpen((v) => !v);
+                setSearchOpen((open) => !open);
               }}
               className={cn(
-                "flex size-11 items-center justify-center rounded-[14px] border border-white/70 bg-white/55 text-text-primary shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_5px_18px_-10px_rgba(0,0,0,0.3)] backdrop-blur-2xl transition-[transform,background-color,box-shadow] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:bg-white/78 active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/20 laptop:size-10",
-                searchOpen && "bg-white/88 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_7px_22px_-12px_rgba(0,0,0,0.34)]",
+                "flex size-11 items-center justify-center rounded-[13px] border border-black/[0.07] bg-[#f7f6f1]/78 text-text-primary transition-colors hover:bg-[#fbfaf6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/12 laptop:size-10",
+                searchOpen && "bg-[#fbfaf6]",
               )}
             >
-              {searchOpen ? <X className="size-[20px]" strokeWidth={3.1} /> : <Search className="size-[21px]" strokeWidth={3.25} />}
+              {searchOpen
+                ? <X className="size-[19px]" strokeWidth={2.9} aria-hidden />
+                : <Search className="size-[20px]" strokeWidth={3} aria-hidden />}
             </button>
             <NewMissionDialog onCreated={refetch} />
           </div>
         }
       />
 
-      <AnimatePresence initial={false}>
-        {searchOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0, y: -6 }}
-            animate={{ opacity: 1, height: "auto", y: 0 }}
-            exit={{ opacity: 0, height: 0, y: -6 }}
-            transition={{ duration: 0.24, ease: [0.2, 0.8, 0.2, 1] }}
-            className="overflow-hidden"
-          >
-            <SearchInput
-              autoFocus
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onClear={() => setQuery("")}
-              placeholder="Rechercher dans les missions…"
-              className="mb-3 w-full rounded-[14px] border border-white/70 bg-white/54 shadow-[0_5px_18px_-11px_rgba(0,0,0,0.2)] backdrop-blur-2xl laptop:mb-5 laptop:max-w-md"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {searchOpen && (
+        <SearchInput
+          autoFocus
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          onClear={() => setQuery("")}
+          placeholder="Mission, agent, runtime ou modèle…"
+          className="mb-4 w-full rounded-[13px] border border-black/[0.07] bg-[#f7f6f1]/78 laptop:max-w-lg"
+        />
+      )}
 
-      {filtered.length === 0 ? (
-        <div className="mt-1 overflow-hidden rounded-[24px] border border-white/60 bg-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] backdrop-blur-3xl tablet:mt-4 tablet:rounded-[32px]">
-          <EmptyState
-            icon={<Inbox className="size-6" />}
-            title={source.length === 0 ? "Aucune mission" : "Aucun résultat"}
-            description={source.length === 0 ? "Hermes n'a encore lancé aucune mission. Elles apparaîtront ici dès leur création." : "Aucune mission ne correspond à cette recherche."}
-          />
-        </div>
+      <div className="scrollbar-none mb-6 flex gap-1 overflow-x-auto border-b border-black/[0.06]">
+        {FILTERS.map((item) => {
+          const active = filter === item.id;
+          const count = item.id === "all"
+            ? source.length
+            : item.id === "attention"
+              ? source.filter(missionRequiresAttention).length
+              : item.id === "active"
+                ? source.filter((mission) => isMissionActive(mission) && !missionRequiresAttention(mission)).length
+                : source.filter((mission) => !isMissionActive(mission)).length;
+
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => {
+                setSearchParams((current) => {
+                  const next = new URLSearchParams(current);
+                  if (item.id === "all") next.delete("filter");
+                  else next.set("filter", item.id);
+                  return next;
+                }, { replace: true });
+              }}
+              className={cn(
+                "relative flex min-h-11 shrink-0 items-center gap-2 px-3 text-[11px] font-bold text-text-muted transition-colors hover:text-text-primary",
+                active && "text-text-primary after:absolute after:inset-x-2 after:bottom-0 after:h-[2px] after:bg-text-primary",
+              )}
+            >
+              <span>{item.label}</span>
+              <span className="font-mono text-[9.5px] tabular-nums">{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {matching.length === 0 ? (
+        <EmptyState
+          icon={<Inbox className="size-6" />}
+          title={source.length === 0 ? "Aucune mission" : "Aucun résultat"}
+          description={source.length === 0
+            ? "Créez un premier objectif. Son run apparaîtra ici dès la planification."
+            : "Aucune mission ne correspond à cette vue."}
+        />
       ) : (
-        <>
-          <div className="flex min-h-0 flex-1 flex-col laptop:hidden">
-            <div className="scrollbar-none mb-3 flex shrink-0 gap-1.5 overflow-x-auto pb-1">
-              {MOBILE_FILTERS.map((filter) => {
-                const count = filter.id === "all" ? filtered.length : missionsByStatus[filter.id].length;
-                const active = mobileFilter === filter.id;
-                return (
-                  <button
-                    key={filter.id}
-                    type="button"
-                    onClick={() => {
-                      setMobileFilter(filter.id);
-                      setSearchParams((current) => {
-                        const next = new URLSearchParams(current);
-                        if (filter.id === "all") next.delete("filter");
-                        else next.set("filter", filter.id);
-                        return next;
-                      }, { replace: true });
-                    }}
-                    className={cn(
-                      "flex min-h-10 shrink-0 items-center gap-2 rounded-[12px] border border-white/55 bg-white/18 px-3 text-[11px] font-bold tracking-[-0.01em] text-text-secondary",
-                      TRANSITION_SPRING,
-                      LIQUID_GLASS_HOVER,
-                      "active:scale-[0.96]",
-                      active && LIQUID_GLASS_ACTIVE,
-                      active && "text-text-primary",
-                    )}
-                  >
-                    <span>{filter.title}</span>
-                    <span className="text-[10px] font-bold tabular-nums text-text-muted">{count}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="flex flex-col gap-2.5 pb-2">
-              {mobileMissions.map((mission) => <MissionKanbanCard key={mission.id} mission={mission} />)}
-            </div>
-          </div>
-
-          <div ref={scrollRef} className="hidden flex-1 gap-6 overflow-x-auto pb-6 kanban-scrollbar laptop:flex">
-            {KANBAN_COLUMNS.map((col) => (
-              <div key={col.id} className="flex h-full w-[320px] shrink-0 flex-col gap-4">
-                <div className="flex items-center justify-between px-2">
-                  <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text-secondary">
-                    <span className={`size-1.5 rounded-full bg-current ${col.color} shadow-[0_0_8px_currentColor]`} />
-                    {col.title}
-                  </h2>
-                  <span className="rounded-[8px] border border-white/60 bg-white/50 px-2 py-0.5 text-[11px] font-bold text-text-primary shadow-sm">{missionsByStatus[col.id].length}</span>
-                </div>
-                <div className="scrollbar-none flex flex-col gap-3 overflow-y-auto pb-4">
-                  {missionsByStatus[col.id].map((mission) => <MissionKanbanCard key={mission.id} mission={mission} />)}
-                </div>
+        <div className="space-y-8">
+          {groups.map((group) => (
+            <section key={group.id} aria-labelledby={`mission-group-${group.id}`}>
+              <div className="mb-2 flex items-center justify-between gap-4">
+                <h2 id={`mission-group-${group.id}`} className="text-[10px] font-bold uppercase tracking-[0.12em] text-text-secondary">
+                  {group.label}
+                </h2>
+                <span className="font-mono text-[10px] font-semibold text-text-muted">{group.missions.length}</span>
               </div>
-            ))}
-          </div>
-        </>
+              <div className="divide-y divide-black/[0.055] border-y border-black/[0.065]">
+                {group.missions.map((mission) => (
+                  <OperatorMissionRow key={mission.id} mission={mission} />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
       )}
     </motion.div>
   );
