@@ -9,17 +9,21 @@ mkdirSync(OUT_DIR, { recursive: true });
 async function settle(page: Page) {
   await page.waitForLoadState("networkidle");
   await page.locator(".auth-art__image").waitFor({ state: "visible" });
-  await page.waitForTimeout(420);
+  await page.waitForTimeout(520);
 }
 
-async function advanceSignupToRuntime(page: Page) {
+async function advanceAccount(page: Page) {
   await page.getByLabel("Email").fill("preview@cortex.local");
   await page.getByLabel("Password").fill("cortex-preview-password");
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByLabel("Workspace").waitFor({ state: "visible" });
-  await page.getByRole("button", { name: "Continue" }).click();
-  await page.getByRole("button", { name: "Add connection" }).waitFor({ state: "visible" });
   await page.waitForTimeout(420);
+}
+
+async function advanceWorkspace(page: Page) {
+  await page.getByRole("button", { name: "Establish workspace" }).click();
+  await page.getByRole("button", { name: "Add connection" }).waitFor({ state: "visible" });
+  await page.waitForTimeout(480);
 }
 
 async function main() {
@@ -35,12 +39,26 @@ async function main() {
   await signup.goto(`${BASE_URL}/signup`);
   await settle(signup);
   await signup.screenshot({ path: path.join(OUT_DIR, "auth-signup-desktop.png"), fullPage: true });
-  await advanceSignupToRuntime(signup);
+
+  await advanceAccount(signup);
+  await signup.screenshot({ path: path.join(OUT_DIR, "auth-workspace-desktop.png"), fullPage: true });
+  await signup.getByRole("button", { name: /Onboarding step/ }).click();
+  await signup.getByRole("button", { name: /Account/ }).waitFor({ state: "visible" });
+  await signup.waitForTimeout(320);
+  await signup.screenshot({ path: path.join(OUT_DIR, "auth-step-menu-desktop.png"), fullPage: true });
+  await signup.getByRole("button", { name: /Workspace/ }).click();
+  await signup.waitForTimeout(280);
+
+  await advanceWorkspace(signup);
   await signup.screenshot({ path: path.join(OUT_DIR, "auth-runtime-desktop.png"), fullPage: true });
   await signup.getByRole("button", { name: "Add connection" }).click();
   await signup.getByRole("button", { name: /VPS \/ SSH/ }).waitFor({ state: "visible" });
-  await signup.waitForTimeout(420);
+  await signup.waitForTimeout(460);
   await signup.screenshot({ path: path.join(OUT_DIR, "auth-runtime-child-menu-desktop.png"), fullPage: true });
+  await signup.getByRole("button", { name: /VPS \/ SSH/ }).click();
+  await signup.getByLabel("Host / Tailscale IP").waitFor({ state: "visible" });
+  await signup.waitForTimeout(460);
+  await signup.screenshot({ path: path.join(OUT_DIR, "auth-runtime-vps-desktop.png"), fullPage: true });
   await desktop.close();
 
   const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
@@ -52,11 +70,17 @@ async function main() {
   const runtimeMobile = await mobile.newPage();
   await runtimeMobile.goto(`${BASE_URL}/signup`);
   await settle(runtimeMobile);
-  await advanceSignupToRuntime(runtimeMobile);
+  await advanceAccount(runtimeMobile);
+  await advanceWorkspace(runtimeMobile);
+  await runtimeMobile.screenshot({ path: path.join(OUT_DIR, "auth-runtime-mobile.png"), fullPage: true });
   await runtimeMobile.getByRole("button", { name: "Add connection" }).click();
   await runtimeMobile.getByRole("button", { name: /VPS \/ SSH/ }).waitFor({ state: "visible" });
-  await runtimeMobile.waitForTimeout(420);
+  await runtimeMobile.waitForTimeout(460);
   await runtimeMobile.screenshot({ path: path.join(OUT_DIR, "auth-runtime-child-menu-mobile.png"), fullPage: true });
+  await runtimeMobile.getByRole("button", { name: /VPS \/ SSH/ }).click();
+  await runtimeMobile.getByLabel("Host / Tailscale IP").waitFor({ state: "visible" });
+  await runtimeMobile.waitForTimeout(460);
+  await runtimeMobile.screenshot({ path: path.join(OUT_DIR, "auth-runtime-vps-mobile.png"), fullPage: true });
   await mobile.close();
 
   await browser.close();
