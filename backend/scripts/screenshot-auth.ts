@@ -41,7 +41,7 @@ async function assertMobileRenderingContract(page: Page) {
 
   if (!state) throw new Error("Mobile auth rendering contract could not inspect required elements");
   const violations: string[] = [];
-  if (!['auto', 'scroll'].includes(state.overflowY)) violations.push(`entry overflow-y=${state.overflowY}`);
+  if (!["auto", "scroll"].includes(state.overflowY)) violations.push(`entry overflow-y=${state.overflowY}`);
   if (state.imagePosition !== "fixed") violations.push(`background position=${state.imagePosition}`);
   if (state.imageFilter !== "none") violations.push(`background filter=${state.imageFilter}`);
   if (state.imageWillChange !== "auto") violations.push(`background will-change=${state.imageWillChange}`);
@@ -64,6 +64,12 @@ async function advanceWorkspace(page: Page) {
   await page.getByRole("button", { name: "Establish workspace" }).click();
   await page.getByRole("button", { name: "Add connection" }).waitFor({ state: "visible" });
   await page.waitForTimeout(300);
+}
+
+async function chooseWorkspaceStep(page: Page) {
+  const item = page.locator(".auth-step-menu__item").filter({ hasText: "Workspace" });
+  await item.waitFor({ state: "visible" });
+  await item.click();
 }
 
 async function captureLogin(browser: Browser, width: number, height: number, name: string) {
@@ -96,7 +102,7 @@ async function main() {
   await signup.getByRole("button", { name: /Account/ }).waitFor({ state: "visible" });
   await signup.waitForTimeout(220);
   await signup.screenshot({ path: path.join(OUT_DIR, "auth-step-menu-desktop.png"), fullPage: true });
-  await signup.getByRole("button", { name: /Workspace/ }).click();
+  await chooseWorkspaceStep(signup);
   await signup.waitForTimeout(180);
 
   await advanceWorkspace(signup);
@@ -132,7 +138,7 @@ async function main() {
   await flowMobile.getByRole("button", { name: /Account/ }).waitFor({ state: "visible" });
   await flowMobile.waitForTimeout(180);
   await flowMobile.screenshot({ path: path.join(OUT_DIR, "auth-step-menu-mobile.png"), fullPage: true });
-  await flowMobile.getByRole("button", { name: /Workspace/ }).click();
+  await chooseWorkspaceStep(flowMobile);
   await flowMobile.waitForTimeout(150);
 
   await advanceWorkspace(flowMobile);
