@@ -54,14 +54,15 @@ async function assertMobileRenderingContract(page: Page) {
 
 async function advanceAccount(page: Page) {
   await page.getByLabel("Email").fill("preview@cortex.local");
-  await page.getByLabel("Password").fill("cortex-preview-password");
+  await page.getByLabel("Password", { exact: true }).fill("cortex-preview-password");
+  await page.getByLabel("Confirm", { exact: true }).fill("cortex-preview-password");
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByRole("textbox", { name: "Workspace", exact: true }).waitFor({ state: "visible" });
   await page.waitForTimeout(260);
 }
 
 async function advanceWorkspace(page: Page) {
-  await page.getByRole("button", { name: "Establish workspace" }).click();
+  await page.getByRole("button", { name: "Continue" }).click();
   await page.getByRole("button", { name: "Add connection" }).waitFor({ state: "visible" });
   await page.waitForTimeout(300);
 }

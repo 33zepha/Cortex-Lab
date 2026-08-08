@@ -21,6 +21,7 @@ import { runMission } from "./core/runner/runner";
 import { assertPublicApiSecured, resolveCorsOrigin } from "./core/security/runtime-security";
 import { toApiMission } from "./api-adapters/to-api-mission";
 import { buildApiHealth } from "./api-adapters/to-api-health";
+import { AuthStore, parseSessionCookie, sessionCookie, verifySession, type AuthConnection } from "./core/auth/auth-store";
 
 config();
 
@@ -41,6 +42,9 @@ const dataDir = path.join(process.cwd(), "data");
 const ledgerPath = path.join(dataDir, "ledger", "events.ndjson");
 const missionsDir = path.join(dataDir, "missions");
 const playgroundDir = path.join(dataDir, "playground");
+const accessUser = process.env.CORTEX_ACCESS_USER?.trim() || "boss";
+const accessPassword = process.env.CORTEX_ACCESS_PASSWORD?.trim() || apiToken;
+const sessionSecret = process.env.CORTEX_SESSION_SECRET?.trim() || apiToken || accessPassword || "cortex-development-session-secret";
 const eventStore = new NdjsonEventStore(ledgerPath);
 const missionRepository = new FileMissionRepository(missionsDir);
 const evidenceStore = new FileEvidenceStore(path.join(dataDir, "evidence"));
@@ -65,6 +69,8 @@ const playgroundReadme = path.join(playgroundDir, "README.md");
 await fs.access(playgroundReadme).catch(async () => {
   await fs.writeFile(playgroundReadme, "# Playground\n\nProjet de test pour les missions Cortex lancées depuis l'UI.\n", "utf8");
 });
+const authStore = new AuthStore(path.join(dataDir, "auth"), sessionSecret);
+await authStore.initialize(accessPassword ? { email: accessUser, password: accessPassword } : undefined);
 
 const app = Fastify({ logger: true, bodyLimit: 256 * 1024 });
 await app.register(cors, { origin: resolveCorsOrigin(host, allowedOrigins) });
@@ -100,6 +106,64 @@ if (apiToken) {
 } else {
   app.log.warn("CORTEX_API_TOKEN absent — mode non authentifié explicitement autorisé");
 }
+
+function authResultPayload(result: { user: { user: string }; workspace: unknown }) {
+  return { authenticated: true, user: result.user.user, workspace: result.workspace };
+}
+
+app.post<{ Body: { email?: string; password?: string; workspaceName?: string; connections?: AuthConnection[] } }>(
+  "/api/auth/signup",
+  async (request, reply) => {
+    const body = request.body ?? {};
+    try {
+      const result = await authStore.signup({
+        email: typeof body.email === "string" ? body.email : "",
+        password: typeof body.password === "string" ? body.password : "",
+        workspaceName: typeof body.workspaceName === "string" ? body.workspaceName : "",
+        connections: Array.isArray(body.connections) ? body.connections : [],
+      });
+      reply.header("Set-Cookie", sessionCookie(result.sessionToken));
+      reply.header("Cache-Control", "no-store");
+      reply.code(201);
+      return authResultPayload(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Création du compte impossible";
+      reply.code(message.includes("existe déjà") ? 409 : 400);
+      return { error: message };
+    }
+  },
+);
+
+app.post<{ Body: { username?: string; password?: string } }>("/api/auth/login", async (request, reply) => {
+  const body = request.body ?? {};
+  const result = await authStore.authenticate(
+    typeof body.username === "string" ? body.username : "",
+    typeof body.password === "string" ? body.password : "",
+  );
+  if (!result) {
+    reply.code(401);
+    return { error: "Invalid credentials" };
+  }
+  reply.header("Set-Cookie", sessionCookie(result.sessionToken));
+  reply.header("Cache-Control", "no-store");
+  return authResultPayload(result);
+});
+
+app.get("/api/auth/session", async (request, reply) => {
+  const session = verifySession(parseSessionCookie(request.headers.cookie), sessionSecret);
+  if (!session) {
+    reply.code(401);
+    return { authenticated: false };
+  }
+  reply.header("Cache-Control", "no-store");
+  return { authenticated: true, user: session.user };
+});
+
+app.post("/api/auth/logout", async (_request, reply) => {
+  reply.header("Set-Cookie", sessionCookie("", 0));
+  reply.header("Cache-Control", "no-store");
+  return { authenticated: false };
+});
 
 let claudeHealthCache: { available: boolean; checkedAt: number } | null = null;
 async function getClaudeAvailability(): Promise<boolean> {

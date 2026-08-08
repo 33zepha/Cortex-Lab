@@ -104,13 +104,14 @@ export function Nexus({
           >
             <Search strokeWidth={3} className="size-[22px]" />
           </button>
-          <button
-            type="button"
+          <NavLink
+            to={ROUTES.profile}
             aria-label="Profil"
-            className={baseButtonClasses}
+            onClick={() => setWingOpen(false)}
+            className={cn(baseButtonClasses, location.pathname === ROUTES.profile && LIQUID_GLASS_ACTIVE)}
           >
             <UserIcon className="size-[22px]" />
-          </button>
+          </NavLink>
         </div>
       </aside>
   );
