@@ -5,7 +5,7 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
-  opacity: .72;
+  opacity: .64;
   mix-blend-mode: soft-light;
 }
 
@@ -26,8 +26,8 @@
   pointer-events: none;
   background: radial-gradient(
     430px circle at var(--auth-pointer-x, 78%) var(--auth-pointer-y, 66%),
-    rgba(239, 239, 233, .042),
-    rgba(239, 239, 233, .014) 32%,
+    rgba(239, 239, 233, .038),
+    rgba(239, 239, 233, .012) 32%,
     transparent 68%
   );
   mix-blend-mode: screen;
@@ -109,13 +109,13 @@
 
 @media (max-width: 900px) {
   .auth-dither-atmosphere {
-    opacity: .50;
+    opacity: .43;
   }
 
   .auth-entry::after {
     background: radial-gradient(
       310px circle at var(--auth-pointer-x, 50%) var(--auth-pointer-y, 77%),
-      rgba(239, 239, 233, .026),
+      rgba(239, 239, 233, .022),
       transparent 70%
     );
   }
