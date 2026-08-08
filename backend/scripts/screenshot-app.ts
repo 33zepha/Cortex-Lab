@@ -44,12 +44,18 @@ async function capture(
   await installAppMocks(page);
   await page.goto(`${BASE_URL}${route}${route.includes("?") ? "&" : "?"}simulate=operator`);
   await page.getByRole("heading", { name: heading }).first().waitFor({ state: "visible" });
+  const modeBar = page.getByRole("complementary", { name: "Mode de données" });
+  await modeBar.waitFor({ state: "visible" });
   await page.evaluate(() => {
     window.scrollTo(0, 0);
     document.querySelector<HTMLElement>(".mobile-content-scroll")?.scrollTo(0, 0);
   });
   await page.waitForTimeout(450);
-  await page.screenshot({ path: path.join(OUT_DIR, name), fullPage: true });
+  const modeBarBox = await modeBar.boundingBox();
+  if (!modeBarBox || modeBarBox.y < 0) {
+    throw new Error(`Simulator mode bar is outside the viewport for ${route}`);
+  }
+  await page.screenshot({ path: path.join(OUT_DIR, name) });
   await page.close();
 }
 
