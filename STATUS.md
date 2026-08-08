@@ -19,6 +19,9 @@ Cortex-Lab n'est plus un prototype statique. Le dépôt contient un frontend Rea
 - Realtime : `/api/stream` projette le ledger en SSE ; le frontend invalide SWR à réception des événements et garde un polling lent comme filet de sécurité.
 - API prod : Vercel relaie `/api/:path*` vers le proxy en conservant explicitement le chemin demandé.
 - Sécurité prod : Fastify écoute `127.0.0.1` par défaut ; le proxy Vercel injecte `CORTEX_API_TOKEN` côté serveur.
+- Authentification : signup/login/session/logout persistants côté runtime ; mots de passe hashés avec `scrypt`, session HttpOnly signée, métadonnées de workspace isolées par compte.
+- Secrets : `CORTEX_SESSION_SECRET` explicite et partagé Vercel/VPS en production ; aucune clé SSH n'est persistée dans le navigateur.
+- Performance frontend : écrans auth et cockpit chargés par route ; le bundle JavaScript d'entrée est passé d'environ 566 kB à environ 319 kB avant gzip.
 
 ## Validation en cours
 

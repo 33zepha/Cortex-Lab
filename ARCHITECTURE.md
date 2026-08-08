@@ -168,6 +168,8 @@ Browser
 
 La rewrite Vercel transmet explicitement `:path*` au proxy. Le navigateur ne reçoit jamais `CORTEX_API_TOKEN`.
 
+Les sessions sont des cookies HttpOnly signés avec `CORTEX_SESSION_SECRET`, vérifiés par le runtime après relais Vercel. Le proxy transmet uniquement le cookie de session au backend ; l'identité ne repose pas sur un header utilisateur forgeable. Les comptes et workspaces résident dans `data/auth/accounts.json` tant que Cortex reste mono-process.
+
 Variables principales :
 
 ```text
@@ -177,6 +179,9 @@ CORTEX_API_TOKEN=...
 CORTEX_TOKEN_BUDGET=120000
 CORTEX_STEP_TIMEOUT_SECONDS=1800
 CORTEX_API_ORIGIN=https://api.cortexlab.online
+CORTEX_ENV=production
+CORTEX_SESSION_SECRET=...
+CORTEX_ACCESS_PASSWORD=...
 ```
 
 ## API actuelle

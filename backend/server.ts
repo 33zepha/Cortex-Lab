@@ -19,14 +19,33 @@ import { SimplePolicy } from "./core/policy/policy";
 import type { Planner } from "./core/contracts/planner";
 import { runMission } from "./core/runner/runner";
 import { assertPublicApiSecured, resolveCorsOrigin } from "./core/security/runtime-security";
+import { MemoryRateLimiter } from "./core/security/rate-limit";
 import { toApiMission } from "./api-adapters/to-api-mission";
 import { buildApiHealth } from "./api-adapters/to-api-health";
+import {
+  AuthStore,
+  AuthStoreError,
+  SignupInputSchema,
+  WorkspaceUpdateInputSchema,
+} from "./core/auth/auth-store";
+import {
+  buildSessionCookie,
+  createSessionToken,
+  getSessionSubject,
+  isAcceptableSessionSecret,
+  resolveSessionSecret,
+  SESSION_TTL_SECONDS,
+} from "./core/auth/session";
 
 config();
 
 const port = Number(process.env.API_PORT ?? 4000);
 const host = process.env.API_HOST ?? "127.0.0.1";
 const apiToken = process.env.CORTEX_API_TOKEN?.trim() || null;
+const accessUser = process.env.CORTEX_ACCESS_USER?.trim() || "boss";
+const accessPassword = process.env.CORTEX_ACCESS_PASSWORD?.trim() || null;
+const productionRuntime = process.env.NODE_ENV === "production" || process.env.CORTEX_ENV === "production";
+const sessionSecret = resolveSessionSecret(process.env.CORTEX_SESSION_SECRET, productionRuntime);
 const allowUnauthenticatedPublic = process.env.CORTEX_ALLOW_UNAUTHENTICATED_PUBLIC === "1";
 const allowSourceRootOverride = process.env.CORTEX_ALLOW_SOURCE_ROOT_OVERRIDE === "1";
 const maxActiveMissions = Math.max(1, Math.min(8, Number(process.env.CORTEX_MAX_ACTIVE_MISSIONS ?? 2) || 2));
@@ -36,11 +55,19 @@ const allowedOrigins = (process.env.CORTEX_ALLOWED_ORIGINS ?? "")
   .filter(Boolean);
 
 assertPublicApiSecured({ host, apiToken, allowUnauthenticatedPublic });
+if (!isAcceptableSessionSecret(sessionSecret, productionRuntime)) {
+  throw new Error(
+    productionRuntime
+      ? "CORTEX_SESSION_SECRET doit être configuré et contenir au moins 32 caractères en production."
+      : "Impossible d'initialiser la session Cortex.",
+  );
+}
 
 const dataDir = path.join(process.cwd(), "data");
 const ledgerPath = path.join(dataDir, "ledger", "events.ndjson");
 const missionsDir = path.join(dataDir, "missions");
 const playgroundDir = path.join(dataDir, "playground");
+const authStore = new AuthStore(path.join(dataDir, "auth", "accounts.json"));
 const eventStore = new NdjsonEventStore(ledgerPath);
 const missionRepository = new FileMissionRepository(missionsDir);
 const evidenceStore = new FileEvidenceStore(path.join(dataDir, "evidence"));
@@ -58,6 +85,7 @@ const policy = new SimplePolicy({
   allowedCommands: [],
 });
 const activeMissionControllers = new Map<string, AbortController>();
+const authRateLimiter = new MemoryRateLimiter({ maxAttempts: 12, windowMs: 60_000 });
 let connectedSseClients = 0;
 
 await fs.mkdir(playgroundDir, { recursive: true });
@@ -77,11 +105,61 @@ function hasValidApiToken(authorization: string | undefined): boolean {
   return expected.length === received.length && timingSafeEqual(expected, received);
 }
 
+function safeEqual(left: string, right: string): boolean {
+  const a = Buffer.from(left);
+  const b = Buffer.from(right);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+function firstHeader(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+type AuthPrincipal = { email: string; legacy: boolean };
+
+async function resolveAuthPrincipal(request: { headers: Record<string, string | string[] | undefined> }): Promise<AuthPrincipal | null> {
+  const sessionSubject = getSessionSubject(firstHeader(request.headers.cookie), sessionSecret);
+  if (!sessionSubject) return null;
+  if (accessPassword && safeEqual(sessionSubject, accessUser)) return { email: accessUser, legacy: true };
+  const account = await authStore.findUser(sessionSubject);
+  return account ? { email: account.email, legacy: false } : null;
+}
+
+function setAuthSession(reply: { header: (name: string, value: string) => unknown }, request: { headers: Record<string, string | string[] | undefined> }, subject: string): void {
+  const forwardedProtocol = firstHeader(request.headers["x-forwarded-proto"]);
+  const secure = process.env.CORTEX_SESSION_SECURE === "1" || forwardedProtocol === "https";
+  const expiresAt = Date.now() + SESSION_TTL_SECONDS * 1000;
+  reply.header("Set-Cookie", buildSessionCookie(createSessionToken(subject, expiresAt, sessionSecret), SESSION_TTL_SECONDS, secure));
+}
+
+function clearAuthSession(reply: { header: (name: string, value: string) => unknown }, request: { headers: Record<string, string | string[] | undefined> }): void {
+  const forwardedProtocol = firstHeader(request.headers["x-forwarded-proto"]);
+  const secure = process.env.CORTEX_SESSION_SECURE === "1" || forwardedProtocol === "https";
+  reply.header("Set-Cookie", buildSessionCookie("", 0, secure));
+}
+
 function parseCursor(value: string | string[] | undefined): number | null {
   const raw = Array.isArray(value) ? value[0] : value;
   if (raw === undefined || raw === "") return null;
   const parsed = Number(raw);
   return Number.isInteger(parsed) && parsed >= 0 ? parsed : null;
+}
+
+function clientAddress(request: { ip?: string; headers: Record<string, string | string[] | undefined> }): string {
+  const forwarded = firstHeader(request.headers["x-forwarded-for"]);
+  return forwarded?.split(",")[0]?.trim() || request.ip || "unknown";
+}
+
+function enforceAuthRateLimit(
+  request: { ip?: string; headers: Record<string, string | string[] | undefined> },
+  reply: { code: (statusCode: number) => unknown; header: (name: string, value: string) => unknown },
+  scope: string,
+): boolean {
+  const decision = authRateLimiter.consume(`${scope}:${clientAddress(request)}`);
+  if (decision.allowed) return true;
+  reply.header("Retry-After", String(decision.retryAfterSeconds));
+  reply.code(429);
+  return false;
 }
 
 app.addHook("onRequest", async (request, reply) => {
@@ -100,6 +178,123 @@ if (apiToken) {
 } else {
   app.log.warn("CORTEX_API_TOKEN absent — mode non authentifié explicitement autorisé");
 }
+
+type LoginBody = { username?: unknown; password?: unknown };
+
+app.post<{ Body: LoginBody }>("/api/auth/signup", async (request, reply) => {
+  if (!enforceAuthRateLimit(request, reply, "signup")) return { error: "Too many authentication attempts" };
+  const parsed = SignupInputSchema.safeParse(request.body ?? {});
+  if (!parsed.success) {
+    reply.code(400);
+    return { error: "Email, mot de passe ou workspace invalide" };
+  }
+
+  try {
+    const created = await authStore.register(parsed.data);
+    setAuthSession(reply, request, created.user.email);
+    reply.header("Cache-Control", "no-store");
+    reply.code(201);
+    return {
+      authenticated: true,
+      user: created.user.email,
+      workspace: created.workspace,
+    };
+  } catch (error) {
+    if (error instanceof AuthStoreError && error.code === "account_exists") {
+      reply.code(409);
+      return { error: "Account already exists" };
+    }
+    throw error;
+  }
+});
+
+app.post<{ Body: LoginBody }>("/api/auth/login", async (request, reply) => {
+  if (!enforceAuthRateLimit(request, reply, "login")) return { error: "Too many authentication attempts" };
+  const username = typeof request.body?.username === "string" ? request.body.username.trim() : "";
+  const password = typeof request.body?.password === "string" ? request.body.password : "";
+  const account = username && password ? await authStore.authenticate(username, password) : null;
+  const isLegacyLogin = Boolean(accessPassword && safeEqual(username, accessUser) && safeEqual(password, accessPassword));
+
+  if (!account && !isLegacyLogin) {
+    reply.code(401);
+    return { error: "Invalid credentials" };
+  }
+
+  const subject = account?.email ?? accessUser;
+  setAuthSession(reply, request, subject);
+  reply.header("Cache-Control", "no-store");
+  return {
+    authenticated: true,
+    user: subject,
+    workspace: account ? await authStore.getWorkspace(account.email) : null,
+  };
+});
+
+app.get("/api/auth/session", async (request, reply) => {
+  const principal = await resolveAuthPrincipal(request);
+  if (!principal) {
+    reply.header("Cache-Control", "no-store");
+    reply.code(401);
+    return { authenticated: false };
+  }
+
+  reply.header("Cache-Control", "no-store");
+  return {
+    authenticated: true,
+    user: principal.email,
+    workspace: principal.legacy ? null : await authStore.getWorkspace(principal.email),
+  };
+});
+
+app.post("/api/auth/logout", async (request, reply) => {
+  clearAuthSession(reply, request);
+  reply.header("Cache-Control", "no-store");
+  return { authenticated: false };
+});
+
+app.get("/api/workspace", async (request, reply) => {
+  const principal = await resolveAuthPrincipal(request);
+  if (!principal) {
+    reply.code(401);
+    return { error: "Cortex session required" };
+  }
+  if (principal.legacy) {
+    reply.code(404);
+    return { error: "Workspace not configured for this account" };
+  }
+
+  const workspace = await authStore.getWorkspace(principal.email);
+  if (!workspace) {
+    reply.code(404);
+    return { error: "Workspace introuvable" };
+  }
+  return { user: principal.email, workspace };
+});
+
+app.post<{ Body: unknown }>("/api/workspace", async (request, reply) => {
+  const principal = await resolveAuthPrincipal(request);
+  if (!principal) {
+    reply.code(401);
+    return { error: "Cortex session required" };
+  }
+  if (principal.legacy) {
+    reply.code(409);
+    return { error: "Workspace setup requires a registered account" };
+  }
+
+  const parsed = WorkspaceUpdateInputSchema.safeParse(request.body ?? {});
+  if (!parsed.success) {
+    reply.code(400);
+    return { error: "Workspace setup invalide" };
+  }
+
+  const workspace = await authStore.updateWorkspace(principal.email, parsed.data);
+  if (!workspace) {
+    reply.code(404);
+    return { error: "Workspace introuvable" };
+  }
+  return { user: principal.email, workspace };
+});
 
 let claudeHealthCache: { available: boolean; checkedAt: number } | null = null;
 async function getClaudeAvailability(): Promise<boolean> {

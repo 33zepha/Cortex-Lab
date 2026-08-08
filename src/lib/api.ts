@@ -22,7 +22,11 @@ export function shouldRetryOnError(error: unknown): boolean {
 }
 
 export async function apiFetch<T>(path: string): Promise<T> {
-  const res = await fetch(apiUrl(path), { cache: "no-store" });
+  const res = await fetch(apiUrl(path), {
+    cache: "no-store",
+    credentials: "include",
+    headers: { Accept: "application/json" },
+  });
   if (!res.ok) {
     const payload = await res.json().catch(() => null);
     const message = payload?.error ?? `API ${path} → ${res.status}`;
@@ -34,7 +38,8 @@ export async function apiFetch<T>(path: string): Promise<T> {
 export async function apiPost<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(apiUrl(path), {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!res.ok) {

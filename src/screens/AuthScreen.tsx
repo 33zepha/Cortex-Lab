@@ -6,7 +6,9 @@ import { AuthStepNav } from "@/components/auth/AuthStepNav";
 import { CortexMark } from "@/components/brand/CortexMark";
 import { DitherAtmosphere } from "@/components/effects/DitherAtmosphere";
 import { IconButton, Input, LiquidButton, LiquidSurface } from "@/components/ui";
-import { login as authenticate } from "@/lib/auth";
+import { login as authenticate, register as createAccount } from "@/lib/auth";
+import { useVps } from "@/lib/VpsContext";
+import { saveWorkspaceSetup, type WorkspaceConnection } from "@/lib/workspace";
 import "@/styles/auth.css";
 import "@/styles/auth-actions.css";
 import "@/styles/auth-effects.css";
@@ -15,18 +17,30 @@ import "@/styles/auth-hero.css";
 type AuthMode = "login" | "signup";
 type SignupStep = "account" | "workspace" | "runtime";
 type ConnectionLayer = "closed" | "root" | "vps" | "api";
-interface AuthScreenProps { initialMode?: AuthMode; }
+
+interface AuthScreenProps {
+  initialMode?: AuthMode;
+}
+
 const STEPS: SignupStep[] = ["account", "workspace", "runtime"];
-const AUTH_SPRING = { type: "spring" as const, stiffness: 430, damping: 32, mass: .72 };
-const MOBILE_TRANSITION = { duration: .19, ease: [0.22, 1, 0.36, 1] as const };
+const AUTH_SPRING = { type: "spring" as const, stiffness: 430, damping: 32, mass: 0.72 };
+const MOBILE_TRANSITION = { duration: 0.19, ease: [0.22, 1, 0.36, 1] as const };
 
 function ActionContent({ label }: { label: string }) {
-  return <><span className="auth-action__label">{label}</span><span className="auth-action__terminal" aria-hidden><ArrowRight size={14} strokeWidth={2.35} /></span></>;
+  return (
+    <>
+      <span className="auth-action__label">{label}</span>
+      <span className="auth-action__terminal" aria-hidden>
+        <ArrowRight size={14} strokeWidth={2.35} />
+      </span>
+    </>
+  );
 }
 
 export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
   const reduceMotion = useReducedMotion();
   const entryRef = useRef<HTMLElement>(null);
+  const { connectVps, disconnectVps } = useVps();
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [step, setStep] = useState<SignupStep>("account");
   const [furthestStep, setFurthestStep] = useState(0);
@@ -36,40 +50,178 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
   const [password, setPassword] = useState("");
   const [loginState, setLoginState] = useState<"idle" | "loading">("idle");
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [signupPasswordConfirmation, setSignupPasswordConfirmation] = useState("");
+  const [signupState, setSignupState] = useState<"idle" | "loading">("idle");
+  const [signupError, setSignupError] = useState<string | null>(null);
+  const [accountCreated, setAccountCreated] = useState(false);
   const [workspaceName, setWorkspaceName] = useState("Cortex Lab");
   const [connectionLayer, setConnectionLayer] = useState<ConnectionLayer>("closed");
   const [vpsHost, setVpsHost] = useState("");
   const [vpsUser, setVpsUser] = useState("root");
   const [apiOrigin, setApiOrigin] = useState("");
-  const mobileRenderingTarget = typeof window !== "undefined" && window.matchMedia("(max-width: 900px), (pointer: coarse)").matches;
+  const [runtimeError, setRuntimeError] = useState<string | null>(null);
+  const [setupSaved, setSetupSaved] = useState(false);
+  const [setupState, setSetupState] = useState<"idle" | "saving">("idle");
+
+  const mobileRenderingTarget =
+    typeof window !== "undefined" && window.matchMedia("(max-width: 900px), (pointer: coarse)").matches;
   const transition = reduceMotion ? { duration: 0 } : mobileRenderingTarget ? MOBILE_TRANSITION : AUTH_SPRING;
   const stepIndex = STEPS.indexOf(step);
 
   function switchMode(next: AuthMode) {
-    setMode(next); setStep("account"); setFurthestStep(0); setDirection(1); setConnectionLayer("closed"); setLoginError(null);
+    setMode(next);
+    setStep("account");
+    setFurthestStep(0);
+    setDirection(1);
+    setConnectionLayer("closed");
+    setLoginError(null);
+    setSignupError(null);
+    setSignupState("idle");
+    setSignupPasswordConfirmation("");
+    setAccountCreated(false);
+    setRuntimeError(null);
+    setSetupSaved(false);
+    setSetupState("idle");
   }
+
   function navigateStep(next: SignupStep) {
     const nextIndex = STEPS.indexOf(next);
-    setDirection(nextIndex >= stepIndex ? 1 : -1); setStep(next); setFurthestStep((current) => Math.max(current, nextIndex)); setConnectionLayer("closed");
+    setDirection(nextIndex >= stepIndex ? 1 : -1);
+    setStep(next);
+    setFurthestStep((current) => Math.max(current, nextIndex));
+    setConnectionLayer("closed");
   }
+
   async function submit(event: FormEvent) {
     event.preventDefault();
+
     if (mode === "login") {
       if (!email.trim() || !password) return;
-      setLoginError(null); setLoginState("loading");
-      try { await authenticate(email.trim(), password); window.location.assign("/"); }
-      catch (error) {
-        setLoginError(error instanceof Error && error.message === "Invalid credentials" ? "Identifiant ou mot de passe incorrect." : "Connexion impossible. Réessaie dans un instant.");
+      setLoginError(null);
+      setLoginState("loading");
+
+      try {
+        await authenticate(email.trim(), password);
+        window.location.assign("/");
+      } catch (error) {
+        setLoginError(
+          error instanceof Error && error.message === "Invalid credentials"
+            ? "Identifiant ou mot de passe incorrect."
+            : "Connexion impossible. Réessaie dans un instant.",
+        );
         setLoginState("idle");
       }
       return;
     }
-    if (step === "account") navigateStep("workspace"); else if (step === "workspace") navigateStep("runtime");
+
+    if (step === "account") {
+      const cleanEmail = signupEmail.trim();
+      if (!cleanEmail || !signupPassword) {
+        setSignupError("Renseigne ton email et un mot de passe.");
+        return;
+      }
+      if (signupPassword.length < 12) {
+        setSignupError("Le mot de passe doit contenir au moins 12 caractères.");
+        return;
+      }
+      if (signupPassword !== signupPasswordConfirmation) {
+        setSignupError("Les deux mots de passe doivent être identiques.");
+        return;
+      }
+      setSignupError(null);
+      navigateStep("workspace");
+      return;
+    }
+
+    if (step === "workspace") {
+      if (!workspaceName.trim()) {
+        setRuntimeError("Donne un nom à ce workspace pour continuer.");
+        return;
+      }
+      if (workspaceName.trim().length > 80) {
+        setRuntimeError("Le nom du workspace doit rester sous 80 caractères.");
+        return;
+      }
+      if (accountCreated) {
+        navigateStep("runtime");
+        return;
+      }
+
+      setRuntimeError(null);
+      setSignupState("loading");
+      try {
+        await createAccount(signupEmail.trim(), signupPassword, workspaceName.trim());
+        setAccountCreated(true);
+        navigateStep("runtime");
+      } catch (error) {
+        setRuntimeError(
+          error instanceof Error && error.message === "Account already exists"
+            ? "Un compte existe déjà avec cet email."
+            : "Impossible de créer le compte. Réessaie dans un instant.",
+        );
+      } finally {
+        setSignupState("idle");
+      }
+    }
   }
+
+  async function persistSetup(connection: WorkspaceConnection) {
+    setSetupState("saving");
+    setRuntimeError(null);
+    try {
+      await saveWorkspaceSetup({
+        workspaceName: workspaceName.trim() || "Cortex Lab",
+        connection,
+      });
+      if (connection?.type === "vps") connectVps({ ip: connection.host, sshId: connection.user });
+      else disconnectVps();
+      setSetupSaved(true);
+      setConnectionLayer("closed");
+    } catch {
+      setRuntimeError("Impossible de sauvegarder le setup du workspace. Réessaie dans un instant.");
+    } finally {
+      setSetupState("idle");
+    }
+  }
+
+  async function saveVpsConnection() {
+    const host = vpsHost.trim();
+    const user = vpsUser.trim() || "root";
+    if (!host) {
+      setRuntimeError("Indique l’IP Tailscale ou le nom d’hôte du VPS.");
+      return;
+    }
+    await persistSetup({ type: "vps", host, user });
+  }
+
+  async function saveApiConnection() {
+    const origin = apiOrigin.trim();
+    try {
+      const parsed = new URL(origin);
+      if (!["http:", "https:"].includes(parsed.protocol)) throw new Error("protocol");
+    } catch {
+      setRuntimeError("Utilise une URL valide, par exemple https://api.example.com.");
+      return;
+    }
+    await persistSetup({ type: "api", origin: origin.replace(/\/$/, "") });
+  }
+
+  async function finishWithoutConnection() {
+    await persistSetup(null);
+  }
+
   function goBack() {
-    if (connectionLayer === "vps" || connectionLayer === "api") { setConnectionLayer("root"); return; }
-    if (step === "runtime") navigateStep("workspace"); else if (step === "workspace") navigateStep("account"); else switchMode("login");
+    if (connectionLayer === "vps" || connectionLayer === "api") {
+      setConnectionLayer("root");
+      return;
+    }
+    if (step === "runtime") navigateStep("workspace");
+    else if (step === "workspace") navigateStep("account");
+    else switchMode("login");
   }
+
   function updateSceneLight(event: ReactPointerEvent<HTMLElement>) {
     if (mobileRenderingTarget || event.pointerType === "touch") return;
     const node = entryRef.current;
@@ -78,15 +230,16 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
     node.style.setProperty("--auth-pointer-x", `${event.clientX - rect.left}px`);
     node.style.setProperty("--auth-pointer-y", `${event.clientY - rect.top}px`);
   }
-  const screenMotion = reduceMotion ? { initial: { opacity: 1 }, animate: { opacity: 1 }, exit: { opacity: 1 } } : mobileRenderingTarget ? {
-    initial: { opacity: 0, y: 5 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -3 },
-  } : {
-    initial: { opacity: 0, x: direction * 11, y: 2, scale: .996 },
-    animate: { opacity: 1, x: 0, y: 0, scale: 1 },
-    exit: { opacity: 0, x: direction * -8, y: -1, scale: .997 },
-  };
+
+  const screenMotion = reduceMotion
+    ? { initial: { opacity: 1 }, animate: { opacity: 1 }, exit: { opacity: 1 } }
+    : mobileRenderingTarget
+      ? { initial: { opacity: 0, y: 5 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -3 } }
+      : {
+          initial: { opacity: 0, x: direction * 11, y: 2, scale: 0.996 },
+          animate: { opacity: 1, x: 0, y: 0, scale: 1 },
+          exit: { opacity: 0, x: direction * -8, y: -1, scale: 0.997 },
+        };
 
   return (
     <main ref={entryRef} className="auth-entry" data-auth-revision="hero-hq-v10" onPointerMove={updateSceneLight}>
@@ -104,30 +257,265 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
       <div className="auth-scene__veil" aria-hidden />
       <DitherAtmosphere />
       <div className="auth-scene__grain" aria-hidden />
-      <div className="auth-art__brand"><CortexMark className="auth-art__mark" /><span>CORTEX</span></div>
+      <div className="auth-art__brand">
+        <CortexMark className="auth-art__mark" />
+        <span>CORTEX</span>
+      </div>
+
       <section className="auth-stage" aria-label={mode === "login" ? "Sign in to Cortex" : "Create a Cortex workspace"}>
         <div className="auth-panel__inner">
           <AnimatePresence mode={mobileRenderingTarget ? "sync" : "wait"} initial={false} custom={direction}>
             {mode === "login" ? (
               <motion.div key="login" className="auth-composition" {...screenMotion} transition={transition}>
-                <header className="auth-heading auth-heading--login"><h1>Welcome back.</h1></header>
+                <header className="auth-heading auth-heading--login">
+                  <h1>Welcome back.</h1>
+                </header>
                 <form className="auth-form" onSubmit={submit}>
                   <LiquidSurface variant="core" className="auth-credential-rail">
-                    <label className="auth-credential-row"><span>Username</span><Input className="auth-rail-input" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="boss" required /></label>
+                    <label className="auth-credential-row">
+                      <span>Username</span>
+                      <Input
+                        className="auth-rail-input"
+                        autoComplete="username"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        placeholder="boss"
+                        required
+                      />
+                    </label>
                     <div className="auth-rail-divider" />
-                    <label className="auth-credential-row"><span>Password</span><div className="auth-password"><Input className="auth-rail-input" type={showPassword ? "text" : "password"} autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="••••••••••••" required /><IconButton className="auth-password__toggle" size="sm" type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword((value) => !value)}>{showPassword ? <EyeOff size={15} strokeWidth={2.7} /> : <Eye size={15} strokeWidth={2.7} />}</IconButton></div></label>
+                    <label className="auth-credential-row">
+                      <span>Password</span>
+                      <div className="auth-password">
+                        <Input
+                          className="auth-rail-input"
+                          type={showPassword ? "text" : "password"}
+                          autoComplete="current-password"
+                          value={password}
+                          onChange={(event) => setPassword(event.target.value)}
+                          placeholder="••••••••••••"
+                          required
+                        />
+                        <IconButton
+                          className="auth-password__toggle"
+                          size="sm"
+                          type="button"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                          onClick={() => setShowPassword((value) => !value)}
+                        >
+                          {showPassword ? <EyeOff size={15} strokeWidth={2.7} /> : <Eye size={15} strokeWidth={2.7} />}
+                        </IconButton>
+                      </div>
+                    </label>
                   </LiquidSurface>
                   {loginError && <p className="auth-error" role="alert">{loginError}</p>}
-                  <LiquidButton sheen={false} className="auth-action" variant="core" type="submit" disabled={loginState === "loading"}><ActionContent label={loginState === "loading" ? "Opening…" : "Enter Cortex"} /></LiquidButton>
+                  <LiquidButton sheen={false} className="auth-action" variant="core" type="submit" disabled={loginState === "loading"}>
+                    <ActionContent label={loginState === "loading" ? "Opening…" : "Enter Cortex"} />
+                  </LiquidButton>
                 </form>
-                <button className="auth-account-link" type="button" onClick={() => switchMode("signup")}>Create account</button>
+                <button className="auth-account-link" type="button" onClick={() => switchMode("signup")}>
+                  Create account
+                </button>
               </motion.div>
             ) : (
               <motion.div key={`signup-${step}`} className="auth-composition" {...screenMotion} transition={transition}>
-                <div className="auth-signup-topbar"><button className="auth-back auth-nav-link" type="button" onClick={goBack}><ArrowLeft size={14} strokeWidth={2.35} /><span>Back</span></button><AuthStepNav step={step} furthestStep={furthestStep} onSelect={navigateStep} /></div>
-                {step === "account" && <><header className="auth-heading auth-heading--signup"><h1>Create account.</h1></header><form className="auth-form" onSubmit={submit}><LiquidSurface variant="core" className="auth-credential-rail"><label className="auth-credential-row"><span>Email</span><Input className="auth-rail-input" type="email" autoComplete="email" placeholder="you@domain.com" required /></label><div className="auth-rail-divider" /><label className="auth-credential-row"><span>Password</span><Input className="auth-rail-input" type="password" autoComplete="new-password" placeholder="12 characters minimum" minLength={12} required /></label></LiquidSurface><LiquidButton sheen={false} className="auth-action" variant="core" type="submit"><ActionContent label="Continue" /></LiquidButton></form></>}
-                {step === "workspace" && <><header className="auth-heading auth-heading--signup"><h1>Name your space.</h1></header><form className="auth-form" onSubmit={submit}><LiquidSurface variant="core" className="auth-workspace-editor"><span className="auth-workspace-editor__mark"><CortexMark /></span><div><span className="auth-workspace-editor__label">Workspace</span><Input aria-label="Workspace" className="auth-workspace-input" value={workspaceName} onChange={(event) => setWorkspaceName(event.target.value)} required /></div></LiquidSurface><LiquidButton sheen={false} className="auth-action auth-action--wide" variant="core" type="submit"><ActionContent label="Establish workspace" /></LiquidButton></form></>}
-                {step === "runtime" && <><header className="auth-heading auth-heading--signup auth-heading--runtime"><h1>Connect Cortex.</h1><p>Attach only the infrastructure this workspace needs.</p></header><div className="auth-runtime-stage"><div className="auth-workspace-line"><CortexMark /><div><strong>{workspaceName || "Cortex Lab"}</strong><span>Workspace established</span></div><CheckIcon aria-hidden /></div><motion.div className="auth-connection-morph" layout transition={transition} data-layer={connectionLayer}><AnimatePresence mode="popLayout" initial={false}>{connectionLayer === "closed" ? <LiquidButton sheen={false} layoutId="connection-surface" key="closed" variant="wing" className="auth-add-connection" type="button" onClick={() => setConnectionLayer("root")} transition={transition}><span className="auth-command__icon" aria-hidden><Plus size={15} strokeWidth={2.4} /></span><span>Add connection</span></LiquidButton> : <LiquidSurface layoutId="connection-surface" key="surface" variant="popover" className="auth-child-menu" transition={transition}>{connectionLayer === "root" && <div className="auth-child-menu__root"><div className="auth-child-menu__head"><strong>Connection</strong><button className="auth-icon-action" type="button" onClick={() => setConnectionLayer("closed")} aria-label="Close connection menu"><X size={14} strokeWidth={2.3} /></button></div><div className="auth-child-menu__list"><button type="button" className="auth-child-row" onClick={() => setConnectionLayer("vps")}><ServerStackIcon className="auth-child-row__icon" aria-hidden /><span><strong>VPS / SSH</strong><small>Remote execution environment</small></span></button><div className="auth-child-divider" /><button type="button" className="auth-child-row" onClick={() => setConnectionLayer("api")}><GlobeAltIcon className="auth-child-row__icon" aria-hidden /><span><strong>API origin</strong><small>Cortex or provider endpoint</small></span></button></div></div>}{connectionLayer === "vps" && <div className="auth-child-form"><button className="auth-child-back auth-nav-link" type="button" onClick={() => setConnectionLayer("root")}><ArrowLeft size={13} strokeWidth={2.3} /><span>VPS / SSH</span></button><div className="auth-child-field-stack"><label className="auth-child-field"><span>Host / Tailscale IP</span><Input className="auth-child-input" value={vpsHost} onChange={(event) => setVpsHost(event.target.value)} placeholder="100.x.x.x" /></label><label className="auth-child-field"><span>SSH user</span><Input className="auth-child-input" value={vpsUser} onChange={(event) => setVpsUser(event.target.value)} placeholder="root" /></label></div><LiquidButton sheen={false} className="auth-action auth-action--compact auth-child-save" variant="core" type="button" onClick={() => setConnectionLayer("closed")}><ActionContent label="Save connection" /></LiquidButton></div>}{connectionLayer === "api" && <div className="auth-child-form"><button className="auth-child-back auth-nav-link" type="button" onClick={() => setConnectionLayer("root")}><ArrowLeft size={13} strokeWidth={2.3} /><span>API origin</span></button><label className="auth-child-field"><span>Origin</span><Input className="auth-child-input" value={apiOrigin} onChange={(event) => setApiOrigin(event.target.value)} placeholder="https://api.example.com" /></label><div className="auth-secret-note"><LockKeyhole size={13} strokeWidth={2.4} /> Secrets stay server-side.</div><LiquidButton sheen={false} className="auth-action auth-action--compact auth-child-save" variant="core" type="button" onClick={() => setConnectionLayer("closed")}><ActionContent label="Save connection" /></LiquidButton></div>}</LiquidSurface>}</AnimatePresence></motion.div><button className="auth-skip" type="button">Continue without connection</button></div></>}
+                <div className="auth-signup-topbar">
+                  <button className="auth-back auth-nav-link" type="button" onClick={goBack}>
+                    <ArrowLeft size={14} strokeWidth={2.35} />
+                    <span>Back</span>
+                  </button>
+                  <AuthStepNav step={step} furthestStep={furthestStep} onSelect={navigateStep} />
+                </div>
+
+                {step === "account" && (
+                  <>
+                    <header className="auth-heading auth-heading--signup"><h1>Create account.</h1></header>
+                    <form className="auth-form" onSubmit={submit}>
+                      <LiquidSurface variant="core" className="auth-credential-rail">
+                        <label className="auth-credential-row">
+                          <span>Email</span>
+                          <Input
+                            className="auth-rail-input"
+                            type="email"
+                            autoComplete="email"
+                            value={signupEmail}
+                            onChange={(event) => setSignupEmail(event.target.value)}
+                            placeholder="you@domain.com"
+                            required
+                          />
+                        </label>
+                        <div className="auth-rail-divider" />
+                        <label className="auth-credential-row">
+                          <span>Password</span>
+                          <Input
+                            className="auth-rail-input"
+                            type="password"
+                            autoComplete="new-password"
+                            value={signupPassword}
+                            onChange={(event) => setSignupPassword(event.target.value)}
+                            placeholder="12 characters minimum"
+                            minLength={12}
+                            required
+                          />
+                        </label>
+                        <div className="auth-rail-divider" />
+                        <label className="auth-credential-row">
+                          <span>Confirm</span>
+                          <Input
+                            className="auth-rail-input"
+                            type="password"
+                            autoComplete="new-password"
+                            value={signupPasswordConfirmation}
+                            onChange={(event) => setSignupPasswordConfirmation(event.target.value)}
+                            placeholder="Repeat password"
+                            minLength={12}
+                            required
+                          />
+                        </label>
+                      </LiquidSurface>
+                      {signupError && <p className="auth-error" role="alert">{signupError}</p>}
+                      <LiquidButton sheen={false} className="auth-action" variant="core" type="submit">
+                        <ActionContent label="Continue" />
+                      </LiquidButton>
+                    </form>
+                  </>
+                )}
+
+                {step === "workspace" && (
+                  <>
+                    <header className="auth-heading auth-heading--signup"><h1>Name your space.</h1></header>
+                    <form className="auth-form" onSubmit={submit}>
+                      <LiquidSurface variant="core" className="auth-workspace-editor">
+                        <span className="auth-workspace-editor__mark"><CortexMark /></span>
+                        <div>
+                          <span className="auth-workspace-editor__label">Workspace</span>
+                          <Input
+                            aria-label="Workspace"
+                            className="auth-workspace-input"
+                            value={workspaceName}
+                            onChange={(event) => {
+                              setWorkspaceName(event.target.value);
+                              setRuntimeError(null);
+                            }}
+                            required
+                          />
+                        </div>
+                      </LiquidSurface>
+                      {runtimeError && <p className="auth-error" role="alert">{runtimeError}</p>}
+                      <LiquidButton sheen={false} className="auth-action auth-action--wide" variant="core" type="submit" disabled={signupState === "loading"}>
+                        <ActionContent label={signupState === "loading" ? "Establishing…" : "Establish workspace"} />
+                      </LiquidButton>
+                    </form>
+                  </>
+                )}
+
+                {step === "runtime" && (
+                  <>
+                    <header className="auth-heading auth-heading--signup auth-heading--runtime">
+                      <h1>Connect Cortex.</h1>
+                      <p>Attach only the infrastructure this workspace needs.</p>
+                    </header>
+                    <div className="auth-runtime-stage">
+                      <div className="auth-workspace-line">
+                        <CortexMark />
+                        <div>
+                          <strong>{workspaceName || "Cortex Lab"}</strong>
+                          <span>Workspace ready</span>
+                        </div>
+                        <CheckIcon aria-hidden />
+                      </div>
+                      {setupSaved && <p className="auth-setup-status" role="status">Workspace setup saved securely.</p>}
+                      {runtimeError && <p className="auth-error" role="alert">{runtimeError}</p>}
+
+                      <motion.div className="auth-connection-morph" layout transition={transition} data-layer={connectionLayer}>
+                        <AnimatePresence mode="popLayout" initial={false}>
+                          {connectionLayer === "closed" ? (
+                            <LiquidButton
+                              sheen={false}
+                              layoutId="connection-surface"
+                              key="closed"
+                              variant="wing"
+                              className="auth-add-connection"
+                              type="button"
+                              onClick={() => {
+                                setRuntimeError(null);
+                                setConnectionLayer("root");
+                              }}
+                              transition={transition}
+                            >
+                              <span className="auth-command__icon" aria-hidden><Plus size={15} strokeWidth={2.4} /></span>
+                              <span>Add connection</span>
+                            </LiquidButton>
+                          ) : (
+                            <LiquidSurface layoutId="connection-surface" key="surface" variant="popover" className="auth-child-menu" transition={transition}>
+                              {connectionLayer === "root" && (
+                                <div className="auth-child-menu__root">
+                                  <div className="auth-child-menu__head">
+                                    <strong>Connection</strong>
+                                    <button className="auth-icon-action" type="button" onClick={() => setConnectionLayer("closed")} aria-label="Close connection menu">
+                                      <X size={14} strokeWidth={2.3} />
+                                    </button>
+                                  </div>
+                                  <div className="auth-child-menu__list">
+                                    <button type="button" className="auth-child-row" onClick={() => setConnectionLayer("vps")}>
+                                      <ServerStackIcon className="auth-child-row__icon" aria-hidden />
+                                      <span><strong>VPS / SSH</strong><small>Remote execution environment</small></span>
+                                    </button>
+                                    <div className="auth-child-divider" />
+                                    <button type="button" className="auth-child-row" onClick={() => setConnectionLayer("api")}>
+                                      <GlobeAltIcon className="auth-child-row__icon" aria-hidden />
+                                      <span><strong>API origin</strong><small>Cortex or provider endpoint</small></span>
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+
+                              {connectionLayer === "vps" && (
+                                <div className="auth-child-form">
+                                  <button className="auth-child-back auth-nav-link" type="button" onClick={() => setConnectionLayer("root")}>
+                                    <ArrowLeft size={13} strokeWidth={2.3} /><span>VPS / SSH</span>
+                                  </button>
+                                  <div className="auth-child-field-stack">
+                                    <label className="auth-child-field">
+                                      <span>Host / Tailscale IP</span>
+                                      <Input className="auth-child-input" value={vpsHost} onChange={(event) => setVpsHost(event.target.value)} placeholder="100.x.x.x" />
+                                    </label>
+                                    <label className="auth-child-field">
+                                      <span>SSH user</span>
+                                      <Input className="auth-child-input" value={vpsUser} onChange={(event) => setVpsUser(event.target.value)} placeholder="root" />
+                                    </label>
+                                  </div>
+                                  <LiquidButton sheen={false} className="auth-action auth-action--compact auth-child-save" variant="core" type="button" onClick={saveVpsConnection} disabled={setupState === "saving"}>
+                                    <ActionContent label={setupState === "saving" ? "Saving…" : "Save connection"} />
+                                  </LiquidButton>
+                                </div>
+                              )}
+
+                              {connectionLayer === "api" && (
+                                <div className="auth-child-form">
+                                  <button className="auth-child-back auth-nav-link" type="button" onClick={() => setConnectionLayer("root")}>
+                                    <ArrowLeft size={13} strokeWidth={2.3} /><span>API origin</span>
+                                  </button>
+                                  <label className="auth-child-field">
+                                    <span>Origin</span>
+                                    <Input className="auth-child-input" value={apiOrigin} onChange={(event) => setApiOrigin(event.target.value)} placeholder="https://api.example.com" />
+                                  </label>
+                                  <div className="auth-secret-note"><LockKeyhole size={13} strokeWidth={2.4} /> Secrets stay server-side.</div>
+                                  <LiquidButton sheen={false} className="auth-action auth-action--compact auth-child-save" variant="core" type="button" onClick={saveApiConnection} disabled={setupState === "saving"}>
+                                    <ActionContent label={setupState === "saving" ? "Saving…" : "Save connection"} />
+                                  </LiquidButton>
+                                </div>
+                              )}
+                            </LiquidSurface>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                      <button className="auth-skip" type="button" onClick={setupSaved ? () => window.location.assign("/") : finishWithoutConnection} disabled={setupState === "saving"}>
+                        {setupSaved ? "Enter Cortex" : setupState === "saving" ? "Saving setup…" : "Continue without connection"}
+                      </button>
+                    </div>
+                  </>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

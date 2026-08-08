@@ -69,7 +69,6 @@ export function SystemScreen() {
   const { vps, connectVps } = useVps();
   const [vpsIp, setVpsIp] = useState("187.127.70.52");
   const [vpsSshId, setVpsSshId] = useState("root");
-  const [vpsSshKey, setVpsSshKey] = useState("");
   const { health, loading, error } = useSystemHealth();
 
   if (loading) {
@@ -129,10 +128,9 @@ export function SystemScreen() {
                   <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted">Identifiant SSH</span>
                   <Input placeholder="ex: root" value={vpsSshId} onChange={(event) => setVpsSshId(event.target.value)} />
                 </label>
-                <label className="block space-y-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted">Mot de passe / clé</span>
-                  <Input type="password" placeholder="••••••••" value={vpsSshKey} onChange={(event) => setVpsSshKey(event.target.value)} />
-                </label>
+                <p className="border-t border-black/[0.06] pt-3 text-[11px] font-semibold leading-relaxed text-text-muted">
+                  Les identifiants SSH restent configurés côté runtime. Cortex ne les stocke pas dans le navigateur.
+                </p>
               </div>
               <div className="mt-6 grid grid-cols-[auto_1fr] gap-2.5 border-t border-black/[0.06] pt-4">
                 <button type="button" onClick={() => setVpsDialogOpen(false)} className="min-h-12 rounded-[12px] px-4 text-[12px] font-bold text-text-muted hover:bg-black/[0.03] hover:text-text-primary">
@@ -141,7 +139,7 @@ export function SystemScreen() {
                 <button
                   type="button"
                   onClick={() => {
-                    connectVps({ ip: vpsIp, sshId: vpsSshId, sshKey: vpsSshKey });
+                    connectVps({ ip: vpsIp, sshId: vpsSshId });
                     setVpsDialogOpen(false);
                   }}
                   className="min-h-12 rounded-[12px] bg-text-primary px-4 text-[12px] font-bold text-white active:opacity-80"

@@ -29,6 +29,11 @@ API_PORT_VALUE="${API_PORT_VALUE:-8080}"
 API_HOST_VALUE="$(read_env API_HOST)"
 API_HOST_VALUE="${API_HOST_VALUE:-127.0.0.1}"
 TOKEN="$(read_env CORTEX_API_TOKEN)"
+SESSION_SECRET="$(read_env CORTEX_SESSION_SECRET)"
+
+if [[ ${#SESSION_SECRET} -lt 32 ]]; then
+  fail "CORTEX_SESSION_SECRET doit contenir au moins 32 caractères dans .env"
+fi
 
 if [[ "$API_HOST_VALUE" != "127.0.0.1" && "$API_HOST_VALUE" != "localhost" && "$API_HOST_VALUE" != "::1" && -z "$TOKEN" ]]; then
   fail "Refus de déployer une API publique (${API_HOST_VALUE}:${API_PORT_VALUE}) sans CORTEX_API_TOKEN dans .env"
@@ -45,7 +50,7 @@ chmod 700 "$BACKUP_DIR" || true
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 BACKUP_PATH="$BACKUP_DIR/cortex-data-$STAMP.tar.gz"
 BACKUP_ITEMS=()
-for item in data/missions data/ledger data/evidence; do
+for item in data/missions data/ledger data/evidence data/auth; do
   [[ -e "$item" ]] && BACKUP_ITEMS+=("$item")
 done
 if (( ${#BACKUP_ITEMS[@]} > 0 )); then
