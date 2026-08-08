@@ -7,6 +7,7 @@ import { MobileNav } from "./MobileNav";
 import { CommandPalette } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { ROUTES } from "@/lib/routes";
+import "@/styles/app-continuity.css";
 
 export function AppShell() {
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -50,18 +51,16 @@ export function AppShell() {
   }, []);
 
   return (
-    <div className="relative isolate flex h-full min-h-0 w-screen overflow-hidden bg-slate-50">
-      <div className="app-ambient-bg absolute inset-0 z-0" />
-
+    <div className="cortex-app-shell relative isolate flex h-full min-h-0 w-screen overflow-hidden">
       <div className="relative z-10 flex h-full min-h-0 w-full items-stretch p-0 laptop:items-center laptop:p-6">
         <div className="fixed left-4 top-1/2 z-sticky hidden -translate-y-1/2 laptop:block">
           <motion.div
             ref={containerRef}
             layout
             className="relative flex items-start"
-            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+            transition={{ type: "spring", stiffness: 410, damping: 34, mass: 0.78 }}
           >
-            <div className="relative z-20 rounded-[24px] border border-white/60 bg-white/60 shadow-[4px_0_24px_rgba(0,0,0,0.08)] backdrop-blur-3xl">
+            <div className="cortex-nav-surface relative z-20 rounded-[22px]">
               <Nexus
                 onOpenPalette={() => setPaletteOpen(true)}
                 wingOpen={wingOpen}
@@ -69,14 +68,14 @@ export function AppShell() {
               />
             </div>
 
-            <AnimatePresence>
+            <AnimatePresence mode="popLayout">
               {showWing && (
                 <motion.div
-                  initial={{ opacity: 0, width: 0, x: -40, marginLeft: 0 }}
-                  animate={{ opacity: 1, width: 160, x: 0, marginLeft: 12 }}
-                  exit={{ opacity: 0, width: 0, x: -40, marginLeft: 0 }}
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                  className="relative z-10 overflow-hidden rounded-[24px] border border-white/60 bg-white/60 shadow-[4px_0_24px_rgba(0,0,0,0.08)] backdrop-blur-3xl"
+                  initial={{ opacity: 0, width: 0, x: -22, marginLeft: 0 }}
+                  animate={{ opacity: 1, width: 160, x: 0, marginLeft: 10 }}
+                  exit={{ opacity: 0, width: 0, x: -16, marginLeft: 0 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 35, mass: 0.74 }}
+                  className="cortex-wing-surface relative z-10 overflow-hidden rounded-[22px]"
                 >
                   <Orbit isOpen={true} />
                 </motion.div>
@@ -87,20 +86,20 @@ export function AppShell() {
 
         <div
           className={cn(
-            "flex h-full min-h-0 w-full items-stretch justify-center transition-all duration-[500ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] laptop:items-center",
+            "flex h-full min-h-0 w-full items-stretch justify-center transition-[padding] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] laptop:items-center",
             "laptop:pl-[96px]",
           )}
         >
           <motion.main
             layout="position"
-            transition={{ type: "spring", bounce: 0, duration: 0.35 }}
+            transition={{ type: "spring", stiffness: 430, damping: 38, mass: 0.72 }}
             className={cn(
-              "relative flex h-full min-h-0 w-full max-w-[1400px] flex-col overflow-hidden will-change-transform",
-              "rounded-none border-0 bg-transparent shadow-none",
-              "laptop:h-fit laptop:max-h-[calc(100vh-48px)] laptop:rounded-[32px] laptop:border laptop:border-white/40 laptop:bg-white/20 laptop:shadow-[0_8px_32px_rgba(0,0,0,0.04)] laptop:backdrop-blur-2xl",
+              "cortex-app-main relative flex h-full min-h-0 w-full max-w-[1400px] flex-col overflow-hidden",
+              "rounded-none border-0",
+              "laptop:h-fit laptop:max-h-[calc(100vh-48px)] laptop:rounded-[28px] laptop:border",
             )}
           >
-            <div className="mobile-content-scroll w-full flex-1 overscroll-contain overflow-y-auto laptop:p-10 laptop:scrollbar-thin">
+            <div className="mobile-content-scroll relative z-[1] w-full flex-1 overscroll-contain overflow-y-auto laptop:p-10 laptop:scrollbar-thin">
               <Outlet />
             </div>
           </motion.main>
