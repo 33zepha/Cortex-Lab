@@ -17,6 +17,7 @@ type ConnectionLayer = "closed" | "root" | "vps" | "api";
 interface AuthScreenProps { initialMode?: AuthMode; }
 const STEPS: SignupStep[] = ["account", "workspace", "runtime"];
 const AUTH_SPRING = { type: "spring" as const, stiffness: 430, damping: 32, mass: .72 };
+const MOBILE_TRANSITION = { duration: .19, ease: [0.22, 1, 0.36, 1] as const };
 
 function ActionContent({ label }: { label: string }) {
   return <><span className="auth-action__label">{label}</span><span className="auth-action__terminal" aria-hidden><ArrowRight size={14} strokeWidth={2.35} /></span></>;
@@ -39,7 +40,8 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
   const [vpsHost, setVpsHost] = useState("");
   const [vpsUser, setVpsUser] = useState("root");
   const [apiOrigin, setApiOrigin] = useState("");
-  const transition = reduceMotion ? { duration: 0 } : AUTH_SPRING;
+  const mobileRenderingTarget = typeof window !== "undefined" && window.matchMedia("(max-width: 900px), (pointer: coarse)").matches;
+  const transition = reduceMotion ? { duration: 0 } : mobileRenderingTarget ? MOBILE_TRANSITION : AUTH_SPRING;
   const stepIndex = STEPS.indexOf(step);
 
   function switchMode(next: AuthMode) {
@@ -68,21 +70,25 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
     if (step === "runtime") navigateStep("workspace"); else if (step === "workspace") navigateStep("account"); else switchMode("login");
   }
   function updateSceneLight(event: ReactPointerEvent<HTMLElement>) {
-    if (event.pointerType === "touch") return;
+    if (mobileRenderingTarget || event.pointerType === "touch") return;
     const node = entryRef.current;
     if (!node) return;
     const rect = node.getBoundingClientRect();
     node.style.setProperty("--auth-pointer-x", `${event.clientX - rect.left}px`);
     node.style.setProperty("--auth-pointer-y", `${event.clientY - rect.top}px`);
   }
-  const screenMotion = reduceMotion ? { initial: { opacity: 1 }, animate: { opacity: 1 }, exit: { opacity: 1 } } : {
+  const screenMotion = reduceMotion ? { initial: { opacity: 1 }, animate: { opacity: 1 }, exit: { opacity: 1 } } : mobileRenderingTarget ? {
+    initial: { opacity: 0, y: 5 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -3 },
+  } : {
     initial: { opacity: 0, x: direction * 11, y: 2, scale: .996 },
     animate: { opacity: 1, x: 0, y: 0, scale: 1 },
     exit: { opacity: 0, x: direction * -8, y: -1, scale: .997 },
   };
 
   return (
-    <main ref={entryRef} className="auth-entry" data-auth-revision="full-scene-v8-effects" onPointerMove={updateSceneLight}>
+    <main ref={entryRef} className="auth-entry" data-auth-revision="mobile-stable-v9" onPointerMove={updateSceneLight}>
       <img className="auth-art__image auth-scene__image" src="/cortex-auth-hero.jpg" alt="Monument sculptural représentant plusieurs intelligences coordonnées dans un même environnement." />
       <div className="auth-scene__veil" aria-hidden />
       <DitherAtmosphere />
@@ -90,7 +96,7 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
       <div className="auth-art__brand"><CortexMark className="auth-art__mark" /><span>CORTEX</span></div>
       <section className="auth-stage" aria-label={mode === "login" ? "Sign in to Cortex" : "Create a Cortex workspace"}>
         <div className="auth-panel__inner">
-          <AnimatePresence mode="wait" initial={false} custom={direction}>
+          <AnimatePresence mode={mobileRenderingTarget ? "sync" : "wait"} initial={false} custom={direction}>
             {mode === "login" ? (
               <motion.div key="login" className="auth-composition" {...screenMotion} transition={transition}>
                 <header className="auth-heading auth-heading--login"><h1>Welcome back.</h1></header>
