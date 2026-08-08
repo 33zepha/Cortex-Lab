@@ -11,13 +11,13 @@ export function OperatorModeBar() {
   return (
     <aside
       aria-label="Mode de données"
-      className="operator-mode-bar fixed left-1/2 top-[max(8px,env(safe-area-inset-top))] z-panel flex -translate-x-1/2 items-center gap-2 rounded-[12px] border border-white/[0.08] bg-[#121613]/95 px-2 py-1.5 text-[#efeee9] shadow-[0_14px_34px_-22px_rgba(0,0,0,0.9)] backdrop-blur-xl"
+      className="relative z-panel flex min-h-10 w-full shrink-0 items-center justify-center gap-2 border-b border-white/[0.065] bg-[#121613] px-2 text-[#efeee9]"
     >
       <FlaskConical className="size-3.5 shrink-0 text-[#d8c59a]" strokeWidth={2.8} aria-hidden />
       <span className="whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.12em]">
         Scénario opérateur
       </span>
-      <span className="hidden h-3 w-px bg-white/10 mobile:block" aria-hidden />
+      <span className="h-3 w-px bg-white/10" aria-hidden />
       <button
         type="button"
         onClick={resetOperatorSimulator}
