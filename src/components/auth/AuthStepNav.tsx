@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AnimatePresence, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CheckIcon } from "@heroicons/react/24/solid";
 import { LiquidButton, LiquidSurface } from "@/components/ui/LiquidSurface";
 import { cn } from "@/lib/cn";
@@ -44,7 +44,23 @@ export function AuthStepNav({
             aria-label={`Onboarding step ${currentIndex + 1} of ${ITEMS.length}: ${ITEMS[currentIndex]?.label}`}
           >
             <span>{ITEMS[currentIndex]?.label}</span>
-            <span className="auth-step-trigger__count">0{currentIndex + 1}/0{ITEMS.length}</span>
+            <span className="auth-step-trigger__count" aria-hidden>
+              <span className="auth-step-trigger__number-window">
+                <AnimatePresence initial={false} mode="popLayout">
+                  <motion.span
+                    key={currentIndex}
+                    className="auth-step-trigger__number"
+                    initial={reduceMotion ? false : { y: 7, opacity: 0, filter: "blur(2px)" }}
+                    animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                    exit={reduceMotion ? undefined : { y: -7, opacity: 0, filter: "blur(2px)" }}
+                    transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 500, damping: 34, mass: .6 }}
+                  >
+                    0{currentIndex + 1}
+                  </motion.span>
+                </AnimatePresence>
+              </span>
+              <span>/0{ITEMS.length}</span>
+            </span>
           </LiquidButton>
         ) : (
           <LiquidSurface
