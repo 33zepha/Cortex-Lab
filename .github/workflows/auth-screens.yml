@@ -5,7 +5,13 @@ on:
     branches: [main]
     paths:
       - "src/screens/AuthScreen.tsx"
+      - "src/components/auth/**"
+      - "src/components/effects/**"
+      - "src/components/ui/LiquidSurface.tsx"
       - "src/styles/auth.css"
+      - "src/styles/auth-actions.css"
+      - "src/styles/auth-effects.css"
+      - "src/styles/liquid-surface.css"
       - "assets/auth/**"
       - "scripts/materialize-auth-hero.mjs"
       - "backend/scripts/screenshot-auth.ts"
