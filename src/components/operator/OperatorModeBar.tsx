@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { FlaskConical, RotateCcw, X } from "lucide-react";
 import {
   isOperatorSimulatorEnabled,
@@ -6,7 +8,16 @@ import {
 } from "@/lib/operator-simulator";
 
 export function OperatorModeBar() {
-  if (!isOperatorSimulatorEnabled()) return null;
+  const location = useLocation();
+  const [enabled, setEnabled] = useState(() => isOperatorSimulatorEnabled());
+
+  useEffect(() => {
+    setEnabled(isOperatorSimulatorEnabled());
+    const timer = window.setTimeout(() => setEnabled(isOperatorSimulatorEnabled()), 50);
+    return () => window.clearTimeout(timer);
+  }, [location.key, location.search]);
+
+  if (!enabled) return null;
 
   return (
     <aside
