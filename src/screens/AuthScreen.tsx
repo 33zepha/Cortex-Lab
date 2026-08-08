@@ -5,7 +5,6 @@ import { ArrowLeft, ArrowRight, Eye, EyeOff, LockKeyhole, Plus, X } from "lucide
 import { AuthStepNav } from "@/components/auth/AuthStepNav";
 import { CortexMark } from "@/components/brand/CortexMark";
 import { Button, IconButton, Input, LiquidButton, LiquidSurface } from "@/components/ui";
-import { SPRING_BOUNCY } from "@/lib/animations";
 import { login as authenticate } from "@/lib/auth";
 import "@/styles/auth.css";
 
@@ -14,6 +13,7 @@ type SignupStep = "account" | "workspace" | "runtime";
 type ConnectionLayer = "closed" | "root" | "vps" | "api";
 interface AuthScreenProps { initialMode?: AuthMode; }
 const STEPS: SignupStep[] = ["account", "workspace", "runtime"];
+const AUTH_SPRING = { type: "spring" as const, stiffness: 430, damping: 32, mass: .72 };
 
 export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
   const reduceMotion = useReducedMotion();
@@ -31,7 +31,7 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
   const [vpsHost, setVpsHost] = useState("");
   const [vpsUser, setVpsUser] = useState("root");
   const [apiOrigin, setApiOrigin] = useState("");
-  const transition = reduceMotion ? { duration: 0 } : SPRING_BOUNCY;
+  const transition = reduceMotion ? { duration: 0 } : AUTH_SPRING;
   const stepIndex = STEPS.indexOf(step);
 
   function switchMode(next: AuthMode) {
@@ -60,13 +60,13 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
     if (step === "runtime") navigateStep("workspace"); else if (step === "workspace") navigateStep("account"); else switchMode("login");
   }
   const screenMotion = reduceMotion ? { initial: { opacity: 1 }, animate: { opacity: 1 }, exit: { opacity: 1 } } : {
-    initial: { opacity: 0, x: direction * 18, y: 5, scale: .992 },
+    initial: { opacity: 0, x: direction * 11, y: 2, scale: .996 },
     animate: { opacity: 1, x: 0, y: 0, scale: 1 },
-    exit: { opacity: 0, x: direction * -14, y: -3, scale: .994 },
+    exit: { opacity: 0, x: direction * -8, y: -1, scale: .997 },
   };
 
   return (
-    <main className="auth-entry" data-auth-revision="full-scene-v6">
+    <main className="auth-entry" data-auth-revision="full-scene-v7-mirror">
       <img className="auth-art__image auth-scene__image" src="/cortex-auth-hero.jpg" alt="Monument sculptural représentant plusieurs intelligences coordonnées dans un même environnement." />
       <div className="auth-scene__veil" aria-hidden />
       <div className="auth-scene__grain" aria-hidden />
