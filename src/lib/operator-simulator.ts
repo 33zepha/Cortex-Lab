@@ -1,4 +1,4 @@
-import { legacyStatusForOperatorStatus } from "@/lib/operator-contract";
+import { legacyStatusForOperatorStatus } from "./operator-contract";
 import type {
   Mission,
   MissionControlCapabilities,
@@ -8,7 +8,7 @@ import type {
   OperatorStage,
   SystemHealth,
   TimelineEvent,
-} from "@/lib/types";
+} from "./types";
 
 const SIMULATOR_KEY = "cortex.operator.simulator";
 const SIMULATOR_SCENARIO = "operator";
