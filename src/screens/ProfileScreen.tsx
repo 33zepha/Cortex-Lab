@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { UserIcon } from "@heroicons/react/24/solid";
 import { Fingerprint, MonitorCog, ShieldCheck, UserRound, RotateCcw } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { BentoCard, Input } from "@/components/ui";
 import { EASE_SPRING_ARRAY } from "@/lib/animations";
+import { logout as signOut, WORKSPACE_STORAGE_KEY } from "@/lib/auth";
 
 const PROFILE_STORAGE_KEY = "cortex.operator-profile";
 
@@ -33,11 +35,25 @@ function readLocalProfile(): LocalProfile {
   }
 }
 
+function readWorkspaceName(): string {
+  if (typeof window === "undefined") return "Cortex Lab";
+  try {
+    const raw = window.localStorage.getItem(WORKSPACE_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) as { name?: unknown } : null;
+    return typeof parsed?.name === "string" && parsed.name.trim() ? parsed.name.trim() : "Cortex Lab";
+  } catch {
+    return "Cortex Lab";
+  }
+}
+
 export function ProfileScreen() {
+  const navigate = useNavigate();
   const initial = useMemo(() => readLocalProfile(), []);
+  const workspaceName = useMemo(() => readWorkspaceName(), []);
   const [displayName, setDisplayName] = useState(initial.displayName);
   const [role, setRole] = useState(initial.role);
   const [saved, setSaved] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const initials = useMemo(() => {
     const words = displayName.trim().split(/\s+/).filter(Boolean);
@@ -62,6 +78,12 @@ export function ProfileScreen() {
     setDisplayName(DEFAULT_PROFILE.displayName);
     setRole(DEFAULT_PROFILE.role);
     setSaved(false);
+  }
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    await signOut().catch(() => undefined);
+    navigate("/login", { replace: true });
   }
 
   return (
@@ -138,21 +160,21 @@ export function ProfileScreen() {
               <ProfileFact
                 icon={<MonitorCog className="size-[19px]" strokeWidth={2.8} />}
                 label="Workspace"
-                value="Cortex Lab"
+                value={workspaceName}
                 detail="Cockpit principal"
               />
               <ProfileFact
                 icon={<Fingerprint className="size-[19px]" strokeWidth={2.8} />}
                 label="Session"
-                value="Locale"
-                detail="Profil conservé sur cet appareil"
+                value="Protégée"
+                detail="Session signée côté serveur"
                 border
               />
               <ProfileFact
                 icon={<ShieldCheck className="size-[19px]" strokeWidth={2.8} />}
                 label="Accès"
-                value="Single-user"
-                detail="Auth multi-utilisateur prévue plus tard"
+                value="Workspace"
+                detail="Compte et espace persistants"
                 border
               />
             </div>
@@ -167,8 +189,25 @@ export function ProfileScreen() {
           <div className="flex items-start gap-3 rounded-[18px] border border-white/60 bg-white/34 px-4 py-3.5 text-text-secondary backdrop-blur-xl">
             <UserRound className="mt-0.5 size-[18px] shrink-0 text-text-primary" strokeWidth={2.8} />
             <p className="text-[12px] font-medium leading-relaxed">
-              Cortex fonctionne encore en mode opérateur unique. Cette page gère donc une identité locale utile à l'interface sans simuler de compte distant ni d'authentification inexistante.
+              Le nom affiché et le rôle restent propres à cet appareil. Le compte, la session et le workspace sont, eux, gérés côté serveur.
             </p>
+          </div>
+        </section>
+
+        <section>
+          <div className="flex items-center justify-between gap-4 rounded-[18px] border border-black/[0.06] bg-white/24 px-4 py-3.5 backdrop-blur-xl">
+            <div>
+              <p className="text-[12px] font-bold text-text-primary">Session Cortex</p>
+              <p className="mt-1 text-[10px] font-semibold text-text-muted">Ferme la session sur cet appareil.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void handleLogout()}
+              disabled={loggingOut}
+              className="min-h-10 shrink-0 rounded-[12px] border border-black/[0.08] bg-white/54 px-3 text-[11px] font-bold text-text-primary transition-[transform,background-color] hover:bg-white/82 active:scale-[0.96] disabled:cursor-wait disabled:opacity-50"
+            >
+              {loggingOut ? "Fermeture…" : "Se déconnecter"}
+            </button>
           </div>
         </section>
       </div>
@@ -195,7 +234,7 @@ function ProfileFact({
         {icon}
         <span className="text-[9px] font-bold uppercase tracking-[0.12em]">{label}</span>
       </div>
-      <p className="mt-3 text-[19px] font-bold tracking-[-0.03em] text-text-primary">{value}</p>
+      <p className="mt-3 truncate text-[19px] font-bold tracking-[-0.03em] text-text-primary" title={value}>{value}</p>
       <p className="mt-1 text-[10px] font-semibold leading-relaxed text-text-muted">{detail}</p>
     </div>
   );

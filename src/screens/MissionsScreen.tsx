@@ -36,10 +36,20 @@ const MOBILE_FILTERS: { id: MobileFilter; title: string }[] = [
 export function MissionsScreen() {
   const [searchParams] = useSearchParams();
   const demoState = searchParams.get("state");
+  const requestedFilter = searchParams.get("filter");
+  const urlFilter: MobileFilter = requestedFilter === "active" || requestedFilter === "running"
+    ? "running"
+    : requestedFilter === "needs_review" || requestedFilter === "completed" || requestedFilter === "failed" || requestedFilter === "cancelled"
+      ? requestedFilter
+      : "all";
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [mobileFilter, setMobileFilter] = useState<MobileFilter>("all");
+  const [mobileFilter, setMobileFilter] = useState<MobileFilter>(urlFilter);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMobileFilter(urlFilter);
+  }, [urlFilter]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -75,6 +85,8 @@ export function MissionsScreen() {
   const filtered = useMemo(
     () =>
       source.filter((m) => {
+        const matchesFilter = mobileFilter === "all" || m.status === mobileFilter;
+        if (!matchesFilter) return false;
         const q = query.toLowerCase().trim();
         if (!q) return true;
         return (
@@ -83,7 +95,7 @@ export function MissionsScreen() {
           m.model.toLowerCase().includes(q)
         );
       }),
-    [source, query],
+    [source, query, mobileFilter],
   );
 
   const missionsByStatus = useMemo(() => {

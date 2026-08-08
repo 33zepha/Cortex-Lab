@@ -5,6 +5,7 @@ data/missions/*
 data/evidence/*
 data/workspaces/*
 data/playground/*
+data/auth/*
 !data/ledger/.gitkeep
 !data/missions/.gitkeep
 !data/evidence/.gitkeep

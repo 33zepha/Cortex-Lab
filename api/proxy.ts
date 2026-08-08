@@ -63,15 +63,33 @@ function signSession(username: string, expiresAt: number, secret: string): strin
 }
 
 function hasValidSession(req: VercelRequest, username: string, secret: string): boolean {
+  return Boolean(readSessionUser(req, username, secret));
+}
+
+function readSessionUser(req: VercelRequest, username: string, secret: string): string | null {
   const token = parseCookies(req.headers.cookie)[SESSION_COOKIE];
-  if (!token) return false;
+  if (!token) return null;
   const parts = token.split(".");
-  if (parts.length !== 3) return false;
-  const [tokenUser, rawExpiresAt, signature] = parts;
-  const expiresAt = Number(rawExpiresAt);
-  if (tokenUser !== username || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) return false;
-  const expected = signSession(tokenUser, expiresAt, secret).split(".").at(-1) ?? "";
-  return safeEqual(signature, expected);
+  if (parts.length === 3) {
+    const [tokenUser, rawExpiresAt, signature] = parts;
+    const expiresAt = Number(rawExpiresAt);
+    if (tokenUser !== username || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) return null;
+    const expected = signSession(tokenUser, expiresAt, secret).split(".").at(-1) ?? "";
+    return safeEqual(signature ?? "", expected) ? tokenUser : null;
+  }
+
+  if (parts.length !== 2) return null;
+  const [payload, signature] = parts;
+  if (!payload || !signature) return null;
+  const expected = createHmac("sha256", secret).update(payload).digest("base64url");
+  if (!safeEqual(signature, expected)) return null;
+  try {
+    const session = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { user?: unknown; expiresAt?: unknown };
+    if (typeof session.user !== "string" || typeof session.expiresAt !== "number" || session.expiresAt <= Date.now()) return null;
+    return session.user;
+  } catch {
+    return null;
+  }
 }
 
 function setSessionCookie(res: VercelResponse, value: string, maxAge: number): void {
@@ -99,78 +117,23 @@ async function fetchUpstream(targetUrl: string, init: RequestInit, method: strin
   throw lastError instanceof Error ? lastError : new Error(String(lastError));
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
-  const startTime = Date.now();
-  const upstreamOrigin = process.env.CORTEX_API_ORIGIN?.replace(/\/$/, "");
-  const apiToken = process.env.CORTEX_API_TOKEN?.trim();
-  const accessUser = process.env.CORTEX_ACCESS_USER?.trim() || "boss";
-  const accessPassword = process.env.CORTEX_ACCESS_PASSWORD?.trim() || apiToken;
-  const sessionSecret = process.env.CORTEX_SESSION_SECRET?.trim() || apiToken || accessPassword;
-  const method = (req.method ?? "GET").toUpperCase();
-  const requestedPath = extractTargetUrl(req, upstreamOrigin || "http://invalid.local").pathname;
-
-  if (requestedPath === "/api/auth/login") {
-    if (method !== "POST") {
-      res.status(405).json({ error: "Method not allowed" });
-      return;
-    }
-    if (!accessPassword || !sessionSecret) {
-      res.status(503).json({ error: "Cortex access is not configured" });
-      return;
-    }
-    const body = (req.body && typeof req.body === "object" ? req.body : {}) as { username?: unknown; password?: unknown };
-    const username = typeof body.username === "string" ? body.username.trim() : "";
-    const password = typeof body.password === "string" ? body.password : "";
-    if (!safeEqual(username, accessUser) || !safeEqual(password, accessPassword)) {
-      res.status(401).json({ error: "Invalid credentials" });
-      return;
-    }
-    const expiresAt = Date.now() + SESSION_TTL_SECONDS * 1000;
-    setSessionCookie(res, signSession(accessUser, expiresAt, sessionSecret), SESSION_TTL_SECONDS);
-    res.setHeader("Cache-Control", "no-store");
-    res.status(200).json({ authenticated: true, user: accessUser });
-    return;
-  }
-
-  if (requestedPath === "/api/auth/session") {
-    if (!accessPassword || !sessionSecret || !hasValidSession(req, accessUser, sessionSecret)) {
-      res.setHeader("Cache-Control", "no-store");
-      res.status(401).json({ authenticated: false });
-      return;
-    }
-    res.setHeader("Cache-Control", "no-store");
-    res.status(200).json({ authenticated: true, user: accessUser });
-    return;
-  }
-
-  if (requestedPath === "/api/auth/logout") {
-    setSessionCookie(res, "", 0);
-    res.setHeader("Cache-Control", "no-store");
-    res.status(200).json({ authenticated: false });
-    return;
-  }
-
-  if (!accessPassword || !sessionSecret || !hasValidSession(req, accessUser, sessionSecret)) {
-    res.setHeader("Cache-Control", "no-store");
-    res.status(401).json({ error: "Cortex session required" });
-    return;
-  }
-
-  if (!upstreamOrigin) {
-    console.error(JSON.stringify({ event: "proxy_config_error", error: "CORTEX_API_ORIGIN manquant côté Vercel", timestamp: new Date().toISOString() }));
-    res.status(503).json({ error: "CORTEX_API_ORIGIN manquant côté Vercel" });
-    return;
-  }
-
+async function proxyToUpstream(
+  req: VercelRequest,
+  res: VercelResponse,
+  upstreamOrigin: string,
+  apiToken: string | undefined,
+  startTime: number,
+  preserveSetCookie = false,
+): Promise<void> {
   try {
     new URL(upstreamOrigin);
   } catch {
-    console.error(JSON.stringify({ event: "proxy_config_error", error: "CORTEX_API_ORIGIN invalide", timestamp: new Date().toISOString() }));
     res.status(503).json({ error: "CORTEX_API_ORIGIN invalide" });
     return;
   }
 
   const { targetUrl, pathname, search } = extractTargetUrl(req, upstreamOrigin);
+  const method = (req.method ?? "GET").toUpperCase();
   console.log(JSON.stringify({ event: "proxy_request", method, path: pathname, search, timestamp: new Date().toISOString() }));
 
   const forwardHeaders: Record<string, string> = {};
@@ -194,11 +157,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     }, method);
 
     console.log(JSON.stringify({ event: "proxy_response", method, path: pathname, status: upstreamResponse.status, durationMs: Date.now() - startTime, timestamp: new Date().toISOString() }));
-
     res.status(upstreamResponse.status);
     upstreamResponse.headers.forEach((value, key) => {
       const lower = key.toLowerCase();
-      if (lower === "transfer-encoding" || lower === "content-length" || lower === "set-cookie") return;
+      if (lower === "transfer-encoding" || lower === "content-length" || (lower === "set-cookie" && !preserveSetCookie)) return;
       res.setHeader(key, value);
     });
 
@@ -206,13 +168,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       res.end();
       return;
     }
-
     if (typeof (res as any).on === "function" && typeof Readable.fromWeb === "function") {
-      const nodeStream = Readable.fromWeb(upstreamResponse.body as any);
-      nodeStream.pipe(res);
+      Readable.fromWeb(upstreamResponse.body as any).pipe(res);
       return;
     }
-
     const reader = upstreamResponse.body.getReader();
     try {
       while (true) {
@@ -227,4 +186,92 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     console.error(JSON.stringify({ event: "proxy_error", method, path: pathname, error: error instanceof Error ? error.message : String(error), durationMs: Date.now() - startTime, timestamp: new Date().toISOString() }));
     if (!res.headersSent) res.status(502).json({ error: "API Cortex centrale inaccessible (502 Bad Gateway)" });
   }
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
+  const startTime = Date.now();
+  const upstreamOrigin = process.env.CORTEX_API_ORIGIN?.replace(/\/$/, "");
+  const apiToken = process.env.CORTEX_API_TOKEN?.trim();
+  const accessUser = process.env.CORTEX_ACCESS_USER?.trim() || "boss";
+  const accessPassword = process.env.CORTEX_ACCESS_PASSWORD?.trim() || apiToken;
+  const sessionSecret = process.env.CORTEX_SESSION_SECRET?.trim() || apiToken || accessPassword || "";
+  const method = (req.method ?? "GET").toUpperCase();
+  const requestedPath = extractTargetUrl(req, upstreamOrigin || "http://invalid.local").pathname;
+
+  if (requestedPath === "/api/auth/login") {
+    if (method !== "POST") {
+      res.status(405).json({ error: "Method not allowed" });
+      return;
+    }
+    const body = (req.body && typeof req.body === "object" ? req.body : {}) as { username?: unknown; password?: unknown };
+    const username = typeof body.username === "string" ? body.username.trim() : "";
+    const password = typeof body.password === "string" ? body.password : "";
+    if (accessPassword && safeEqual(username, accessUser) && safeEqual(password, accessPassword)) {
+      const expiresAt = Date.now() + SESSION_TTL_SECONDS * 1000;
+      setSessionCookie(res, signSession(accessUser, expiresAt, sessionSecret), SESSION_TTL_SECONDS);
+      res.setHeader("Cache-Control", "no-store");
+      res.status(200).json({ authenticated: true, user: accessUser });
+      return;
+    }
+    if (!upstreamOrigin) {
+      res.status(401).json({ error: "Invalid credentials" });
+      return;
+    }
+    if (!sessionSecret) {
+      res.status(503).json({ error: "Cortex access is not configured" });
+      return;
+    }
+    await proxyToUpstream(req, res, upstreamOrigin, apiToken, startTime, true);
+    return;
+  }
+
+  if (requestedPath === "/api/auth/signup") {
+    if (method !== "POST") {
+      res.status(405).json({ error: "Method not allowed" });
+      return;
+    }
+    if (!upstreamOrigin) {
+      res.status(503).json({ error: "CORTEX_API_ORIGIN manquant côté Vercel" });
+      return;
+    }
+    if (!sessionSecret) {
+      res.status(503).json({ error: "Cortex access is not configured" });
+      return;
+    }
+    await proxyToUpstream(req, res, upstreamOrigin, apiToken, startTime, true);
+    return;
+  }
+
+  if (requestedPath === "/api/auth/session") {
+    const sessionUser = sessionSecret ? readSessionUser(req, accessUser, sessionSecret) : null;
+    if (!sessionUser) {
+      res.setHeader("Cache-Control", "no-store");
+      res.status(401).json({ authenticated: false });
+      return;
+    }
+    res.setHeader("Cache-Control", "no-store");
+    res.status(200).json({ authenticated: true, user: sessionUser });
+    return;
+  }
+
+  if (requestedPath === "/api/auth/logout") {
+    setSessionCookie(res, "", 0);
+    res.setHeader("Cache-Control", "no-store");
+    res.status(200).json({ authenticated: false });
+    return;
+  }
+
+  if (!sessionSecret || !hasValidSession(req, accessUser, sessionSecret)) {
+    res.setHeader("Cache-Control", "no-store");
+    res.status(401).json({ error: "Cortex session required" });
+    return;
+  }
+
+  if (!upstreamOrigin) {
+    console.error(JSON.stringify({ event: "proxy_config_error", error: "CORTEX_API_ORIGIN manquant côté Vercel", timestamp: new Date().toISOString() }));
+    res.status(503).json({ error: "CORTEX_API_ORIGIN manquant côté Vercel" });
+    return;
+  }
+
+  await proxyToUpstream(req, res, upstreamOrigin, apiToken, startTime);
 }
