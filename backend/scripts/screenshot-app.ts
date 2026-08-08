@@ -44,6 +44,10 @@ async function capture(
   await installAppMocks(page);
   await page.goto(`${BASE_URL}${route}${route.includes("?") ? "&" : "?"}simulate=operator`);
   await page.getByRole("heading", { name: heading }).first().waitFor({ state: "visible" });
+  await page.evaluate(() => {
+    window.scrollTo(0, 0);
+    document.querySelector<HTMLElement>(".mobile-content-scroll")?.scrollTo(0, 0);
+  });
   await page.waitForTimeout(450);
   await page.screenshot({ path: path.join(OUT_DIR, name), fullPage: true });
   await page.close();
