@@ -106,7 +106,7 @@ export function MissionControlBar({
 
   return (
     <>
-      <div className="sticky bottom-[calc(74px+env(safe-area-inset-bottom))] z-sticky mt-5 laptop:static laptop:bottom-auto laptop:z-auto">
+      <div className="relative mt-5">
         <div className="flex min-h-[58px] items-center gap-1.5 overflow-x-auto rounded-[17px] border border-white/[0.08] bg-[#131714]/95 p-1.5 text-[#efeee9] shadow-[0_20px_42px_-28px_rgba(0,0,0,0.95)] backdrop-blur-xl laptop:inline-flex laptop:min-h-0 laptop:rounded-[15px]">
           {controls.map(({ id, label, icon: Icon, onClick }) => (
             <button
