@@ -6,6 +6,66 @@ const BASE_URL = process.env.CORTEX_SCREENSHOT_URL ?? "http://127.0.0.1:4173";
 const OUT_DIR = path.resolve(process.cwd(), "artifacts/ui");
 mkdirSync(OUT_DIR, { recursive: true });
 
+async function installAuthPreviewMocks(page: Page) {
+  await page.route("**/api/auth/signup", async (route) => {
+    const payload = route.request().postDataJSON() as { email?: string; workspaceName?: string } | null;
+    const now = Date.now();
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({
+        authenticated: true,
+        user: payload?.email ?? "preview@cortex.local",
+        workspace: {
+          id: "ws_preview",
+          name: payload?.workspaceName ?? "Cortex Lab",
+          connection: null,
+          createdAt: now,
+          updatedAt: now,
+        },
+      }),
+    });
+  });
+
+  await page.route("**/api/workspace", async (route) => {
+    const now = Date.now();
+    const request = route.request();
+    if (request.method() === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          user: "preview@cortex.local",
+          workspace: {
+            id: "ws_preview",
+            name: "Cortex Lab",
+            connection: null,
+            createdAt: now,
+            updatedAt: now,
+          },
+        }),
+      });
+      return;
+    }
+
+    const payload = request.postDataJSON() as { workspaceName?: string; connection?: unknown } | null;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        user: "preview@cortex.local",
+        workspace: {
+          id: "ws_preview",
+          name: payload?.workspaceName ?? "Cortex Lab",
+          connection: payload?.connection ?? null,
+          createdAt: now,
+          updatedAt: now,
+        },
+      }),
+    });
+  });
+}
+
 async function settle(page: Page) {
   await page.waitForLoadState("networkidle");
   await page.locator(".auth-art__image").waitFor({ state: "visible" });
@@ -53,8 +113,10 @@ async function assertMobileRenderingContract(page: Page) {
 }
 
 async function advanceAccount(page: Page) {
+  const previewPassword = "cortex-preview-password";
   await page.getByLabel("Email").fill("preview@cortex.local");
-  await page.getByLabel("Password").fill("cortex-preview-password");
+  await page.getByLabel("Password", { exact: true }).fill(previewPassword);
+  await page.getByLabel("Confirm", { exact: true }).fill(previewPassword);
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByRole("textbox", { name: "Workspace", exact: true }).waitFor({ state: "visible" });
   await page.waitForTimeout(260);
@@ -92,6 +154,7 @@ async function main() {
   await loginDesktop.screenshot({ path: path.join(OUT_DIR, "auth-login-desktop.png"), fullPage: true });
 
   const signup = await desktop.newPage();
+  await installAuthPreviewMocks(signup);
   await signup.goto(`${BASE_URL}/signup`);
   await settle(signup);
   await signup.screenshot({ path: path.join(OUT_DIR, "auth-signup-desktop.png"), fullPage: true });
@@ -127,6 +190,7 @@ async function main() {
 
   const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
   const flowMobile = await mobile.newPage();
+  await installAuthPreviewMocks(flowMobile);
   await flowMobile.goto(`${BASE_URL}/signup`);
   await settle(flowMobile);
   await assertMobileRenderingContract(flowMobile);
