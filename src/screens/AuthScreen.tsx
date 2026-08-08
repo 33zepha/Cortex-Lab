@@ -10,6 +10,7 @@ import { login as authenticate } from "@/lib/auth";
 import "@/styles/auth.css";
 import "@/styles/auth-actions.css";
 import "@/styles/auth-effects.css";
+import "@/styles/auth-hero.css";
 
 type AuthMode = "login" | "signup";
 type SignupStep = "account" | "workspace" | "runtime";
