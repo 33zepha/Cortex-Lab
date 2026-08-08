@@ -103,6 +103,11 @@ export function DitherAtmosphere({ className }: { className?: string }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Mobile Safari pays a disproportionate cost for WebGL + translucent UI.
+    // Keep the photographic scene and static grain there; reserve the shader for desktop.
+    const mobileRenderingTarget = window.matchMedia("(max-width: 900px), (pointer: coarse)").matches;
+    if (mobileRenderingTarget) return;
+
     const gl = canvas.getContext("webgl2", {
       alpha: true,
       antialias: false,
@@ -151,16 +156,13 @@ export function DitherAtmosphere({ className }: { className?: string }) {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
-    const staticMode = reducedMotion || coarsePointer;
     const targetPointer = { x: 0.68, y: 0.62 };
     const pointer = { ...targetPointer };
     let raf = 0;
     let active = true;
 
     const resize = () => {
-      const maxRatio = coarsePointer ? 1 : 1.5;
-      const ratio = Math.min(window.devicePixelRatio || 1, maxRatio);
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
       const width = Math.max(1, Math.floor(canvas.clientWidth * ratio));
       const height = Math.max(1, Math.floor(canvas.clientHeight * ratio));
       if (canvas.width !== width || canvas.height !== height) {
@@ -171,7 +173,7 @@ export function DitherAtmosphere({ className }: { className?: string }) {
     };
 
     const onPointerMove = (event: PointerEvent) => {
-      if (staticMode || event.pointerType === "touch") return;
+      if (reducedMotion || event.pointerType === "touch") return;
       targetPointer.x = event.clientX / Math.max(window.innerWidth, 1);
       targetPointer.y = 1 - event.clientY / Math.max(window.innerHeight, 1);
     };
@@ -184,18 +186,18 @@ export function DitherAtmosphere({ className }: { className?: string }) {
       gl.useProgram(program);
       gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
       gl.uniform2f(pointerLocation, pointer.x, pointer.y);
-      gl.uniform1f(timeLocation, staticMode ? 0 : now / 1000);
+      gl.uniform1f(timeLocation, reducedMotion ? 0 : now / 1000);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
-      if (!staticMode && !document.hidden) raf = requestAnimationFrame(render);
+      if (!reducedMotion && !document.hidden) raf = requestAnimationFrame(render);
     };
 
     const onVisibility = () => {
       cancelAnimationFrame(raf);
-      if (!document.hidden && !staticMode) raf = requestAnimationFrame(render);
+      if (!document.hidden && !reducedMotion) raf = requestAnimationFrame(render);
     };
 
     window.addEventListener("resize", resize, { passive: true });
-    if (!staticMode) window.addEventListener("pointermove", onPointerMove, { passive: true });
+    if (!reducedMotion) window.addEventListener("pointermove", onPointerMove, { passive: true });
     document.addEventListener("visibilitychange", onVisibility);
     render(performance.now());
 

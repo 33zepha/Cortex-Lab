@@ -107,17 +107,368 @@
     box-shadow 180ms ease;
 }
 
+/* Mobile is treated as a different rendering target, not a scaled desktop. */
 @media (max-width: 900px) {
-  .auth-dither-atmosphere {
-    opacity: .43;
+  .auth-entry {
+    min-height: 100svh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    background: #090c0b;
   }
 
+  .auth-entry::-webkit-scrollbar {
+    display: none;
+  }
+
+  .auth-scene__image,
+  .auth-art__image {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100svh;
+    object-position: 58% 50%;
+    transform: scaleX(-1) scale(1.012);
+    filter: none;
+    will-change: auto;
+    backface-visibility: hidden;
+  }
+
+  .auth-scene__veil {
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 105% 52% at 50% 88%, rgba(5,8,7,.29), transparent 68%),
+      linear-gradient(180deg, rgba(4,7,6,.055) 0%, rgba(4,7,6,.04) 34%, rgba(4,7,6,.18) 62%, rgba(4,7,6,.66) 100%);
+  }
+
+  .auth-scene__grain {
+    position: fixed;
+    inset: 0;
+    opacity: .018;
+  }
+
+  .auth-dither-atmosphere,
   .auth-entry::after {
-    background: radial-gradient(
-      310px circle at var(--auth-pointer-x, 50%) var(--auth-pointer-y, 77%),
-      rgba(239, 239, 233, .022),
-      transparent 70%
-    );
+    display: none;
+  }
+
+  .auth-art__brand {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 18px);
+    left: max(18px, calc(env(safe-area-inset-left) + 18px));
+  }
+
+  .auth-stage {
+    min-height: 100svh;
+    align-items: end;
+    padding:
+      calc(env(safe-area-inset-top) + 92px)
+      max(18px, calc(env(safe-area-inset-right) + 18px))
+      max(24px, calc(env(safe-area-inset-bottom) + 18px))
+      max(18px, calc(env(safe-area-inset-left) + 18px));
+  }
+
+  .auth-panel__inner {
+    width: min(100%, 388px);
+    justify-self: center;
+    margin: 0;
+  }
+
+  .auth-composition {
+    transform: none !important;
+  }
+
+  .auth-heading h1 {
+    animation: auth-title-reveal-mobile 360ms cubic-bezier(.22, 1, .36, 1) both;
+    max-width: 340px;
+    font-size: clamp(39px, 10.9vw, 46px);
+    line-height: .94;
+    letter-spacing: -.057em;
+  }
+
+  @keyframes auth-title-reveal-mobile {
+    from { opacity: 0; transform: translate3d(0, 5px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+
+  .auth-heading,
+  .auth-heading--login {
+    margin-bottom: 20px;
+  }
+
+  .auth-heading--signup {
+    margin-top: 26px;
+  }
+
+  .auth-heading--runtime {
+    margin-bottom: 18px;
+  }
+
+  .auth-heading > p:last-child {
+    max-width: 280px;
+    margin-top: 9px;
+    font-size: 10.3px;
+    line-height: 1.45;
+  }
+
+  /* On touch devices translucency is faked with alpha instead of live blur. */
+  .auth-entry .liquid-surface[data-liquid-variant="core"] {
+    background: rgba(18,22,20,.76);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .auth-entry .liquid-surface[data-liquid-variant="wing"] {
+    background: rgba(20,24,22,.78);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .auth-entry .liquid-surface[data-liquid-variant="popover"] {
+    background: rgba(17,21,19,.94);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.065), 0 12px 30px -24px rgba(0,0,0,.72);
+  }
+
+  .auth-entry .liquid-surface__specular {
+    display: none;
+  }
+
+  .auth-entry .liquid-surface__edge {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
+  }
+
+  .auth-credential-rail {
+    border-radius: 16px !important;
+  }
+
+  .auth-credential-row {
+    min-height: 54px;
+    grid-template-columns: 68px minmax(0,1fr);
+    padding: 0 6px 0 13px;
+    transition: background-color 120ms ease;
+  }
+
+  .auth-rail-input {
+    height: 54px !important;
+    font-size: 16px !important;
+  }
+
+  .auth-rail-divider {
+    margin-inline: 13px;
+  }
+
+  .auth-password .auth-rail-input {
+    padding-right: 42px !important;
+  }
+
+  .auth-password__toggle {
+    right: 2px;
+  }
+
+  .auth-action,
+  .auth-back,
+  .auth-account-link,
+  .auth-step-trigger,
+  .auth-add-connection,
+  .auth-child-row,
+  .auth-child-back,
+  .auth-child-save,
+  .auth-skip,
+  .auth-icon-action {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .auth-action {
+    min-height: 46px;
+  }
+
+  .auth-action:hover,
+  .auth-child-row:hover,
+  .auth-add-connection:hover {
+    transform: none;
+  }
+
+  .auth-action:active {
+    transform: scale(.988);
+  }
+
+  .auth-action__terminal,
+  .auth-command__icon,
+  .auth-child-row__icon {
+    transition: opacity 120ms ease;
+  }
+
+  .auth-step-trigger__number {
+    will-change: auto;
+    filter: none !important;
+  }
+
+  .auth-step-menu {
+    width: min(252px, calc(100vw - 36px));
+  }
+
+  .auth-step-menu__item {
+    min-height: 46px;
+  }
+
+  .auth-workspace-editor > .liquid-surface__content {
+    min-height: 68px;
+    padding: 8px 12px;
+  }
+
+  .auth-workspace-input {
+    font-size: 17px !important;
+  }
+
+  .auth-runtime-stage {
+    gap: 12px;
+  }
+
+  .auth-workspace-line {
+    padding-bottom: 12px;
+  }
+
+  .auth-add-connection {
+    min-height: 52px;
+    border-radius: 15px !important;
+  }
+
+  .auth-child-menu {
+    border-radius: 16px !important;
+  }
+
+  .auth-child-row {
+    min-height: 56px;
+  }
+
+  .auth-child-form {
+    gap: 9px;
+    padding: 9px;
+  }
+
+  .auth-child-field {
+    min-height: 46px;
+    grid-template-columns: minmax(92px, 31%) minmax(0,1fr);
+    padding-left: 11px;
+  }
+
+  .auth-child-input {
+    height: 44px !important;
+    font-size: 16px !important;
+  }
+
+  .auth-credential-row,
+  .auth-child-field,
+  .auth-workspace-editor,
+  .auth-child-menu,
+  .auth-action {
+    scroll-margin-bottom: 34svh;
+  }
+}
+
+/* Narrow / tall phones: keep the sculptural focal region visible. */
+@media (max-width: 390px) and (min-height: 760px) {
+  .auth-scene__image,
+  .auth-art__image {
+    object-position: 61% 49%;
+    transform: scaleX(-1) scale(1.018);
+  }
+}
+
+/* Wider modern phones, including Pro Max class devices. */
+@media (min-width: 421px) and (max-width: 900px) and (orientation: portrait) {
+  .auth-scene__image,
+  .auth-art__image {
+    object-position: 55% 50%;
+  }
+
+  .auth-stage {
+    padding-inline: max(22px, env(safe-area-inset-left));
+    padding-bottom: max(30px, calc(env(safe-area-inset-bottom) + 20px));
+  }
+
+  .auth-panel__inner {
+    width: min(100%, 400px);
+  }
+}
+
+/* Short phones must never crop the form or runtime controls. */
+@media (max-width: 900px) and (max-height: 740px) and (orientation: portrait) {
+  .auth-stage {
+    align-items: start;
+    padding-top: calc(env(safe-area-inset-top) + 78px);
+    padding-bottom: max(18px, calc(env(safe-area-inset-bottom) + 12px));
+  }
+
+  .auth-heading h1 {
+    font-size: 36px;
+  }
+
+  .auth-heading,
+  .auth-heading--login {
+    margin-bottom: 16px;
+  }
+
+  .auth-heading--signup {
+    margin-top: 18px;
+  }
+
+  .auth-credential-row {
+    min-height: 50px;
+  }
+
+  .auth-rail-input {
+    height: 50px !important;
+  }
+
+  .auth-account-link {
+    margin-top: 12px;
+  }
+}
+
+/* Landscape phone: treat the free side of the artwork as the working rail. */
+@media (max-width: 900px) and (orientation: landscape) {
+  .auth-entry {
+    min-height: 100svh;
+  }
+
+  .auth-scene__image,
+  .auth-art__image {
+    object-position: 48% 50%;
+    transform: scaleX(-1) scale(1.01);
+  }
+
+  .auth-scene__veil {
+    background: linear-gradient(90deg, rgba(4,7,6,.04) 0%, rgba(4,7,6,.10) 48%, rgba(4,7,6,.62) 100%);
+  }
+
+  .auth-stage {
+    min-height: 100svh;
+    align-items: start;
+    padding:
+      calc(env(safe-area-inset-top) + 48px)
+      max(24px, calc(env(safe-area-inset-right) + 18px))
+      max(18px, calc(env(safe-area-inset-bottom) + 12px))
+      max(24px, calc(env(safe-area-inset-left) + 18px));
+  }
+
+  .auth-panel__inner {
+    width: min(390px, 48vw);
+    justify-self: end;
+  }
+
+  .auth-heading h1 {
+    font-size: clamp(32px, 6.8vw, 40px);
+  }
+
+  .auth-heading--signup {
+    margin-top: 16px;
   }
 }
 
