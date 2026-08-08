@@ -1,1 +1,1 @@
-export { default } from "./proxy";
+export { default } from "./proxy.js";
