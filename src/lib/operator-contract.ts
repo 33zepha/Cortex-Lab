@@ -5,7 +5,7 @@ import type {
   OperatorDecision,
   OperatorRunStatus,
   OperatorStage,
-} from "@/lib/types";
+} from "./types";
 
 export type OperationalMission = {
   mission: Mission;
