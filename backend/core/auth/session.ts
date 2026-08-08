@@ -10,13 +10,12 @@ export function resolveSessionSecret(raw: string | undefined, production: boolea
   if (configured) return configured;
   if (!production) return DEVELOPMENT_SESSION_SECRET;
 
-  // Production prefers a dedicated CORTEX_SESSION_SECRET. For existing Cortex
-  // deployments that predate that variable, derive an isolated signing key from
-  // another server-only secret instead of taking auth offline. The source secret
-  // is never exposed to the browser or persisted in the repository.
-  const fallbackMaterial = process.env.CORTEX_API_TOKEN?.trim() || process.env.CORTEX_ACCESS_PASSWORD?.trim() || "";
-  if (!fallbackMaterial) return "";
-  return createHash("sha256").update(`cortex-session:v1:${fallbackMaterial}`).digest("hex");
+  // Production prefers a dedicated CORTEX_SESSION_SECRET. Deployments that
+  // predate that variable may derive an isolated signing key from the existing
+  // server-only service token. Never derive sessions from a user password.
+  const serviceToken = process.env.CORTEX_API_TOKEN?.trim() || "";
+  if (!serviceToken) return "";
+  return createHash("sha256").update(`cortex-session:v1:${serviceToken}`).digest("hex");
 }
 
 export function isAcceptableSessionSecret(secret: string, production: boolean): boolean {
