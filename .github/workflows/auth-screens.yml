@@ -4,6 +4,7 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "index.html"
       - "src/screens/AuthScreen.tsx"
       - "src/components/auth/**"
       - "src/components/effects/**"
