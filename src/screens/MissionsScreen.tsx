@@ -33,12 +33,23 @@ const MOBILE_FILTERS: { id: MobileFilter; title: string }[] = [
   { id: "cancelled", title: "Annulées" },
 ];
 
+function parseFilter(value: string | null): MobileFilter {
+  if (value === "active") return "running";
+  return MOBILE_FILTERS.some((filter) => filter.id === value) ? (value as MobileFilter) : "all";
+}
+
+function matchesFilter(mission: Mission, filter: MobileFilter): boolean {
+  if (filter === "all") return true;
+  return mission.status === filter;
+}
+
 export function MissionsScreen() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const demoState = searchParams.get("state");
+  const urlFilter = parseFilter(searchParams.get("filter"));
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [mobileFilter, setMobileFilter] = useState<MobileFilter>("all");
+  const [mobileFilter, setMobileFilter] = useState<MobileFilter>(urlFilter);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -72,18 +83,22 @@ export function MissionsScreen() {
   const { missions, loading, error, refetch } = useMissions();
   const source = demoState === "empty" ? emptyMissions : (missions ?? []);
 
+  useEffect(() => {
+    setMobileFilter(urlFilter);
+  }, [urlFilter]);
+
   const filtered = useMemo(
     () =>
       source.filter((m) => {
         const q = query.toLowerCase().trim();
-        if (!q) return true;
-        return (
+        const matchesQuery = !q || (
           (m.title && m.title.toLowerCase().includes(q)) ||
           m.objective.toLowerCase().includes(q) ||
           m.model.toLowerCase().includes(q)
         );
+        return matchesQuery && matchesFilter(m, urlFilter);
       }),
-    [source, query],
+    [source, query, urlFilter],
   );
 
   const missionsByStatus = useMemo(() => {
@@ -202,7 +217,15 @@ export function MissionsScreen() {
                   <button
                     key={filter.id}
                     type="button"
-                    onClick={() => setMobileFilter(filter.id)}
+                    onClick={() => {
+                      setMobileFilter(filter.id);
+                      setSearchParams((current) => {
+                        const next = new URLSearchParams(current);
+                        if (filter.id === "all") next.delete("filter");
+                        else next.set("filter", filter.id);
+                        return next;
+                      }, { replace: true });
+                    }}
                     className={cn(
                       "flex min-h-10 shrink-0 items-center gap-2 rounded-[12px] border border-white/55 bg-white/18 px-3 text-[11px] font-bold tracking-[-0.01em] text-text-secondary",
                       TRANSITION_SPRING,

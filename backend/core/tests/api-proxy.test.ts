@@ -200,4 +200,115 @@ describe("Vercel Node Proxy Handler (api/proxy.ts)", () => {
     expect(receivedUrl).toBe("/api/tokens/weekly?foo=bar");
     expect(JSON.parse(getBody())).toEqual({ days: [] });
   });
+
+  it("relaye un signup vers le runtime et signe une session utilisateur", async () => {
+    let receivedPath = "";
+    let receivedAuth = "";
+    let receivedBody = "";
+    let receivedCookie = "";
+
+    const server = http.createServer((sReq, sRes) => {
+      receivedPath = sReq.url ?? "";
+      receivedAuth = sReq.headers.authorization ?? "";
+      receivedCookie = sReq.headers.cookie ?? "";
+      sReq.setEncoding("utf8");
+      sReq.on("data", (chunk) => { receivedBody += chunk; });
+      sReq.on("end", () => {
+        if (sReq.url === "/api/workspace") {
+          sRes.writeHead(200, { "content-type": "application/json" });
+          sRes.end(JSON.stringify({ user: "ada@example.com", workspace: { name: "Operations" } }));
+          return;
+        }
+        sRes.writeHead(201, { "content-type": "application/json" });
+        sRes.end(JSON.stringify({ authenticated: true, user: "ada@example.com", workspace: { name: "Operations" } }));
+      });
+    });
+
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address() as { port: number };
+    process.env.CORTEX_API_ORIGIN = `http://127.0.0.1:${address.port}`;
+    process.env.CORTEX_API_TOKEN = "service-token";
+    process.env.CORTEX_SESSION_SECRET = "session-secret";
+
+    const req = mockReq({
+      method: "POST",
+      url: "/api/proxy?path=auth/signup",
+      query: { path: ["auth", "signup"] },
+      body: { email: "ada@example.com", password: "correct horse battery staple", workspaceName: "Operations" },
+    });
+    const response = mockRes();
+
+    await handler(req, response.res);
+
+    const signupPath = receivedPath;
+    const signupAuth = receivedAuth;
+    const signupBody = receivedBody;
+    const setCookie = response.getHeaders()["set-cookie"].split(";")[0];
+    const workspaceRequest = mockReq({
+      method: "GET",
+      url: "/api/proxy?path=workspace",
+      query: { path: "workspace" },
+      headers: { accept: "application/json", cookie: setCookie },
+    });
+    const workspaceResponse = mockRes();
+    await handler(workspaceRequest, workspaceResponse.res);
+    server.close();
+
+    expect(response.getStatus()).toBe(201);
+    expect(response.getHeaders()["set-cookie"]).toContain("cortex_session=");
+    expect(signupPath).toBe("/api/auth/signup");
+    expect(signupAuth).toBe("Bearer service-token");
+    expect(JSON.parse(signupBody)).toMatchObject({ email: "ada@example.com", workspaceName: "Operations" });
+    expect(JSON.parse(response.getBody()).user).toBe("ada@example.com");
+    expect(workspaceResponse.getStatus()).toBe(200);
+    expect(receivedCookie).toContain("cortex_session=");
+  });
+
+  it("ne transmet pas une identité utilisateur forgée par le navigateur", async () => {
+    let receivedUserHeader = "";
+    let receivedCookie = "";
+    const server = http.createServer((sReq, sRes) => {
+      receivedUserHeader = String(sReq.headers["x-cortex-user"] ?? "");
+      receivedCookie = sReq.headers.cookie ?? "";
+      sRes.writeHead(200, { "content-type": "application/json" });
+      sRes.end(JSON.stringify({ status: "ok" }));
+    });
+
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address() as { port: number };
+    process.env.CORTEX_API_ORIGIN = `http://127.0.0.1:${address.port}`;
+    process.env.CORTEX_API_TOKEN = "service-token";
+    const cookie = await createSessionCookie();
+
+    const req = mockReq({
+      url: "/api/proxy?path=health",
+      query: { path: "health" },
+      headers: { accept: "application/json", cookie, "x-cortex-user": "attacker@example.com" },
+    });
+    const response = mockRes();
+    await handler(req, response.res);
+    server.close();
+
+    expect(response.getStatus()).toBe(200);
+    expect(receivedUserHeader).toBe("");
+    expect(receivedCookie).toContain("cortex_session=");
+  });
+
+  it("refuse un secret de session de secours en production", async () => {
+    process.env.CORTEX_ENV = "production";
+    delete process.env.CORTEX_SESSION_SECRET;
+    process.env.CORTEX_ACCESS_PASSWORD = "test-password";
+
+    const req = mockReq({
+      method: "POST",
+      url: "/api/proxy?path=auth/login",
+      query: { path: ["auth", "login"] },
+      body: { username: "boss", password: "test-password" },
+    });
+    const response = mockRes();
+    await handler(req, response.res);
+
+    expect(response.getStatus()).toBe(503);
+    expect(JSON.parse(response.getBody()).error).toMatch(/SESSION_SECRET/);
+  });
 });

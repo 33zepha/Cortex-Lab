@@ -1,10 +1,13 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { UserIcon } from "@heroicons/react/24/solid";
-import { Fingerprint, MonitorCog, ShieldCheck, UserRound, RotateCcw } from "lucide-react";
+import { Fingerprint, LogOut, MonitorCog, ShieldCheck, UserRound, RotateCcw } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { BentoCard, Input } from "@/components/ui";
 import { EASE_SPRING_ARRAY } from "@/lib/animations";
+import { logout } from "@/lib/auth";
+import { useVps } from "@/lib/VpsContext";
+import { useNavigate } from "react-router-dom";
 
 const PROFILE_STORAGE_KEY = "cortex.operator-profile";
 
@@ -34,10 +37,14 @@ function readLocalProfile(): LocalProfile {
 }
 
 export function ProfileScreen() {
+  const navigate = useNavigate();
+  const { disconnectVps } = useVps();
   const initial = useMemo(() => readLocalProfile(), []);
   const [displayName, setDisplayName] = useState(initial.displayName);
   const [role, setRole] = useState(initial.role);
   const [saved, setSaved] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
 
   const initials = useMemo(() => {
     const words = displayName.trim().split(/\s+/).filter(Boolean);
@@ -64,13 +71,41 @@ export function ProfileScreen() {
     setSaved(false);
   }
 
+  async function signOut() {
+    setLoggingOut(true);
+    setLogoutError(null);
+    try {
+      await logout();
+      disconnectVps();
+      navigate("/login", { replace: true });
+    } catch {
+      setLoggingOut(false);
+      setLogoutError("Déconnexion impossible pour le moment. Vérifie la connexion et réessaie.");
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: EASE_SPRING_ARRAY }}
     >
-      <PageHeader title="Profil" icon={UserIcon} />
+      <PageHeader
+        title="Profil"
+        icon={UserIcon}
+        action={
+          <button
+            type="button"
+            onClick={signOut}
+            disabled={loggingOut}
+            className="flex min-h-10 items-center gap-2 rounded-[13px] border border-white/65 bg-white/45 px-3 text-[11px] font-bold text-text-secondary shadow-[inset_0_1px_1px_rgba(255,255,255,0.9)] backdrop-blur-xl transition-colors hover:bg-white/75 hover:text-text-primary disabled:opacity-50"
+          >
+            <LogOut className="size-4" strokeWidth={2.7} />
+            {loggingOut ? "Déconnexion…" : "Se déconnecter"}
+          </button>
+        }
+      />
+      {logoutError && <p className="mt-3 text-[11px] font-semibold text-error" role="alert">{logoutError}</p>}
 
       <div className="space-y-5 laptop:space-y-7">
         <section>

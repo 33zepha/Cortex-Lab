@@ -38,3 +38,18 @@ git push origin main
 ```
 
 Le déploiement du VPS n'est pas couplé aux pushes frontend. Le backend reste un service séparé et stable.
+
+## Authentification et secrets
+
+Le parcours `/signup` crée le compte et le workspace côté runtime. Le mot de passe est dérivé avec `scrypt` et le navigateur ne conserve ni clé SSH ni secret runtime.
+
+En production, configure exactement le même secret sur Vercel et le VPS :
+
+```text
+CORTEX_ENV=production
+CORTEX_SESSION_SECRET=<32 caractères minimum, aléatoires>
+CORTEX_API_TOKEN=<même valeur Vercel/VPS>
+CORTEX_ACCESS_PASSWORD=<mot de passe legacy boss, optionnel>
+```
+
+`CORTEX_API_TOKEN` n'est jamais accepté comme mot de passe de connexion. Le script `scripts/deploy-cortex-vps.sh` bloque le déploiement si `CORTEX_SESSION_SECRET` est absent ou trop court, et sauvegarde aussi `data/auth`.
