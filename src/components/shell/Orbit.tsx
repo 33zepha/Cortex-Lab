@@ -14,27 +14,32 @@ export function Orbit({ isOpen }: { isOpen: boolean }) {
 
   let content = null;
   if (isOpen) {
-    if (id) {
-      content = <MissionDetailOrbit key={`mission-${id}`} id={id} direction={direction} type={type} />;
-    } else if (currentIndex === 0) {
-      content = <OverviewOrbit key="overview" direction={direction} type={type} />;
-    } else if (currentIndex === 1) {
-      content = <MissionsOrbit key="missions" direction={direction} type={type} />;
-    } else if (currentIndex === 2) {
-      content = <SystemOrbit key="system" direction={direction} type={type} />;
-    }
+    if (id) content = <MissionDetailOrbit key={`mission-${id}`} id={id} direction={direction} type={type} />;
+    else if (currentIndex === 0) content = <OverviewOrbit key="overview" direction={direction} type={type} />;
+    else if (currentIndex === 1) content = <MissionsOrbit key="missions" direction={direction} type={type} />;
+    else if (currentIndex === 2) content = <SystemOrbit key="system" direction={direction} type={type} />;
   }
 
   return (
-    <div className="grid w-[160px] h-full items-start overflow-hidden">
-      <AnimatePresence custom={{ direction, type }}>
-        {content}
-      </AnimatePresence>
+    <div className="grid h-full w-[160px] items-start overflow-hidden">
+      <AnimatePresence custom={{ direction, type }}>{content}</AnimatePresence>
     </div>
   );
 }
 
-function OrbitShell({ title, children, hideTitle, direction, type }: { title: string; children: ReactNode; hideTitle?: boolean; direction: number; type: OrbitTransitionType }) {
+function OrbitShell({
+  title,
+  children,
+  hideTitle,
+  direction,
+  type,
+}: {
+  title: string;
+  children: ReactNode;
+  hideTitle?: boolean;
+  direction: number;
+  type: OrbitTransitionType;
+}) {
   return (
     <motion.aside
       custom={{ direction, type }}
@@ -42,17 +47,12 @@ function OrbitShell({ title, children, hideTitle, direction, type }: { title: st
       initial="enter"
       animate="center"
       exit="exit"
-      className={cn(
-        "col-start-1 row-start-1",
-        "flex h-fit max-h-[calc(100vh-4rem)] w-[160px] flex-col shrink-0 origin-center",
-      )}
+      className="col-start-1 row-start-1 flex h-fit max-h-[calc(100vh-4rem)] w-[160px] shrink-0 origin-center flex-col"
     >
-      <div className="flex-1 overflow-y-auto scrollbar-none p-3 space-y-3">
+      <div className="scrollbar-none flex-1 space-y-3 overflow-y-auto p-3">
         {!hideTitle && (
           <motion.div variants={FADE_UP_VARIANTS} className="px-2">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-text-muted">
-              {title}
-            </h2>
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-muted">{title}</h2>
           </motion.div>
         )}
         <div className="space-y-0.5">{children}</div>
@@ -78,24 +78,18 @@ function OrbitLink({
     <MotionLink
       variants={FADE_UP_VARIANTS}
       to={to}
+      data-active={active ? "true" : "false"}
       className={cn(
-        "flex items-center justify-between rounded-[8px] px-2 py-1 text-[13px] tracking-tight",
+        "cortex-orbit-link flex items-center justify-between rounded-[8px] px-2 py-1.5 text-[12px] tracking-tight",
         TRANSITION_SPRING,
-        "focus-visible:ring-2 focus-visible:ring-accent-indigo focus-visible:outline-none focus-visible:ring-offset-2",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[#101411]",
         "active:scale-[0.98] active:duration-150 active:ease-out",
-        active
-          ? "bg-black/[0.04] text-text-primary font-medium"
-          : "text-text-secondary hover:text-text-primary",
+        active && "font-medium",
       )}
     >
       <span className="truncate">{children}</span>
       {badge !== undefined && badge !== 0 && (
-        <span
-          className={cn(
-            "ml-2 shrink-0 rounded-full px-1.5 text-[10px] font-medium tabular-nums",
-            active ? "text-text-primary" : "text-text-muted",
-          )}
-        >
+        <span className="ml-2 shrink-0 rounded-full px-1.5 text-[10px] font-medium tabular-nums text-text-muted">
           {badge}
         </span>
       )}
@@ -108,9 +102,7 @@ function OverviewOrbit({ direction, type }: { direction: number; type: OrbitTran
 
   return (
     <OrbitShell title="Général" direction={direction} type={type}>
-      <OrbitLink to={ROUTES.missionDetail(missionActive.id)} active={false}>
-        Mission active
-      </OrbitLink>
+      <OrbitLink to={ROUTES.missionDetail(missionActive.id)} active={false}>Mission active</OrbitLink>
       {needsReview.length > 0 && (
         <OrbitLink to={`${ROUTES.missions}?filter=needs_review`} active={false} badge={needsReview.length}>
           À réviser
@@ -131,7 +123,6 @@ const missionFilters: { value: MissionFilter; label: string }[] = [
 function MissionsOrbit({ direction, type }: { direction: number; type: OrbitTransitionType }) {
   const [searchParams] = useSearchParams();
   const active = (searchParams.get("filter") as MissionFilter | null) ?? "all";
-
   const counts: Record<MissionFilter, number> = {
     all: allMissions.length,
     active: allMissions.filter((m) => m.status === "running").length,
@@ -143,12 +134,7 @@ function MissionsOrbit({ direction, type }: { direction: number; type: OrbitTran
   return (
     <OrbitShell title="Vues" direction={direction} type={type}>
       {missionFilters.map((f) => (
-        <OrbitLink
-          key={f.value}
-          to={`${ROUTES.missions}?filter=${f.value}`}
-          active={active === f.value}
-          badge={counts[f.value]}
-        >
+        <OrbitLink key={f.value} to={`${ROUTES.missions}?filter=${f.value}`} active={active === f.value} badge={counts[f.value]}>
           {f.label}
         </OrbitLink>
       ))}
@@ -193,10 +179,7 @@ const MotionButton = motion.button;
 
 function SystemOrbit({ direction, type }: { direction: number; type: OrbitTransitionType }) {
   const handleAnchorClick = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -207,12 +190,12 @@ function SystemOrbit({ direction, type }: { direction: number; type: OrbitTransi
           variants={FADE_UP_VARIANTS}
           type="button"
           onClick={() => handleAnchorClick(s.id)}
+          data-active="false"
           className={cn(
-            "group flex w-full items-center justify-between rounded-[8px] px-2 py-1 text-[13px] tracking-tight text-left",
+            "cortex-orbit-link group flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left text-[12px] tracking-tight",
             TRANSITION_SPRING,
-            "focus-visible:ring-2 focus-visible:ring-accent-indigo focus-visible:outline-none focus-visible:ring-offset-2",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[#101411]",
             "active:scale-[0.98] active:duration-150 active:ease-out",
-            "text-text-secondary hover:text-text-primary hover:bg-black/[0.04]",
           )}
         >
           <span className="truncate">{s.label}</span>
@@ -221,6 +204,3 @@ function SystemOrbit({ direction, type }: { direction: number; type: OrbitTransi
     </OrbitShell>
   );
 }
-
-
-
