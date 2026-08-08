@@ -205,3 +205,17 @@
     transition: none !important;
   }
 }
+
+
+/* The mobile dock owns a real layout zone. Content never runs underneath it,
+ * including on compact and landscape viewports. */
+@media (max-width: 1279px) {
+  .cortex-app-main {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+
+  .cortex-app-main .mobile-content-scroll {
+    padding-bottom: 24px;
+    scroll-padding-bottom: 24px;
+  }
+}
