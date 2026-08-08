@@ -74,7 +74,7 @@ void main() {
   float threshold = ign(gl_FragCoord.xy * 0.72);
   float quantized = (base + step(threshold, fraction)) / levels;
 
-  float centerMask = smoothstep(0.92, 0.20, length((uv - 0.5) * vec2(0.78, 1.0)));
+  float centerMask = 1.0 - smoothstep(0.20, 0.92, length((uv - 0.5) * vec2(0.78, 1.0)));
   float tonalMask = smoothstep(0.18, 0.72, field) * centerMask;
   vec3 graphite = vec3(0.105, 0.115, 0.108);
   vec3 chalk = vec3(0.77, 0.775, 0.75);
