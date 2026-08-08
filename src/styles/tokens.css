@@ -3,7 +3,7 @@
  * et pour tout CSS écrit à la main. Ne pas dupliquer ces valeurs ailleurs.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap");
 
 :root {
   /* ---- Couleur : surfaces (light — canvas / surface / surface-subtle) ---- */

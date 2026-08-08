@@ -1,0 +1,143 @@
+.auth-dither-atmosphere {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: .64;
+  mix-blend-mode: soft-light;
+}
+
+.auth-scene__grain {
+  z-index: -1;
+}
+
+.auth-stage {
+  position: relative;
+  z-index: 2;
+}
+
+.auth-entry::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    430px circle at var(--auth-pointer-x, 78%) var(--auth-pointer-y, 66%),
+    rgba(239, 239, 233, .038),
+    rgba(239, 239, 233, .012) 32%,
+    transparent 68%
+  );
+  mix-blend-mode: screen;
+}
+
+.auth-heading h1 {
+  animation: auth-title-reveal 620ms cubic-bezier(.16, 1, .3, 1) both;
+  transform-origin: left bottom;
+}
+
+@keyframes auth-title-reveal {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 9px, 0) scale(.994);
+    filter: blur(6px);
+  }
+  58% {
+    filter: blur(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.auth-step-trigger__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  min-width: 31px;
+  font-variant-numeric: tabular-nums;
+}
+
+.auth-step-trigger__number-window {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 12px;
+  height: 12px;
+  overflow: hidden;
+}
+
+.auth-step-trigger__number {
+  grid-area: 1 / 1;
+  display: inline-block;
+  will-change: transform, opacity, filter;
+}
+
+.auth-action__terminal,
+.auth-command__icon,
+.auth-child-row__icon {
+  transition:
+    transform 220ms cubic-bezier(.2, .8, .2, 1),
+    opacity 160ms ease;
+}
+
+.auth-action:hover .auth-action__terminal {
+  transform: translateX(1.5px);
+}
+
+.auth-add-connection:hover .auth-command__icon {
+  transform: rotate(4deg) scale(1.035);
+}
+
+.auth-child-row:hover .auth-child-row__icon {
+  transform: translateX(1px) scale(1.025);
+}
+
+.auth-credential-rail,
+.auth-workspace-editor,
+.auth-child-menu {
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+@media (max-width: 900px) {
+  .auth-dither-atmosphere {
+    opacity: .43;
+  }
+
+  .auth-entry::after {
+    background: radial-gradient(
+      310px circle at var(--auth-pointer-x, 50%) var(--auth-pointer-y, 77%),
+      rgba(239, 239, 233, .022),
+      transparent 70%
+    );
+  }
+}
+
+@media (pointer: coarse) {
+  .auth-entry::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-heading h1 {
+    animation: none;
+  }
+
+  .auth-action__terminal,
+  .auth-command__icon,
+  .auth-child-row__icon,
+  .auth-credential-rail,
+  .auth-workspace-editor,
+  .auth-child-menu {
+    transition: none !important;
+  }
+}
