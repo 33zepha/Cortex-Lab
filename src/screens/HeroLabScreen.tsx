@@ -2,11 +2,11 @@ import LetterGlitch from "@/components/hero/LetterGlitch";
 
 export function HeroLabScreen() {
   return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-black text-white">
+    <main className="relative min-h-[112dvh] overflow-hidden bg-black text-white sm:min-h-[108dvh] lg:min-h-[104dvh]">
       <div className="absolute inset-0">
         <LetterGlitch
           glitchColors={["#161c1a", "#394841", "#8b9b93"]}
-          glitchSpeed={96}
+          glitchSpeed={104}
           centerVignette={true}
           outerVignette={false}
           smooth={true}
@@ -14,25 +14,25 @@ export function HeroLabScreen() {
         />
       </div>
 
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.58)_0%,rgba(0,0,0,0.24)_38%,rgba(0,0,0,0.02)_72%,rgba(0,0,0,0.06)_100%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_72%_48%,rgba(128,151,141,0.035),transparent_42%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.42)_0%,rgba(0,0,0,0.12)_31%,rgba(0,0,0,0.00)_58%,rgba(0,0,0,0.04)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_73%_50%,rgba(128,151,141,0.025),transparent_47%)]" />
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] max-w-[1480px] items-center px-6 py-24 sm:px-10 lg:px-16">
-        <section className="max-w-[590px] lg:-translate-y-3">
-          <div className="mb-7 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/38">
-            <span className="h-px w-7 bg-white/20" />
+      <div className="relative z-10 mx-auto flex min-h-[112dvh] max-w-[1560px] items-end px-6 pb-[12dvh] pt-24 sm:min-h-[108dvh] sm:items-center sm:px-10 sm:py-24 lg:min-h-[104dvh] lg:px-14 xl:px-16">
+        <section className="max-w-[510px] sm:max-w-[500px] lg:-translate-y-4 lg:max-w-[470px]">
+          <div className="mb-6 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/36">
+            <span className="h-px w-7 bg-white/18" />
             Cortex / visual lab
           </div>
-          <h1 className="max-w-[560px] text-balance text-[clamp(3rem,6.3vw,6.7rem)] font-semibold leading-[0.91] tracking-[-0.065em] text-[#f3f4f2]">
+          <h1 className="max-w-[500px] text-balance text-[clamp(2.9rem,5.2vw,5.8rem)] font-semibold leading-[0.92] tracking-[-0.06em] text-[#f3f4f2]">
             Intelligence,<br />held in form.
           </h1>
-          <p className="mt-7 max-w-[430px] text-pretty text-[15px] leading-7 text-white/46 sm:text-[16px]">
+          <p className="mt-6 max-w-[390px] text-pretty text-[14px] leading-7 text-white/44 sm:text-[15px]">
             A living operational layer that gathers models, agents and context into one coherent system.
           </p>
         </section>
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black via-black/30 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black via-black/22 to-transparent" />
     </main>
   );
 }
