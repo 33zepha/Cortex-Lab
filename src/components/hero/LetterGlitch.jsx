@@ -1,6 +1,22 @@
 import { useEffect, useRef } from 'react';
 import './LetterGlitch.css';
 
+const SYSTEM_FRAGMENTS = [
+  'AGENT:03',
+  'CTX 84%',
+  'RUN_018',
+  'MEM:READY',
+  'MODEL/02',
+  'TRACE:A17',
+  'ROUTE:7F2',
+  'CACHE:HIT',
+  'TASK:02',
+  'SYNC:OK'
+];
+
+const CLUSTER_FRAGMENTS = ['<>', '[]', '/02', 'A17', '++', '0x7', '::', 'R2'];
+const CORTEX_CHARACTERS = ['C', 'O', 'R', 'T', 'E', 'X'];
+
 const LetterGlitch = ({
   glitchColors = ['#26342f', '#536c62', '#8fa69b'],
   className = '',
@@ -18,6 +34,15 @@ const LetterGlitch = ({
   const lastGlitchTime = useRef(Date.now());
   const metrics = useRef({ fontSize: 12, charWidth: 7.8, charHeight: 16.5 });
   const cortexEvent = useRef({ row: 0, column: 0, startedAt: -99, duration: 0, nextAt: 1.8 });
+  const informationEvents = useRef({
+    system: [],
+    clusters: [],
+    nextSystemAt: 2.4,
+    nextClusterAt: 1.8,
+    lastPosition: null
+  });
+  const pointer = useRef({ x: -1000, y: -1000, movedAt: -99 });
+  const reducedMotion = useRef(false);
 
   const lettersAndSymbols = Array.from(characters);
   const getRandomChar = () => lettersAndSymbols[Math.floor(Math.random() * lettersAndSymbols.length)];
@@ -40,19 +65,53 @@ const LetterGlitch = ({
     return t * t * (3 - 2 * t);
   };
 
+  const randomBetween = (min, max) => min + Math.random() * (max - min);
+
+  const pickEventPosition = (length, previousPosition = null) => {
+    const { columns, rows } = grid.current;
+    const marginX = Math.min(6, Math.max(3, Math.floor(columns * 0.035)));
+    const marginY = Math.min(6, Math.max(3, Math.floor(rows * 0.05)));
+    const maxColumn = Math.max(marginX, columns - marginX - length);
+    const maxRow = Math.max(marginY, rows - marginY - 1);
+    const minDistance = Math.max(8, Math.floor(columns * 0.16));
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const position = {
+        column: marginX + Math.floor(Math.random() * Math.max(1, maxColumn - marginX + 1)),
+        row: marginY + Math.floor(Math.random() * Math.max(1, maxRow - marginY + 1))
+      };
+
+      if (
+        !previousPosition ||
+        Math.abs(position.column - previousPosition.column) > minDistance ||
+        Math.abs(position.row - previousPosition.row) > Math.max(5, Math.floor(rows * 0.16))
+      ) {
+        return position;
+      }
+    }
+
+    return {
+      column: marginX,
+      row: Math.min(maxRow, Math.max(marginY, Math.floor(rows * 0.5)))
+    };
+  };
+
   const activityAt = (column, row) => {
     const { columns, rows } = grid.current;
     if (!columns || !rows) return 0.55;
     const nx = column / columns;
     const ny = row / rows;
 
-    // Full-screen terminal field. Density varies like a live buffer, but no
-    // region is deliberately empty or reserved for the effect itself.
-    const basinA = Math.exp(-(((nx - 0.22) / 0.34) ** 2 + ((ny - 0.3) / 0.38) ** 2));
-    const basinB = Math.exp(-(((nx - 0.7) / 0.42) ** 2 + ((ny - 0.57) / 0.44) ** 2));
-    const basinC = Math.exp(-(((nx - 0.46) / 0.5) ** 2 + ((ny - 0.88) / 0.18) ** 2));
-    const rowRhythm = 0.9 + Math.sin(row * 0.71) * 0.07 + Math.sin(row * 0.17 + column * 0.025) * 0.04;
-    return Math.max(0.22, Math.min(1, (0.4 + basinA * 0.2 + basinB * 0.28 + basinC * 0.1) * rowRhythm));
+    // Broad, imperfect pools keep the entire viewport alive. The modulation is
+    // intentionally low contrast: it should read as load distribution, never
+    // as a visible grid, scan or decorative wave.
+    const poolA = Math.exp(-(((nx - 0.2) / 0.42) ** 2 + ((ny - 0.28) / 0.48) ** 2));
+    const poolB = Math.exp(-(((nx - 0.76) / 0.48) ** 2 + ((ny - 0.62) / 0.52) ** 2));
+    const poolC = Math.exp(-(((nx - 0.48) / 0.58) ** 2 + ((ny - 0.9) / 0.22) ** 2));
+    const lowFrequencyVariation =
+      Math.sin(nx * 6.1 + Math.sin(ny * 3.3) * 1.4) * 0.045 +
+      Math.cos(ny * 5.4 + Math.sin(nx * 2.7) * 1.2) * 0.04;
+    return Math.max(0.27, Math.min(0.9, 0.4 + poolA * 0.13 + poolB * 0.18 + poolC * 0.08 + lowFrequencyVariation));
   };
 
   const scheduleCortexEvent = time => {
@@ -61,16 +120,15 @@ const LetterGlitch = ({
     const { columns, rows } = grid.current;
     if (!columns || !rows) return;
 
-    const marginX = 5;
-    const marginY = 5;
-    const maxColumn = Math.max(marginX, columns - marginX - 7);
-    const maxRow = Math.max(marginY, rows - marginY - 1);
-
-    event.column = marginX + Math.floor(Math.random() * Math.max(1, maxColumn - marginX));
-    event.row = marginY + Math.floor(Math.random() * Math.max(1, maxRow - marginY));
+    const position = pickEventPosition(CORTEX_CHARACTERS.length, {
+      column: event.column,
+      row: event.row
+    });
+    event.column = position.column;
+    event.row = position.row;
     event.startedAt = time;
-    event.duration = 5.6 + Math.random() * 2.8;
-    event.nextAt = time + event.duration + 3.4 + Math.random() * 6.8;
+    event.duration = 5.8 + Math.random() * 3.2;
+    event.nextAt = time + event.duration + 4.2 + Math.random() * 8.4;
   };
 
   const cortexAt = (column, row, time) => {
@@ -89,20 +147,93 @@ const LetterGlitch = ({
     const stability = Math.max(0, reveal * fade);
     if (stability < 0.02) return null;
 
-    const chars = ['C', 'O', 'R', 'T', 'E', 'X'];
+    const chars = CORTEX_CHARACTERS;
     const settled = stability > 0.52 || Math.sin(time * 16 + index * 2.2) > 0.25;
     return {
       char: settled ? chars[index] : getRandomChar(),
-      alpha: 0.2 + stability * 0.76
+      alpha: 0.2 + stability * 0.78
     };
+  };
+
+  const resetInformationEvents = time => {
+    informationEvents.current = {
+      system: [],
+      clusters: [],
+      nextSystemAt: time + randomBetween(2.2, 4.4),
+      nextClusterAt: time + randomBetween(1.4, 3.2),
+      lastPosition: null
+    };
+  };
+
+  const scheduleInformationEvents = time => {
+    if (reducedMotion.current) return;
+
+    const state = informationEvents.current;
+    state.system = state.system.filter(event => time < event.startedAt + event.duration);
+    state.clusters = state.clusters.filter(event => time < event.startedAt + event.duration);
+
+    if (time >= state.nextClusterAt && state.clusters.length < 2) {
+      const text = CLUSTER_FRAGMENTS[Math.floor(Math.random() * CLUSTER_FRAGMENTS.length)];
+      const position = pickEventPosition(text.length, state.lastPosition);
+      state.clusters.push({
+        text,
+        column: position.column,
+        row: position.row,
+        startedAt: time,
+        duration: randomBetween(1.8, 3.4),
+        kind: 'cluster'
+      });
+      state.lastPosition = position;
+      state.nextClusterAt = time + randomBetween(3.6, 7.8);
+    }
+
+    if (time >= state.nextSystemAt && state.system.length < 2) {
+      const text = SYSTEM_FRAGMENTS[Math.floor(Math.random() * SYSTEM_FRAGMENTS.length)];
+      const position = pickEventPosition(text.length, state.lastPosition);
+      state.system.push({
+        text,
+        column: position.column,
+        row: position.row,
+        startedAt: time,
+        duration: randomBetween(2.2, 4.2),
+        kind: 'system'
+      });
+      state.lastPosition = position;
+      state.nextSystemAt = time + randomBetween(4.6, 9.4);
+    }
+  };
+
+  const drawTransientEvent = (ctx, event, time, charWidth, charHeight) => {
+    const elapsed = time - event.startedAt;
+    const entrance = smoothstep(elapsed / 0.34);
+    const exit = 1 - smoothstep((elapsed - (event.duration - 0.76)) / 0.76);
+    const envelope = Math.max(0, entrance * exit);
+    if (envelope < 0.01) return;
+
+    const resolved = smoothstep((elapsed - 0.42) / 0.48);
+    const eventAlpha = event.kind === 'system' ? 0.5 : 0.28;
+    const text = Array.from(event.text);
+
+    text.forEach((character, index) => {
+      const reveal = smoothstep((elapsed - index * 0.045) / 0.24);
+      if (reveal < 0.01) return;
+
+      const legible = resolved > 0.45 && Math.sin(time * 8.2 + index * 3.7 + event.row) > -0.2;
+      ctx.globalAlpha = Math.min(0.76, eventAlpha * envelope * reveal);
+      ctx.fillStyle = event.kind === 'system' ? '#a5b7ad' : '#72877b';
+      ctx.fillText(legible ? character : getRandomChar(), (event.column + index) * charWidth, event.row * charHeight);
+    });
   };
 
   const initializeLetters = (columns, rows) => {
     grid.current = { columns, rows };
+    const now = performance.now() * 0.001;
+    resetInformationEvents(now);
     letters.current = Array.from({ length: columns * rows }, (_, index) => {
       const color = getRandomColor();
       const column = index % columns;
       const row = Math.floor(index / columns);
+      const stable = Math.random() < 0.075;
       return {
         char: getRandomChar(),
         color,
@@ -111,8 +242,10 @@ const LetterGlitch = ({
         colorProgress: 1,
         activity: activityAt(column, row),
         phase: Math.random() * Math.PI * 2,
-        opacity: 0.17 + Math.random() * 0.43,
-        cadence: 0.7 + Math.random() * 1.3
+        opacity: 0.12 + Math.random() * 0.35,
+        cadence: 0.7 + Math.random() * 1.3,
+        signalUntil: stable ? now + randomBetween(2.4, 5.2) : 0,
+        stableUntil: stable ? now + randomBetween(3.2, 7.2) : 0
       };
     });
   };
@@ -123,6 +256,9 @@ const LetterGlitch = ({
     const { width, height } = canvasRef.current.getBoundingClientRect();
     const { fontSize, charWidth, charHeight } = metrics.current;
     const time = (timestamp || performance.now()) * 0.001;
+    const pointerAge = Math.max(0, time - pointer.current.movedAt);
+    const pointerFade = 1 - smoothstep(pointerAge / 2.8);
+    scheduleInformationEvents(time);
     scheduleCortexEvent(time);
 
     ctx.clearRect(0, 0, width, height);
@@ -136,14 +272,36 @@ const LetterGlitch = ({
       const y = row * charHeight;
       const breath = 0.95 + Math.sin(time * (0.15 + letter.cadence * 0.035) + letter.phase) * 0.05;
       const rowPulse = 0.94 + Math.sin(time * 0.27 + row * 0.43) * 0.06;
+      const current =
+        Math.sin(column * 0.075 + row * 0.11 - time * 0.19 + letter.phase * 0.18) * 0.5 +
+        Math.sin(column * 0.021 - row * 0.064 + time * 0.11) * 0.5;
+      const currentLift = 0.9 + current * 0.11;
+      let pointerFocus = 0;
+      if (pointerFade > 0.001) {
+        const dx = (x - pointer.current.x) / 150;
+        const dy = (y - pointer.current.y) / 110;
+        pointerFocus = Math.exp(-(dx * dx + dy * dy)) * pointerFade;
+      }
       const cortex = cortexAt(column, row, time);
-      const ambientAlpha = letter.opacity * letter.activity * breath * rowPulse;
+      const stable = letter.stableUntil > time;
+      const active = letter.signalUntil > time;
+      const signalLift = stable ? 0.1 : active ? 0.045 : 0;
+      const focusLift = pointerFocus * 0.025;
+      const ambientAlpha =
+        letter.opacity * letter.activity * breath * rowPulse * currentLift + signalLift + focusLift;
       const alpha = cortex ? Math.max(ambientAlpha, cortex.alpha) : ambientAlpha;
       if (alpha < 0.024) return;
 
       ctx.globalAlpha = Math.min(0.96, alpha);
-      ctx.fillStyle = cortex ? '#afc1b7' : letter.color;
+      ctx.fillStyle = cortex ? '#c1cec6' : stable ? '#9aada2' : letter.color;
       ctx.fillText(cortex?.char || letter.char, x, y);
+    });
+
+    informationEvents.current.clusters.forEach(event => {
+      drawTransientEvent(ctx, event, time, charWidth, charHeight);
+    });
+    informationEvents.current.system.forEach(event => {
+      drawTransientEvent(ctx, event, time, charWidth, charHeight);
     });
 
     ctx.globalAlpha = 1;
@@ -152,9 +310,9 @@ const LetterGlitch = ({
   const resizeCanvas = () => {
     const canvas = canvasRef.current;
     if (!canvas || !canvas.parentElement) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const rect = canvas.parentElement.getBoundingClientRect();
     const compact = rect.width < 760;
+    const dpr = Math.min(window.devicePixelRatio || 1, compact ? 1.5 : 2);
     metrics.current = compact
       ? { fontSize: 10.2, charWidth: 6.8, charHeight: 14.6 }
       : { fontSize: 11.5, charWidth: 7.45, charHeight: 15.7 };
@@ -168,21 +326,50 @@ const LetterGlitch = ({
     const columns = Math.ceil(rect.width / metrics.current.charWidth);
     const rows = Math.ceil(rect.height / metrics.current.charHeight);
     initializeLetters(columns, rows);
-    cortexEvent.current.nextAt = performance.now() * 0.001 + 1 + Math.random() * 1.6;
-    drawLetters();
+    const now = performance.now() * 0.001;
+    if (reducedMotion.current) {
+      const compactField = rect.width < 760;
+      cortexEvent.current = {
+        column: compactField ? Math.max(5, Math.floor(columns * 0.56)) : Math.max(5, Math.floor(columns * 0.72)),
+        row: compactField ? Math.max(5, Math.floor(rows * 0.28)) : Math.max(5, Math.floor(rows * 0.46)),
+        startedAt: now - 1.8,
+        duration: 100000,
+        nextAt: Number.POSITIVE_INFINITY
+      };
+    } else {
+      cortexEvent.current.nextAt = now + 2.8 + Math.random() * 2.2;
+    }
+    drawLetters(performance.now());
   };
 
-  const updateLetters = () => {
+  const updateLetters = time => {
     if (!letters.current.length) return;
-    const updateCount = Math.max(2, Math.floor(letters.current.length * 0.012));
+    const updateRatio = metrics.current.charWidth < 7 ? 0.009 : 0.012;
+    const updateCount = Math.max(2, Math.floor(letters.current.length * updateRatio));
     for (let i = 0; i < updateCount; i += 1) {
       const index = Math.floor(Math.random() * letters.current.length);
       const letter = letters.current[index];
-      if (!letter || Math.random() > 0.48 + letter.activity * 0.48) continue;
+      if (!letter) continue;
+      const column = index % grid.current.columns;
+      const row = Math.floor(index / grid.current.columns);
+      const x = column * metrics.current.charWidth;
+      const y = row * metrics.current.charHeight;
+      const pointerAge = Math.max(0, time - pointer.current.movedAt);
+      const pointerFade = 1 - smoothstep(pointerAge / 2.8);
+      const pointerFocus =
+        pointerFade > 0.001
+          ? Math.exp(-(((x - pointer.current.x) / 170) ** 2 + ((y - pointer.current.y) / 125) ** 2)) * pointerFade
+          : 0;
+
+      if (letter.stableUntil > time && Math.random() > 0.06 + pointerFocus * 0.14) continue;
+      if (Math.random() > 0.42 + letter.activity * 0.48 + pointerFocus * 0.08) continue;
+
       letter.char = getRandomChar();
       letter.sourceColor = letter.color;
       letter.targetColor = getRandomColor();
-      letter.opacity = 0.14 + Math.random() * 0.48;
+      letter.opacity = 0.11 + Math.random() * 0.38;
+      letter.signalUntil = Math.random() < 0.18 ? time + randomBetween(0.55, 1.8) : 0;
+      letter.stableUntil = Math.random() < 0.055 ? time + randomBetween(2.6, 6.4) : 0;
       if (!smooth) {
         letter.color = letter.targetColor;
         letter.colorProgress = 1;
@@ -210,6 +397,8 @@ const LetterGlitch = ({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    reducedMotion.current = motionQuery.matches;
     context.current = canvas.getContext('2d', { alpha: true });
     resizeCanvas();
 
@@ -220,11 +409,11 @@ const LetterGlitch = ({
 
     const animate = timestamp => {
       if (!running) return;
-      if (visible) {
+      if (visible && !reducedMotion.current) {
         const now = Date.now();
         let changed = false;
         if (now - lastGlitchTime.current >= glitchSpeed) {
-          updateLetters();
+          updateLetters(timestamp * 0.001);
           lastGlitchTime.current = now;
           changed = true;
         }
@@ -241,12 +430,24 @@ const LetterGlitch = ({
       clearTimeout(resizeTimeout);
       resizeTimeout = window.setTimeout(resizeCanvas, 100);
     };
+    const handlePointerMove = event => {
+      const rect = canvas.getBoundingClientRect();
+      pointer.current.x = event.clientX - rect.left;
+      pointer.current.y = event.clientY - rect.top;
+      pointer.current.movedAt = performance.now() * 0.001;
+    };
+    const handleMotionChange = event => {
+      reducedMotion.current = event.matches;
+      resizeCanvas();
+    };
     const resizeObserver = new ResizeObserver(handleResize);
     if (canvas.parentElement) resizeObserver.observe(canvas.parentElement);
     const intersectionObserver = new IntersectionObserver(entries => {
       visible = entries[0]?.isIntersecting ?? true;
     }, { threshold: 0.02 });
     intersectionObserver.observe(canvas);
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    motionQuery.addEventListener('change', handleMotionChange);
     animate(performance.now());
 
     return () => {
@@ -255,6 +456,8 @@ const LetterGlitch = ({
       cancelAnimationFrame(animationRef.current);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
+      window.removeEventListener('pointermove', handlePointerMove);
+      motionQuery.removeEventListener('change', handleMotionChange);
     };
   }, [characters, glitchColors, glitchSpeed, smooth]);
 
