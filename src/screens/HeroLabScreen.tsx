@@ -12,7 +12,7 @@ const WAITLIST_REVEALS = [
   { name: "link", start: 0.42, end: 0.74 },
 ] as const;
 
-const TYPEFACES = new Set(["instrument", "inter", "jakarta"]);
+const TYPEFACES = new Set(["syne", "unbounded", "newsreader"]);
 
 function clamp01(value: number) {
   return Math.min(1, Math.max(0, value));
@@ -75,8 +75,8 @@ function updateJourney(journey: HTMLElement, progress: number) {
 export function HeroLabScreen() {
   const journeyRef = useRef<HTMLDivElement>(null);
   const [joined, setJoined] = useState(false);
-  const requestedTypeface = new URLSearchParams(window.location.search).get("type") ?? "instrument";
-  const typeface = TYPEFACES.has(requestedTypeface) ? requestedTypeface : "instrument";
+  const requestedTypeface = new URLSearchParams(window.location.search).get("type") ?? "syne";
+  const typeface = TYPEFACES.has(requestedTypeface) ? requestedTypeface : "syne";
 
   useEffect(() => {
     const journey = journeyRef.current;
