@@ -25,7 +25,7 @@ export function VpsProvider({ children }: { children: ReactNode }) {
     // Remove credentials written by pre-server-persistence builds. Never read them back.
     window.localStorage.removeItem(LEGACY_VPS_STORAGE_KEY);
 
-    if (location.pathname === "/hero-lab" || location.pathname === "/login" || location.pathname === "/signup") {
+    if (location.pathname === "/hero-lab" || location.pathname === "/project" || location.pathname === "/login" || location.pathname === "/signup") {
       setVps(null);
       return;
     }
