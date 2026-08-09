@@ -47,33 +47,33 @@ function updateJourney(journey: HTMLElement, progress: number) {
   journey.style.setProperty("--hero-logo-opacity", mix(1, 0.94, access).toFixed(4));
   journey.style.setProperty("--hero-logo-glow", mix(0.5, 0.88, lensProgress).toFixed(4));
 
-  journey.style.setProperty("--hero-field-scale", mix(1.008, 1.038, drift).toFixed(4));
-  journey.style.setProperty("--hero-field-rotate", `${mix(-0.12, 0.12, drift).toFixed(3)}deg`);
-  journey.style.setProperty("--hero-field-x", `${mix(0, -1.2, drift).toFixed(2)}%`);
-  journey.style.setProperty("--hero-field-y", `${mix(0, -0.7, drift).toFixed(2)}%`);
-  journey.style.setProperty("--hero-field-brightness", mix(1, 0.82, clamp01(mist * 0.48 + access * 0.12)).toFixed(3));
-  journey.style.setProperty("--hero-field-saturate", mix(1, 0.86, clamp01(mist * 0.5 + access * 0.08)).toFixed(3));
+  journey.style.setProperty("--hero-field-scale", mix(1.004, 1.022, drift).toFixed(4));
+  journey.style.setProperty("--hero-field-rotate", `${mix(-0.04, 0.04, drift).toFixed(3)}deg`);
+  journey.style.setProperty("--hero-field-x", `${mix(0, -0.45, drift).toFixed(2)}%`);
+  journey.style.setProperty("--hero-field-y", `${mix(0, -0.25, drift).toFixed(2)}%`);
+  journey.style.setProperty("--hero-field-brightness", mix(1, 0.9, clamp01(mist * 0.38 + access * 0.08)).toFixed(3));
+  journey.style.setProperty("--hero-field-saturate", mix(1, 0.92, clamp01(mist * 0.38 + access * 0.06)).toFixed(3));
 
   journey.style.setProperty("--hero-glow-opacity", mix(0.72, 0.38, clamp01(mist * 0.78 + access * 0.12)).toFixed(3));
-  journey.style.setProperty("--hero-mist-opacity", (mist * 0.76 + access * 0.1).toFixed(4));
-  journey.style.setProperty("--hero-mist-scale", mix(0.76, 1.12, mistArrives).toFixed(4));
-  journey.style.setProperty("--hero-mist-x", `${mix(14, -10, phase(progress, 0.12, 0.84)).toFixed(2)}%`);
-  journey.style.setProperty("--hero-mist-y", `${mix(8, -7, phase(progress, 0.16, 0.78)).toFixed(2)}%`);
-  journey.style.setProperty("--hero-mist-rotate", `${mix(-4, 3.5, phase(progress, 0.14, 0.82)).toFixed(2)}deg`);
+  journey.style.setProperty("--hero-mist-opacity", (mist * 0.62 + access * 0.06).toFixed(4));
+  journey.style.setProperty("--hero-mist-scale", mix(0.92, 1.06, mistArrives).toFixed(4));
+  journey.style.setProperty("--hero-mist-x", `${mix(7, -5, phase(progress, 0.12, 0.84)).toFixed(2)}%`);
+  journey.style.setProperty("--hero-mist-y", `${mix(4, -4, phase(progress, 0.16, 0.78)).toFixed(2)}%`);
+  journey.style.setProperty("--hero-mist-rotate", `${mix(-2, 2, phase(progress, 0.14, 0.82)).toFixed(2)}deg`);
   journey.style.setProperty("--hero-lens-radius", `${mix(5.5, 24, lensProgress).toFixed(2)}%`);
 
   journey.style.setProperty("--hero-intro-opacity", intro.toFixed(4));
   journey.style.setProperty("--hero-intro-y", `${mix(0, -28, introExit).toFixed(1)}px`);
   journey.style.setProperty("--hero-intro-scale", mix(1, 0.94, introExit).toFixed(4));
   journey.style.setProperty("--hero-intro-rotate", `${mix(0, -0.7, introExit).toFixed(2)}deg`);
-  journey.style.setProperty("--hero-intro-blur", `${mix(0, 5, introExit).toFixed(2)}px`);
+  journey.style.setProperty("--hero-intro-blur", `${mix(0, 3.2, introExit).toFixed(2)}px`);
   journey.style.setProperty("--hero-text-drift", `${mix(0, -3.5, threshold).toFixed(2)}px`);
   journey.style.setProperty("--hero-scroll-opacity", (1 - phase(progress, 0.04, 0.24)).toFixed(4));
 
   journey.style.setProperty("--hero-access-opacity", access.toFixed(4));
   journey.style.setProperty("--hero-access-y", `${mix(26, 0, access).toFixed(1)}px`);
   journey.style.setProperty("--hero-access-scale", mix(0.975, 1, access).toFixed(4));
-  journey.style.setProperty("--hero-access-blur", `${mix(5, 0, access).toFixed(2)}px`);
+  journey.style.setProperty("--hero-access-blur", `${mix(3.2, 0, access).toFixed(2)}px`);
 
   if (journey.dataset.journeyStage !== stage) {
     journey.dataset.journeyStage = stage;
@@ -255,7 +255,6 @@ export function HeroLabScreen() {
           <div className="hero-lab__veil pointer-events-none absolute inset-0" />
           <div className="hero-lab__glow pointer-events-none absolute inset-0" aria-hidden="true" />
           <div className="hero-lab__mist pointer-events-none absolute inset-0" aria-hidden="true"><span /><span /><span /></div>
-          <div className="hero-lab__frame pointer-events-none absolute inset-x-6 bottom-6 top-6 sm:inset-x-10 sm:bottom-9 sm:top-9 lg:inset-x-14 xl:inset-x-16" />
 
           <div className="hero-lab__shared-mark" data-hero-layer="shared-mark" aria-hidden="true">
             <span className="hero-lab__shared-mark-shell">
@@ -335,7 +334,6 @@ export function HeroLabScreen() {
             </div>
           </section>
 
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#10261d]/24 to-transparent" />
         </section>
       </div>
     </main>
