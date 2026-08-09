@@ -17,17 +17,29 @@ const AGENTS = [
   { name: "Evaluator", state: "checking the result", x: 82, y: 71, tone: "quiet" },
 ] as const;
 
+const WAITLIST_REVEALS = [
+  { name: "mark", start: 0, end: 0.38 },
+  { name: "kicker", start: 0.08, end: 0.46 },
+  { name: "title", start: 0.14, end: 0.54 },
+  { name: "copy", start: 0.22, end: 0.62 },
+  { name: "form", start: 0.3, end: 0.72 },
+] as const;
+
 function clamp01(value: number) {
   return Math.min(1, Math.max(0, value));
 }
 
-function smoothstep(value: number) {
+function smootherstep(value: number) {
   const t = clamp01(value);
-  return t * t * (3 - 2 * t);
+  return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+function mix(from: number, to: number, amount: number) {
+  return from + (to - from) * amount;
 }
 
 function phase(progress: number, start: number, end: number) {
-  return smoothstep((progress - start) / (end - start));
+  return smootherstep((progress - start) / (end - start));
 }
 
 function updateJourney(journey: HTMLElement, progress: number) {
@@ -39,24 +51,66 @@ function updateJourney(journey: HTMLElement, progress: number) {
   const graphOut = phase(progress, 0.69, 0.82);
   const graph = graphIn * (1 - graphOut);
   const waitlist = phase(progress, 0.69, 0.88);
+  const depth = smootherstep(progress);
+  const componentsReveal = phase(progress, 0.17, 0.34);
+  const graphDraw = phase(progress, 0.45, 0.62);
+  const waitlistReveal = phase(progress, 0.72, 0.9);
 
-  journey.style.setProperty("--journey-progress", progress.toFixed(3));
-  journey.style.setProperty("--hero-field-scale", (1.012 + progress * 1.62).toFixed(3));
-  journey.style.setProperty("--hero-field-rotate", `${(progress * 1.4 - 0.2).toFixed(2)}deg`);
-  journey.style.setProperty("--hero-intro-opacity", intro.toFixed(3));
+  journey.style.setProperty("--journey-progress", progress.toFixed(4));
+  journey.style.setProperty("--hero-field-scale", mix(1.012, 2.48, depth).toFixed(4));
+  journey.style.setProperty("--hero-field-rotate", `${mix(-0.14, 0.92, depth).toFixed(3)}deg`);
+  journey.style.setProperty("--hero-field-x", `${mix(0, -1.8, depth).toFixed(2)}%`);
+  journey.style.setProperty("--hero-field-y", `${mix(0, -0.9, depth).toFixed(2)}%`);
+  journey.style.setProperty("--hero-glow-opacity", mix(0.72, 0.96, phase(progress, 0.05, 0.7)).toFixed(3));
+  journey.style.setProperty("--hero-intro-opacity", intro.toFixed(4));
   journey.style.setProperty("--hero-intro-y", `${((1 - intro) * -26).toFixed(1)}px`);
-  journey.style.setProperty("--hero-components-opacity", components.toFixed(3));
-  journey.style.setProperty("--hero-components-y", `${((1 - components) * 28).toFixed(1)}px`);
-  journey.style.setProperty("--hero-components-scale", (0.96 + components * 0.04).toFixed(3));
-  journey.style.setProperty("--hero-graph-opacity", graph.toFixed(3));
-  journey.style.setProperty("--hero-graph-y", `${((1 - graph) * 30).toFixed(1)}px`);
-  journey.style.setProperty("--hero-graph-scale", (0.965 + graph * 0.035).toFixed(3));
-  journey.style.setProperty("--hero-waitlist-opacity", waitlist.toFixed(3));
-  journey.style.setProperty("--hero-waitlist-y", `${((1 - waitlist) * 32).toFixed(1)}px`);
-  journey.style.setProperty("--hero-waitlist-scale", (0.96 + waitlist * 0.04).toFixed(3));
+  journey.style.setProperty("--hero-components-opacity", components.toFixed(4));
+  journey.style.setProperty("--hero-components-y", `${((1 - components) * 34 - componentsOut * 18).toFixed(2)}px`);
+  journey.style.setProperty("--hero-components-scale", mix(0.952, 1, components).toFixed(4));
+  journey.style.setProperty("--hero-components-reveal", componentsReveal.toFixed(4));
+  journey.style.setProperty("--hero-graph-opacity", graph.toFixed(4));
+  journey.style.setProperty("--hero-graph-y", `${((1 - graph) * 34 - graphOut * 16).toFixed(2)}px`);
+  journey.style.setProperty("--hero-graph-scale", mix(0.958, 1, graph).toFixed(4));
+  journey.style.setProperty("--hero-graph-draw", graphDraw.toFixed(4));
+  journey.style.setProperty("--hero-waitlist-opacity", waitlist.toFixed(4));
+  journey.style.setProperty("--hero-waitlist-y", `${((1 - waitlist) * 38).toFixed(2)}px`);
+  journey.style.setProperty("--hero-waitlist-scale", mix(0.955, 1, waitlist).toFixed(4));
+  journey.style.setProperty("--hero-waitlist-reveal", waitlistReveal.toFixed(4));
 
-  journey.dataset.journeyStage =
-    waitlist > 0.5 ? "waitlist" : graph > 0.5 ? "agents" : components > 0.5 ? "components" : "surface";
+  COMPONENTS.forEach((_, index) => {
+    const reveal = phase(componentsReveal, index * 0.12, 0.48 + index * 0.12);
+    journey.style.setProperty(`--hero-card-${index + 1}`, reveal.toFixed(4));
+    journey.style.setProperty(`--hero-card-${index + 1}-y`, `${mix(24, 0, reveal).toFixed(2)}px`);
+    journey.style.setProperty(`--hero-card-${index + 1}-scale`, mix(0.97, 1, reveal).toFixed(4));
+  });
+
+  AGENTS.forEach((_, index) => {
+    const reveal = phase(graphDraw, 0.16 + index * 0.12, 0.56 + index * 0.1);
+    journey.style.setProperty(`--hero-node-${index + 1}`, reveal.toFixed(4));
+    journey.style.setProperty(`--hero-node-${index + 1}-scale`, mix(0.82, 1, reveal).toFixed(4));
+  });
+
+  WAITLIST_REVEALS.forEach(({ name, start, end }) => {
+    const reveal = phase(waitlistReveal, start, end);
+    journey.style.setProperty(`--hero-waitlist-${name}`, reveal.toFixed(4));
+    journey.style.setProperty(`--hero-waitlist-${name}-y`, `${mix(18, 0, reveal).toFixed(2)}px`);
+  });
+
+  const nextStage = waitlist > 0.5 ? "waitlist" : graph > 0.5 ? "agents" : components > 0.5 ? "components" : "surface";
+
+  if (journey.dataset.journeyStage !== nextStage) {
+    journey.dataset.journeyStage = nextStage;
+    journey.querySelectorAll<HTMLElement>(".hero-lab__layer").forEach((layer) => {
+      const layerStage = layer.classList.contains("hero-lab__components")
+        ? "components"
+        : layer.classList.contains("hero-lab__graph")
+          ? "agents"
+          : "waitlist";
+      const active = layerStage === nextStage;
+      layer.inert = !active;
+      layer.setAttribute("aria-hidden", String(!active));
+    });
+  }
 }
 
 export function HeroLabScreen() {
@@ -68,23 +122,54 @@ export function HeroLabScreen() {
     if (!journey) return;
 
     let frame = 0;
-    const measure = () => {
-      frame = 0;
+    let currentProgress = 0;
+    let targetProgress = 0;
+    let lastTime = performance.now();
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const readProgress = () => {
       const travel = Math.max(1, journey.offsetHeight - window.innerHeight);
-      const progress = clamp01(-journey.getBoundingClientRect().top / travel);
-      updateJourney(journey, progress);
-    };
-    const scheduleMeasure = () => {
-      if (frame === 0) frame = window.requestAnimationFrame(measure);
+      return clamp01(-journey.getBoundingClientRect().top / travel);
     };
 
-    scheduleMeasure();
-    window.addEventListener("scroll", scheduleMeasure, { passive: true });
-    window.addEventListener("resize", scheduleMeasure);
+    const render = (time: number) => {
+      const delta = Math.min(0.04, Math.max(0.001, (time - lastTime) / 1000));
+      lastTime = time;
+      const distance = targetProgress - currentProgress;
+      const follow = reducedMotion.matches ? 1 : 1 - Math.exp(-delta * 10.5);
+      currentProgress += distance * follow;
+
+      if (Math.abs(distance) < 0.00008) currentProgress = targetProgress;
+      updateJourney(journey, currentProgress);
+
+      if (currentProgress !== targetProgress) {
+        frame = window.requestAnimationFrame(render);
+      } else {
+        frame = 0;
+      }
+    };
+
+    const scheduleRender = () => {
+      targetProgress = readProgress();
+      if (reducedMotion.matches) currentProgress = targetProgress;
+      if (frame === 0) {
+        lastTime = performance.now();
+        frame = window.requestAnimationFrame(render);
+      }
+    };
+
+    currentProgress = readProgress();
+    targetProgress = currentProgress;
+    updateJourney(journey, currentProgress);
+
+    window.addEventListener("scroll", scheduleRender, { passive: true });
+    window.addEventListener("resize", scheduleRender, { passive: true });
+    reducedMotion.addEventListener("change", scheduleRender);
 
     return () => {
-      window.removeEventListener("scroll", scheduleMeasure);
-      window.removeEventListener("resize", scheduleMeasure);
+      window.removeEventListener("scroll", scheduleRender);
+      window.removeEventListener("resize", scheduleRender);
+      reducedMotion.removeEventListener("change", scheduleRender);
       if (frame) window.cancelAnimationFrame(frame);
     };
   }, []);
@@ -150,8 +235,16 @@ export function HeroLabScreen() {
               </div>
 
               <div className="hero-lab__components-grid">
-                {COMPONENTS.map((component) => (
-                  <article className="hero-lab__component-card" key={component.name}>
+                {COMPONENTS.map((component, index) => (
+                  <article
+                    className="hero-lab__component-card"
+                    key={component.name}
+                    style={{
+                      "--card-reveal": `var(--hero-card-${index + 1})`,
+                      "--card-y": `var(--hero-card-${index + 1}-y)`,
+                      "--card-scale": `var(--hero-card-${index + 1}-scale)`,
+                    } as CSSProperties}
+                  >
                     <div className={`hero-lab__component-signal hero-lab__component-signal--${component.signal}`} aria-hidden="true">
                       <span /><span /><span /><span />
                     </div>
@@ -176,10 +269,18 @@ export function HeroLabScreen() {
 
               <div className="hero-lab__graph-canvas" role="img" aria-label="A visible relation graph connecting Planner, Researcher, Builder and Evaluator">
                 <svg className="hero-lab__graph-lines" viewBox="0 0 600 300" fill="none" aria-hidden="true">
-                  <path d="M98 150C164 150 176 64 240 64S325 114 365 114 425 82 493 82" />
-                  <path d="M98 150C174 150 193 238 272 238S366 180 430 180 475 194 505 216" />
-                  <path d="M240 64C300 64 300 114 365 114" />
-                  <path d="M365 114C399 114 397 180 430 180" />
+                  <g className="hero-lab__graph-paths">
+                    <path pathLength="1" d="M98 150C164 150 176 64 240 64S325 114 365 114 425 82 493 82" />
+                    <path pathLength="1" d="M98 150C174 150 193 238 272 238S366 180 430 180 475 194 505 216" />
+                    <path pathLength="1" d="M240 64C300 64 300 114 365 114" />
+                    <path pathLength="1" d="M365 114C399 114 397 180 430 180" />
+                  </g>
+                  <g className="hero-lab__graph-flow">
+                    <path d="M98 150C164 150 176 64 240 64S325 114 365 114 425 82 493 82" />
+                    <path d="M98 150C174 150 193 238 272 238S366 180 430 180 475 194 505 216" />
+                    <path d="M240 64C300 64 300 114 365 114" />
+                    <path d="M365 114C399 114 397 180 430 180" />
+                  </g>
                   <circle cx="365" cy="114" r="4" />
                   <circle cx="430" cy="180" r="3" />
                 </svg>
@@ -189,11 +290,16 @@ export function HeroLabScreen() {
                   <span>intent</span>
                 </div>
 
-                {AGENTS.map((agent) => (
+                {AGENTS.map((agent, index) => (
                   <div
                     className={`hero-lab__agent-node hero-lab__agent-node--${agent.tone}`}
                     key={agent.name}
-                    style={{ "--node-x": `${agent.x}%`, "--node-y": `${agent.y}%` } as CSSProperties}
+                    style={{
+                      "--node-x": `${agent.x}%`,
+                      "--node-y": `${agent.y}%`,
+                      "--node-reveal": `var(--hero-node-${index + 1})`,
+                      "--node-scale": `var(--hero-node-${index + 1}-scale)`,
+                    } as CSSProperties}
                   >
                     <span className="hero-lab__agent-node-dot" aria-hidden="true" />
                     <span className="hero-lab__agent-node-copy">

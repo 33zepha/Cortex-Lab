@@ -25,6 +25,9 @@
   --journey-progress: 0;
   --hero-field-scale: 1.012;
   --hero-field-rotate: 0deg;
+  --hero-field-x: 0%;
+  --hero-field-y: 0%;
+  --hero-glow-opacity: 0.72;
   --hero-intro-opacity: 1;
   --hero-intro-y: 0px;
   --hero-components-opacity: 0;
@@ -36,6 +39,22 @@
   --hero-waitlist-opacity: 0;
   --hero-waitlist-y: 32px;
   --hero-waitlist-scale: 0.96;
+  --hero-components-reveal: 0;
+  --hero-graph-draw: 0;
+  --hero-waitlist-reveal: 0;
+  --hero-card-1: 0;
+  --hero-card-2: 0;
+  --hero-card-3: 0;
+  --hero-card-4: 0;
+  --hero-node-1: 0;
+  --hero-node-2: 0;
+  --hero-node-3: 0;
+  --hero-node-4: 0;
+  --hero-waitlist-mark: 0;
+  --hero-waitlist-kicker: 0;
+  --hero-waitlist-title: 0;
+  --hero-waitlist-copy: 0;
+  --hero-waitlist-form: 0;
   position: relative;
   height: 290svh;
   min-height: 1900px;
@@ -52,8 +71,9 @@
 
 .hero-lab__field {
   z-index: 0;
-  transform: scale(var(--hero-field-scale)) rotate(var(--hero-field-rotate));
+  transform: translate3d(var(--hero-field-x), var(--hero-field-y), 0) scale(var(--hero-field-scale)) rotate(var(--hero-field-rotate));
   transform-origin: var(--hero-entry-x) var(--hero-entry-y);
+  backface-visibility: hidden;
   will-change: transform;
 }
 
@@ -76,7 +96,8 @@
     radial-gradient(circle at 75% 46%, rgba(211, 232, 218, 0.12) 0%, transparent 22%),
     radial-gradient(ellipse 44% 38% at 86% 74%, rgba(116, 174, 139, 0.16) 0%, transparent 72%);
   mix-blend-mode: screen;
-  opacity: 0.72;
+  opacity: var(--hero-glow-opacity);
+  will-change: opacity;
 }
 
 .hero-lab__frame {
@@ -98,7 +119,7 @@
   position: relative;
   opacity: var(--hero-intro-opacity);
   transform: translate3d(0, var(--hero-intro-y), 0);
-  transition: opacity 140ms linear, transform 140ms cubic-bezier(0.22, 1, 0.36, 1);
+  backface-visibility: hidden;
   will-change: opacity, transform;
 }
 
@@ -162,7 +183,7 @@
   background: rgba(239, 245, 240, 0.2);
   opacity: var(--hero-intro-opacity);
   transform: translateX(-50%);
-  transition: opacity 160ms linear;
+  will-change: opacity;
 }
 
 .hero-lab__scroll-cue span {
@@ -179,6 +200,7 @@
   display: grid;
   place-items: center;
   pointer-events: none;
+  backface-visibility: hidden;
   will-change: opacity, transform;
 }
 
@@ -186,21 +208,18 @@
   z-index: 3;
   opacity: var(--hero-components-opacity);
   transform: translate3d(0, var(--hero-components-y), 0) scale(var(--hero-components-scale));
-  transition: opacity 140ms linear, transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .hero-lab__graph {
   z-index: 4;
   opacity: var(--hero-graph-opacity);
   transform: translate3d(0, var(--hero-graph-y), 0) scale(var(--hero-graph-scale));
-  transition: opacity 140ms linear, transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .hero-lab__waitlist {
   z-index: 5;
   opacity: var(--hero-waitlist-opacity);
   transform: translate3d(0, var(--hero-waitlist-y), 0) scale(var(--hero-waitlist-scale));
-  transition: opacity 140ms linear, transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .hero-lab__layer-inner {
@@ -262,6 +281,11 @@
   background: linear-gradient(145deg, rgba(208, 231, 214, 0.14), rgba(16, 51, 39, 0.31));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 18px 65px rgba(4, 17, 12, 0.15);
   backdrop-filter: blur(14px) saturate(0.8);
+  opacity: var(--card-reveal, 0);
+  transform: translate3d(0, var(--card-y, 24px), 0) scale(var(--card-scale, 0.97));
+  transform-origin: 50% 70%;
+  backface-visibility: hidden;
+  will-change: opacity, transform;
 }
 
 .hero-lab__component-card::after {
@@ -289,6 +313,8 @@
   width: 3px;
   border-radius: 3px;
   background: rgba(231, 244, 234, 0.72);
+  transform: scaleY(var(--card-reveal, 0));
+  transform-origin: bottom;
 }
 
 .hero-lab__component-signal span:nth-child(1) { height: 8px; opacity: 0.35; }
@@ -372,16 +398,34 @@
   overflow: visible;
 }
 
-.hero-lab__graph-lines path {
+.hero-lab__graph-paths path {
+  stroke: rgba(223, 241, 226, 0.52);
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--hero-graph-draw));
+  stroke-linecap: round;
+  stroke-width: 1;
+}
+
+.hero-lab__graph-flow path {
   stroke: rgba(223, 241, 226, 0.46);
   stroke-dasharray: 5 10;
   stroke-linecap: round;
   stroke-width: 1;
+  opacity: var(--hero-graph-draw);
   animation: graph-flow 12s linear infinite;
+  animation-play-state: paused;
+}
+
+.hero-lab__journey[data-journey-stage="agents"] .hero-lab__graph-flow path {
+  animation-play-state: running;
 }
 
 .hero-lab__graph-lines circle {
   fill: rgba(233, 246, 235, 0.8);
+  opacity: var(--hero-graph-draw);
+  transform: scale(var(--hero-graph-draw));
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .hero-lab__graph-center {
@@ -396,7 +440,9 @@
   font-weight: 700;
   letter-spacing: 0.13em;
   text-transform: uppercase;
-  transform: translate(-50%, -50%);
+  opacity: var(--hero-graph-draw);
+  transform: translate(-50%, -50%) scale(var(--hero-graph-draw));
+  transform-origin: center;
 }
 
 .hero-lab__graph-center-dot,
@@ -418,7 +464,10 @@
   align-items: flex-start;
   gap: 0.5rem;
   min-width: 110px;
-  transform: translate(-50%, -50%);
+  opacity: var(--node-reveal, 0);
+  transform: translate(-50%, -50%) scale(var(--node-scale, 0.82));
+  transform-origin: left center;
+  will-change: opacity, transform;
 }
 
 .hero-lab__agent-node--quiet .hero-lab__agent-node-dot {
@@ -463,6 +512,8 @@
   border: 1px solid rgba(239, 247, 241, 0.19);
   border-radius: 50%;
   background: rgba(226, 242, 229, 0.08);
+  opacity: var(--hero-waitlist-mark, 0);
+  transform: translate3d(0, var(--hero-waitlist-mark-y, 18px), 0) scale(var(--hero-waitlist-mark, 0));
 }
 
 .hero-lab__waitlist-mark img {
@@ -473,10 +524,14 @@
 
 .hero-lab__waitlist .hero-lab__kicker {
   margin-bottom: 1.15rem;
+  opacity: var(--hero-waitlist-kicker, 0);
+  transform: translate3d(0, var(--hero-waitlist-kicker-y, 18px), 0);
 }
 
 .hero-lab__waitlist h2 {
   font-size: clamp(3.15rem, 6.4vw, 6.7rem);
+  opacity: var(--hero-waitlist-title, 0);
+  transform: translate3d(0, var(--hero-waitlist-title-y, 18px), 0);
 }
 
 .hero-lab__waitlist-copy {
@@ -484,6 +539,8 @@
   color: rgba(226, 240, 228, 0.59);
   font-size: 0.86rem;
   letter-spacing: -0.025em;
+  opacity: var(--hero-waitlist-copy, 0);
+  transform: translate3d(0, var(--hero-waitlist-copy-y, 18px), 0);
 }
 
 .hero-lab__waitlist-form {
@@ -497,6 +554,8 @@
   box-shadow: 0 16px 60px rgba(4, 17, 12, 0.15);
   backdrop-filter: blur(14px);
   pointer-events: auto;
+  opacity: var(--hero-waitlist-form, 0);
+  transform: translate3d(0, var(--hero-waitlist-form-y, 18px), 0);
 }
 
 .hero-lab__waitlist-form input {
@@ -561,6 +620,8 @@
   gap: 0.45rem;
   margin-top: 2.45rem;
   color: rgba(240, 248, 241, 0.9);
+  opacity: var(--hero-waitlist-form, 0);
+  transform: translate3d(0, var(--hero-waitlist-form-y, 18px), 0);
 }
 
 .hero-lab__waitlist-success strong {
