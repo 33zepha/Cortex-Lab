@@ -162,17 +162,17 @@ export function HeroLabScreen() {
 
           <div className="hero-lab__shell relative mx-auto flex min-h-[100dvh] max-w-[1680px] flex-col">
             <div className="hero-lab__content flex flex-1 items-center">
-              <section className="hero-lab__copy max-w-[470px] lg:-translate-y-2 lg:max-w-[455px]">
+              <section className="hero-lab__copy lg:-translate-y-2">
                 <div className="hero-lab__brand" aria-label="Cortex">
                   <img className="hero-lab__logo" src={cortexHeroMark} alt="Cortex mark" draggable={false} />
+                  <span className="hero-lab__wordmark">Cortex</span>
                 </div>
                 <div className="hero-lab__intro-lockup">
-                  <h1 id="hero-lab-title" className="hero-lab__headline max-w-[470px] text-balance text-[#f2f4f1]">
-                    <span>One</span>
-                    <span className="hero-lab__headline-italic">operational</span>
-                    <span className="hero-lab__headline-strong">layer.</span>
+                  <h1 id="hero-lab-title" className="hero-lab__headline text-[#f2f4f1]">
+                    <span>Intelligence,</span>
+                    <span>coordinated.</span>
                   </h1>
-                  <p className="hero-lab__promise">for intelligent work.</p>
+                  <p className="hero-lab__promise">Models, agents and context.<br />One operational layer.</p>
                 </div>
               </section>
             </div>
