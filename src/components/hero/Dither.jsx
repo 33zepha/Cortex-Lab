@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unknown-property */
-import { forwardRef, useEffect, useRef } from "react";
+import { forwardRef, useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { EffectComposer, wrapEffect } from "@react-three/postprocessing";
 import { Effect } from "postprocessing";
@@ -28,6 +28,8 @@ uniform float waveSpeed;
 uniform float waveFrequency;
 uniform float waveAmplitude;
 uniform vec3 waveColor;
+uniform vec3 baseColor;
+uniform vec3 highlightColor;
 uniform vec2 mousePos;
 uniform int enableMouseInteraction;
 uniform float mouseRadius;
@@ -93,6 +95,8 @@ void main() {
   uv.x *= resolution.x / resolution.y;
 
   float field = pattern(uv);
+  float tonal = smoothstep(0.015, 1.05, field);
+  float highlight = smoothstep(0.58, 1.12, field);
 
   if (enableMouseInteraction == 1) {
     vec2 mouseNDC = (mousePos / resolution - 0.5) * vec2(1.0, -1.0);
@@ -102,7 +106,8 @@ void main() {
     field -= 0.5 * effect;
   }
 
-  vec3 color = mix(vec3(0.0), waveColor, field);
+  vec3 color = mix(baseColor, waveColor, tonal);
+  color = mix(color, highlightColor, highlight * 0.2);
   gl_FragColor = vec4(color, 1.0);
 }
 `;
@@ -112,6 +117,7 @@ precision highp float;
 
 uniform float colorNum;
 uniform float pixelSize;
+uniform float ditherBias;
 
 const float bayerMatrix8x8[64] = float[64](
   0.0/64.0, 48.0/64.0, 12.0/64.0, 60.0/64.0,  3.0/64.0, 51.0/64.0, 15.0/64.0, 63.0/64.0,
@@ -131,7 +137,7 @@ vec3 dither(vec2 uv, vec3 color) {
   float threshold = bayerMatrix8x8[y * 8 + x] - 0.25;
   float step = 1.0 / (colorNum - 1.0);
   color += threshold * step;
-  color = clamp(color - 0.2, 0.0, 1.0);
+  color = clamp(color - ditherBias, 0.0, 1.0);
   return floor(color * (colorNum - 1.0) + 0.5) / (colorNum - 1.0);
 }
 
@@ -148,7 +154,8 @@ class RetroEffectImpl extends Effect {
   constructor() {
     const uniforms = new Map([
       ["colorNum", new THREE.Uniform(4.0)],
-      ["pixelSize", new THREE.Uniform(2.0)]
+      ["pixelSize", new THREE.Uniform(2.0)],
+      ["ditherBias", new THREE.Uniform(0.04)]
     ]);
     super("RetroEffect", ditherFragmentShader, { uniforms });
     this.uniforms = uniforms;
@@ -169,23 +176,45 @@ class RetroEffectImpl extends Effect {
   get pixelSize() {
     return this.uniforms.get("pixelSize").value;
   }
+
+  set ditherBias(value) {
+    this.uniforms.get("ditherBias").value = value;
+  }
+
+  get ditherBias() {
+    return this.uniforms.get("ditherBias").value;
+  }
 }
 
 const WrappedRetro = wrapEffect(RetroEffectImpl);
 
-const RetroEffect = forwardRef(function RetroEffect({ colorNum, pixelSize }, ref) {
-  return <WrappedRetro ref={ref} colorNum={colorNum} pixelSize={pixelSize} />;
+const RetroEffect = forwardRef(function RetroEffect({ colorNum, pixelSize, ditherBias }, ref) {
+  return <WrappedRetro ref={ref} colorNum={colorNum} pixelSize={pixelSize} ditherBias={ditherBias} />;
 });
 
 RetroEffect.displayName = "RetroEffect";
+
+function supportsWebGL() {
+  if (typeof document === "undefined") return true;
+
+  try {
+    const canvas = document.createElement("canvas");
+    return Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl") || canvas.getContext("experimental-webgl"));
+  } catch {
+    return false;
+  }
+}
 
 function DitheredWaves({
   waveSpeed,
   waveFrequency,
   waveAmplitude,
   waveColor,
+  baseColor,
+  highlightColor,
   colorNum,
   pixelSize,
+  ditherBias,
   disableAnimation,
   enableMouseInteraction,
   mouseRadius
@@ -200,6 +229,8 @@ function DitheredWaves({
     waveFrequency: new THREE.Uniform(waveFrequency),
     waveAmplitude: new THREE.Uniform(waveAmplitude),
     waveColor: new THREE.Uniform(new THREE.Color(...waveColor)),
+    baseColor: new THREE.Uniform(new THREE.Color(...baseColor)),
+    highlightColor: new THREE.Uniform(new THREE.Color(...highlightColor)),
     mousePos: new THREE.Uniform(new THREE.Vector2(0, 0)),
     enableMouseInteraction: new THREE.Uniform(enableMouseInteraction ? 1 : 0),
     mouseRadius: new THREE.Uniform(mouseRadius)
@@ -213,9 +244,12 @@ function DitheredWaves({
     if (resolution.x !== width || resolution.y !== height) {
       resolution.set(width, height);
     }
+    mouseRef.current.set(width * 0.5, height * 0.5);
   }, [size, gl]);
 
   const previousColor = useRef([...waveColor]);
+  const previousBaseColor = useRef([...baseColor]);
+  const previousHighlightColor = useRef([...highlightColor]);
 
   useFrame(({ clock }) => {
     const uniforms = waveUniformsRef.current;
@@ -233,6 +267,16 @@ function DitheredWaves({
       previousColor.current = [...waveColor];
     }
 
+    if (!previousBaseColor.current.every((value, index) => value === baseColor[index])) {
+      uniforms.baseColor.value.set(...baseColor);
+      previousBaseColor.current = [...baseColor];
+    }
+
+    if (!previousHighlightColor.current.every((value, index) => value === highlightColor[index])) {
+      uniforms.highlightColor.value.set(...highlightColor);
+      previousHighlightColor.current = [...highlightColor];
+    }
+
     uniforms.enableMouseInteraction.value = enableMouseInteraction ? 1 : 0;
     uniforms.mouseRadius.value = mouseRadius;
 
@@ -248,6 +292,12 @@ function DitheredWaves({
     mouseRef.current.set((event.clientX - rect.left) * dpr, (event.clientY - rect.top) * dpr);
   };
 
+  const handlePointerLeave = () => {
+    if (!enableMouseInteraction) return;
+    const dpr = gl.getPixelRatio();
+    mouseRef.current.set(size.width * dpr * 0.5, size.height * dpr * 0.5);
+  };
+
   return (
     <>
       <mesh ref={mesh} scale={[viewport.width, viewport.height, 1]}>
@@ -260,11 +310,12 @@ function DitheredWaves({
       </mesh>
 
       <EffectComposer>
-        <RetroEffect colorNum={colorNum} pixelSize={pixelSize} />
+        <RetroEffect colorNum={colorNum} pixelSize={pixelSize} ditherBias={ditherBias} />
       </EffectComposer>
 
       <mesh
         onPointerMove={handlePointerMove}
+        onPointerLeave={handlePointerLeave}
         position={[0, 0, 0.01]}
         scale={[viewport.width, viewport.height, 1]}
         frustumCulled={false}
@@ -281,12 +332,21 @@ export default function Dither({
   waveFrequency = 3,
   waveAmplitude = 0.3,
   waveColor = [0.5, 0.5, 0.5],
+  baseColor = [0.08, 0.11, 0.09],
+  highlightColor = [0.72, 0.78, 0.73],
   colorNum = 4,
   pixelSize = 2,
+  ditherBias = 0.04,
   disableAnimation = false,
   enableMouseInteraction = true,
   mouseRadius = 1
 }) {
+  const webglSupported = useMemo(supportsWebGL, []);
+
+  if (!webglSupported) {
+    return <div className="dither-fallback" aria-hidden="true" />;
+  }
+
   return (
     <Canvas
       className="dither-container"
@@ -299,8 +359,11 @@ export default function Dither({
         waveFrequency={waveFrequency}
         waveAmplitude={waveAmplitude}
         waveColor={waveColor}
+        baseColor={baseColor}
+        highlightColor={highlightColor}
         colorNum={colorNum}
         pixelSize={pixelSize}
+        ditherBias={ditherBias}
         disableAnimation={disableAnimation}
         enableMouseInteraction={enableMouseInteraction}
         mouseRadius={mouseRadius}

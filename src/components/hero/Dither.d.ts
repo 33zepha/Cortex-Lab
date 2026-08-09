@@ -5,8 +5,11 @@ export type DitherProps = {
   waveFrequency?: number;
   waveAmplitude?: number;
   waveColor?: [number, number, number];
+  baseColor?: [number, number, number];
+  highlightColor?: [number, number, number];
   colorNum?: number;
   pixelSize?: number;
+  ditherBias?: number;
   disableAnimation?: boolean;
   enableMouseInteraction?: boolean;
   mouseRadius?: number;
