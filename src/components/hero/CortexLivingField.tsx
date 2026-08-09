@@ -1,109 +1,22 @@
 import { useEffect, useRef } from "react";
 
-type Vec3 = { x: number; y: number; z: number };
-type ClusterId = 0 | 1 | 2;
-type FieldPoint = {
-  cluster: ClusterId;
-  u: number;
-  v: number;
-  phase: number;
-  energy: number;
-  shell: number;
-  jitter: Vec3;
-};
-type Filament = {
-  cluster: ClusterId;
-  phase: number;
-  offset: number;
-  energy: number;
-};
-type AmbientMote = {
-  cluster: ClusterId;
-  phase: number;
-  radius: number;
-  vertical: number;
-  depth: number;
-  energy: number;
-};
-type SceneData = {
-  points: FieldPoint[];
-  filaments: Filament[];
-  motes: AmbientMote[];
-};
-type ProjectedPoint = {
-  x: number;
-  y: number;
-  z: number;
-  alpha: number;
-  size: number;
-  energy: number;
-  cluster: ClusterId;
-};
-type ClusterConfig = {
-  anchor: Vec3;
-  approachAnchor: Vec3;
-  radius: Vec3;
-  tilt: number;
-  phase: number;
-  tone: readonly [number, number, number];
-};
+type CortexLivingFieldProps = { className?: string };
+
 type StoryState = {
   approach: number;
   braid: number;
   cohere: number;
 };
-type CortexLivingFieldProps = { className?: string };
 
-const TAU = Math.PI * 2;
-const GOLDEN = 0.6180339887498949;
 const STORY = {
-  approachStart: 7,
-  braidStart: 15,
-  cohereStart: 27,
-  settledAt: 35,
+  approachStart: 8,
+  braidStart: 18,
+  cohereStart: 32,
+  settledAt: 44,
 } as const;
-
-const CLUSTERS: readonly ClusterConfig[] = [
-  {
-    anchor: { x: 0.48, y: 1.02, z: -0.18 },
-    approachAnchor: { x: 0.25, y: 0.72, z: -0.08 },
-    radius: { x: 0.5, y: 0.59, z: 0.39 },
-    tilt: -0.24,
-    phase: 0.35,
-    tone: [236, 239, 233],
-  },
-  {
-    anchor: { x: -0.36, y: 0.02, z: 0.24 },
-    approachAnchor: { x: -0.1, y: 0.02, z: 0.13 },
-    radius: { x: 0.46, y: 0.52, z: 0.43 },
-    tilt: 0.11,
-    phase: 2.45,
-    tone: [219, 229, 224],
-  },
-  {
-    anchor: { x: 0.54, y: -1.03, z: -0.04 },
-    approachAnchor: { x: 0.27, y: -0.72, z: -0.02 },
-    radius: { x: 0.54, y: 0.57, z: 0.38 },
-    tilt: 0.22,
-    phase: 4.6,
-    tone: [229, 232, 238],
-  },
-] as const;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
-}
-
-function mix(a: number, b: number, amount: number) {
-  return a + (b - a) * amount;
-}
-
-function mixVec(a: Vec3, b: Vec3, amount: number): Vec3 {
-  return {
-    x: mix(a.x, b.x, amount),
-    y: mix(a.y, b.y, amount),
-    z: mix(a.z, b.z, amount),
-  };
 }
 
 function smoothstep(edge0: number, edge1: number, value: number) {
@@ -111,23 +24,8 @@ function smoothstep(edge0: number, edge1: number, value: number) {
   return t * t * (3 - 2 * t);
 }
 
-function seededRandom(seed: number) {
-  let value = seed >>> 0;
-  return () => {
-    value += 0x6d2b79f5;
-    let t = value;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function clusterConfig(cluster: ClusterId): ClusterConfig {
-  return CLUSTERS[cluster]!;
-}
-
 function storyState(elapsedSeconds: number, reducedMotion: boolean): StoryState {
-  if (reducedMotion) return { approach: 1, braid: 0.84, cohere: 0.62 };
+  if (reducedMotion) return { approach: 1, braid: 0.84, cohere: 0.7 };
   return {
     approach: smoothstep(STORY.approachStart, STORY.braidStart, elapsedSeconds),
     braid: smoothstep(STORY.braidStart, STORY.cohereStart, elapsedSeconds),
@@ -135,158 +33,308 @@ function storyState(elapsedSeconds: number, reducedMotion: boolean): StoryState 
   };
 }
 
-function nucleusPosition(point: FieldPoint, time: number, reducedMotion: boolean): Vec3 {
-  const config = clusterConfig(point.cluster);
-  const latitude = Math.asin(clamp(point.u * 2 - 1, -1, 1));
-  const longitude = point.v * TAU + config.tilt;
-  const latCos = Math.cos(latitude);
-  const sculpt = 1 + Math.sin(longitude * 2.7 + latitude * 1.8 + config.phase) * 0.055;
-  const shell = point.shell * sculpt;
-  const breath = reducedMotion
-    ? 1
-    : 1 + Math.sin(time * (0.31 + point.cluster * 0.025) + config.phase) * 0.015;
-  const drift = reducedMotion ? 0 : 0.034;
-  const anchor: Vec3 = {
-    x: config.anchor.x + Math.sin(time * 0.17 + config.phase) * drift,
-    y: config.anchor.y + Math.cos(time * 0.145 + config.phase) * drift * 0.72,
-    z: config.anchor.z + Math.sin(time * 0.13 + config.phase * 0.7) * drift * 0.8,
-  };
+const VERTEX_SHADER = `#version 300 es
+in vec2 a_position;
+void main() {
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}
+`;
 
-  return {
-    x: anchor.x + latCos * Math.cos(longitude) * config.radius.x * shell * breath,
-    y: anchor.y + Math.sin(latitude) * config.radius.y * shell * breath,
-    z: anchor.z + latCos * Math.sin(longitude) * config.radius.z * shell * breath,
-  };
+const FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform vec3 u_story;
+uniform vec2 u_pointer;
+uniform float u_mobile;
+
+out vec4 outColor;
+
+#define PI 3.141592653589793
+#define TAU 6.283185307179586
+#define STEPS 52
+
+float saturate(float x) { return clamp(x, 0.0, 1.0); }
+
+float hash31(vec3 p) {
+  p = fract(p * 0.1031);
+  p += dot(p, p.yzx + 33.33);
+  return fract((p.x + p.y) * p.z);
 }
 
-function approachPosition(point: FieldPoint, time: number, reducedMotion: boolean): Vec3 {
-  const config = clusterConfig(point.cluster);
-  const s = point.u * 2 - 1;
-  const phi = point.v * TAU + config.phase * 0.32;
-  const taper = 0.74 + 0.26 * Math.cos(s * Math.PI * 0.5);
-  const tube = (0.205 + point.cluster * 0.008) * taper * point.shell;
-  const longitudinal = 0.57 + point.cluster * 0.025;
-  const motion = reducedMotion ? 0 : Math.sin(time * 0.22 + config.phase) * 0.018;
-  const lean = config.tilt * 0.72;
+float noise3(vec3 p) {
+  vec3 i = floor(p);
+  vec3 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
 
-  return {
-    x: config.approachAnchor.x + s * lean + Math.cos(phi) * tube + motion,
-    y: config.approachAnchor.y + s * longitudinal + Math.sin(phi) * tube * 0.5,
-    z: config.approachAnchor.z + Math.sin(phi) * tube * 0.9 + Math.sin(s * Math.PI + config.phase) * 0.06,
-  };
+  float n000 = hash31(i + vec3(0.0, 0.0, 0.0));
+  float n100 = hash31(i + vec3(1.0, 0.0, 0.0));
+  float n010 = hash31(i + vec3(0.0, 1.0, 0.0));
+  float n110 = hash31(i + vec3(1.0, 1.0, 0.0));
+  float n001 = hash31(i + vec3(0.0, 0.0, 1.0));
+  float n101 = hash31(i + vec3(1.0, 0.0, 1.0));
+  float n011 = hash31(i + vec3(0.0, 1.0, 1.0));
+  float n111 = hash31(i + vec3(1.0, 1.0, 1.0));
+
+  float nx00 = mix(n000, n100, f.x);
+  float nx10 = mix(n010, n110, f.x);
+  float nx01 = mix(n001, n101, f.x);
+  float nx11 = mix(n011, n111, f.x);
+  float nxy0 = mix(nx00, nx10, f.y);
+  float nxy1 = mix(nx01, nx11, f.y);
+  return mix(nxy0, nxy1, f.z);
 }
 
-function braidPosition(point: FieldPoint, time: number, cohere: number, reducedMotion: boolean): Vec3 {
-  const s = point.u * 2 - 1;
-  const config = clusterConfig(point.cluster);
-  const strandPhase = point.cluster * (TAU / 3);
-  const angle = strandPhase + s * Math.PI * 1.12 + Math.sin(s * Math.PI * 0.72) * 0.14;
-  const centerTension = Math.exp(-s * s * 4.1);
-  const settle = mix(1, 0.82, cohere);
-  const helixRadius = (0.38 - centerTension * 0.07 * cohere) * settle;
-  const fibreRadius = (0.14 + Math.cos(s * Math.PI) * 0.012) * point.shell * mix(1, 0.9, cohere);
-  const phi = point.v * TAU + point.phase * 0.05;
-  const axisX = 0.075 + Math.sin(s * Math.PI * 0.95) * 0.06;
-  const axisZ = Math.sin(s * Math.PI * 0.74) * 0.038;
-  const living = reducedMotion ? 0 : Math.sin(time * 0.19 + config.phase + s * 2.1) * 0.013 * (1 - cohere * 0.7);
-
-  return {
-    x: axisX + Math.cos(angle) * (helixRadius + Math.cos(phi) * fibreRadius) + living,
-    y: s * 1.42 + Math.sin(phi) * fibreRadius * 0.62,
-    z: axisZ + Math.sin(angle) * (helixRadius * 0.78 + Math.cos(phi) * fibreRadius * 0.72),
-  };
+float fbm(vec3 p) {
+  float value = 0.0;
+  float amplitude = 0.55;
+  for (int i = 0; i < 3; i++) {
+    value += noise3(p) * amplitude;
+    p = p * 2.03 + vec3(1.7, -2.1, 0.9);
+    amplitude *= 0.47;
+  }
+  return value;
 }
 
-function livingPosition(point: FieldPoint, time: number, state: StoryState, reducedMotion: boolean): Vec3 {
-  const nucleus = nucleusPosition(point, time, reducedMotion);
-  const approach = approachPosition(point, time, reducedMotion);
-  const braided = braidPosition(point, time, state.cohere, reducedMotion);
-  const position = mixVec(mixVec(nucleus, approach, state.approach), braided, state.braid);
-  const jitterFade = 1 - state.braid * 0.68;
-
-  return {
-    x: position.x + point.jitter.x * jitterFade,
-    y: position.y + point.jitter.y * jitterFade,
-    z: position.z + point.jitter.z * jitterFade,
-  };
+mat2 rot(float a) {
+  float c = cos(a);
+  float s = sin(a);
+  return mat2(c, -s, s, c);
 }
 
-function buildScene(compact: boolean): SceneData {
-  const random = seededRandom(compact ? 0x6c0a7 : 0xc07e91);
-  const points: FieldPoint[] = [];
-  const filaments: Filament[] = [];
-  const motes: AmbientMote[] = [];
-  const pointCount = compact ? 420 : 720;
-  const filamentCount = compact ? 6 : 9;
+vec3 nucleusCenter(int id, float time) {
+  vec3 c;
+  float phase;
+  if (id == 0) { c = vec3(0.68, 0.86, -0.10); phase = 0.3; }
+  else if (id == 1) { c = vec3(-0.08, 0.02, 0.20); phase = 2.45; }
+  else { c = vec3(0.72, -0.88, -0.02); phase = 4.7; }
 
-  for (let cluster = 0; cluster < 3; cluster += 1) {
-    const clusterId = cluster as ClusterId;
-    for (let index = 0; index < pointCount; index += 1) {
-      const u = (index + 0.5) / pointCount;
-      const v = (index * GOLDEN + random() * 0.02) % 1;
-      const shell = 0.78 + Math.pow(random(), 0.52) * 0.25;
-      const jitterScale = compact ? 0.016 : 0.012;
-      points.push({
-        cluster: clusterId,
-        u,
-        v,
-        phase: random() * TAU,
-        energy: 0.38 + Math.pow(random(), 0.55) * 0.62,
-        shell,
-        jitter: {
-          x: (random() - 0.5) * jitterScale,
-          y: (random() - 0.5) * jitterScale,
-          z: (random() - 0.5) * jitterScale,
-        },
-      });
-    }
+  float drift = 0.035 * (1.0 - u_story.y * 0.7);
+  c.x += sin(time * 0.19 + phase) * drift;
+  c.y += cos(time * 0.155 + phase) * drift * 0.75;
+  c.z += sin(time * 0.13 + phase * 0.8) * drift * 0.9;
+  return c;
+}
 
-    for (let index = 0; index < filamentCount; index += 1) {
-      filaments.push({
-        cluster: clusterId,
-        phase: (index / filamentCount + random() * 0.045) % 1,
-        offset: (random() - 0.5) * 0.08,
-        energy: 0.5 + random() * 0.5,
-      });
-    }
+vec3 approachCenter(int id) {
+  if (id == 0) return vec3(0.34, 0.56, -0.05);
+  if (id == 1) return vec3(0.08, 0.0, 0.11);
+  return vec3(0.36, -0.56, -0.01);
+}
 
-    const moteCount = compact ? 5 : 8;
-    for (let index = 0; index < moteCount; index += 1) {
-      motes.push({
-        cluster: clusterId,
-        phase: random() * TAU,
-        radius: 0.72 + random() * 0.78,
-        vertical: random() - 0.5,
-        depth: random() - 0.5,
-        energy: 0.16 + random() * 0.24,
-      });
-    }
+vec3 coreScale(int id) {
+  if (id == 0) return vec3(0.46, 0.54, 0.38);
+  if (id == 1) return vec3(0.42, 0.47, 0.42);
+  return vec3(0.49, 0.52, 0.37);
+}
+
+vec3 coreTone(int id) {
+  if (id == 0) return vec3(0.83, 0.88, 0.82);
+  if (id == 1) return vec3(0.68, 0.79, 0.74);
+  return vec3(0.76, 0.78, 0.84);
+}
+
+float livingCore(vec3 p, int id, float time, out float skin, out float inner) {
+  float phase = id == 0 ? 0.3 : (id == 1 ? 2.45 : 4.7);
+  vec3 c = mix(nucleusCenter(id, time), approachCenter(id), u_story.x);
+  vec3 q = p - c;
+
+  float angle = (id == 0 ? -0.18 : (id == 1 ? 0.11 : 0.19));
+  q.xz = rot(angle) * q.xz;
+
+  float breath = 1.0 + sin(time * (0.34 + float(id) * 0.026) + phase) * 0.035;
+  vec3 scale = coreScale(id) * breath;
+
+  float organic = fbm(q * 2.2 + vec3(phase, time * 0.035, -phase)) - 0.5;
+  float wave = sin(q.y * 5.0 + phase + time * 0.23) * 0.022;
+  vec3 warped = q;
+  warped.x += organic * 0.10 + wave;
+  warped.z += organic * 0.075 - wave * 0.6;
+
+  float r = length(warped / scale);
+  float membraneWidth = mix(0.105, 0.075, u_story.x);
+  skin = exp(-pow((r - 0.86) / membraneWidth, 2.0));
+  inner = exp(-r * r * 2.8) * (0.72 + 0.28 * sin((q.y + q.x * 0.45) * 11.0 + phase));
+
+  float pulse = 0.86 + 0.14 * sin(time * 0.42 + phase + organic * 3.0);
+  return (skin * 0.86 + inner * 0.16) * pulse;
+}
+
+vec3 braidAxis(float y) {
+  return vec3(
+    0.20 + sin(y * 1.38) * 0.055,
+    y,
+    sin(y * 1.02) * 0.045
+  );
+}
+
+float braidStrand(vec3 p, int id, float time, out float skin, out float inner) {
+  float phase = float(id) * (TAU / 3.0);
+  float y = clamp(p.y, -1.55, 1.55);
+  vec3 axis = braidAxis(y);
+
+  float settle = mix(1.0, 0.58, u_story.z);
+  float helixRadius = mix(0.34, 0.20, u_story.z) * settle + 0.08;
+  float angle = y * 2.05 + phase + sin(y * 1.25) * 0.14;
+  vec3 strandCenter = axis + vec3(cos(angle) * helixRadius, 0.0, sin(angle) * helixRadius * 0.76);
+
+  float ends = smoothstep(1.68, 1.30, abs(y));
+  float organic = fbm(vec3(p.x * 2.4, y * 1.45 + phase, p.z * 2.4 + time * 0.028)) - 0.5;
+  float radius = mix(0.19, 0.23, u_story.z) * (1.0 + organic * 0.12);
+  vec3 d = p - strandCenter;
+  d.x += organic * 0.035;
+  d.z -= organic * 0.028;
+
+  float r = length(vec2(d.x, d.z)) / radius;
+  skin = exp(-pow((r - 0.78) / 0.13, 2.0)) * ends;
+  inner = exp(-r * r * 2.7) * ends;
+
+  float travelling = 0.82 + 0.18 * sin(y * 4.1 - time * 0.37 + phase + organic * 2.0);
+  return (skin * 0.76 + inner * 0.21) * travelling;
+}
+
+float unifiedBody(vec3 p, float time, out float skin, out float inner) {
+  vec3 q = p - braidAxis(clamp(p.y, -1.45, 1.45));
+  float ends = smoothstep(1.62, 1.25, abs(p.y));
+  float organic = fbm(vec3(q.x * 2.6, p.y * 1.12 + time * 0.025, q.z * 2.6)) - 0.5;
+  q.x += organic * 0.055;
+  q.z -= organic * 0.043;
+
+  float radius = 0.39 + 0.035 * sin(p.y * 2.1) + organic * 0.04;
+  float r = length(vec2(q.x, q.z)) / radius;
+  skin = exp(-pow((r - 0.9) / 0.105, 2.0)) * ends;
+
+  float lamella = 0.5 + 0.5 * sin(p.y * 8.4 + q.x * 5.0 - time * 0.16 + organic * 3.0);
+  inner = exp(-r * r * 2.15) * mix(0.34, 0.72, lamella) * ends;
+  return skin * 0.82 + inner * 0.16;
+}
+
+vec4 sampleField(vec3 p, float time) {
+  float density = 0.0;
+  vec3 colour = vec3(0.0);
+  float totalWeight = 0.0;
+  float maxSkin = 0.0;
+
+  for (int id = 0; id < 3; id++) {
+    float cSkin;
+    float cInner;
+    float core = livingCore(p, id, time, cSkin, cInner);
+
+    float bSkin;
+    float bInner;
+    float braid = braidStrand(p, id, time, bSkin, bInner);
+
+    float localDensity = mix(core, braid, u_story.y);
+    float w = max(localDensity, 0.0001);
+    density += localDensity;
+    colour += coreTone(id) * w;
+    totalWeight += w;
+    maxSkin = max(maxSkin, mix(cSkin, bSkin, u_story.y));
   }
 
-  return { points, filaments, motes };
+  float uSkin;
+  float uInner;
+  float united = unifiedBody(p, time, uSkin, uInner);
+  float unitedBlend = u_story.z;
+  density = mix(density, max(density * 0.46, united * 1.18), unitedBlend);
+
+  vec3 braidedTone = totalWeight > 0.0 ? colour / totalWeight : vec3(0.76, 0.82, 0.79);
+  vec3 unitedTone = vec3(0.76, 0.84, 0.80);
+  colour = mix(braidedTone, unitedTone, unitedBlend * 0.72);
+  maxSkin = mix(maxSkin, uSkin, unitedBlend);
+
+  return vec4(colour, density * (0.70 + maxSkin * 0.34));
 }
 
-function rotatePoint(point: Vec3, rx: number, ry: number, rz: number): Vec3 {
-  const cosX = Math.cos(rx);
-  const sinX = Math.sin(rx);
-  const cosY = Math.cos(ry);
-  const sinY = Math.sin(ry);
-  const cosZ = Math.cos(rz);
-  const sinZ = Math.sin(rz);
-  const y1 = point.y * cosX - point.z * sinX;
-  const z1 = point.y * sinX + point.z * cosX;
-  const x2 = point.x * cosY + z1 * sinY;
-  const z2 = -point.x * sinY + z1 * cosY;
-  return { x: x2 * cosZ - y1 * sinZ, y: x2 * sinZ + y1 * cosZ, z: z2 };
+void main() {
+  vec2 frag = gl_FragCoord.xy;
+  vec2 uv = (frag * 2.0 - u_resolution.xy) / u_resolution.y;
+  float aspect = u_resolution.x / u_resolution.y;
+
+  float desktopShift = smoothstep(1.12, 1.62, aspect);
+  uv.x -= mix(0.03, 0.56, desktopShift);
+
+  vec2 pointer = u_pointer * vec2(0.05, 0.035) * (1.0 - u_story.z * 0.55);
+  uv += pointer;
+
+  vec3 ro = vec3(0.0, 0.0, 3.7);
+  vec3 rd = normalize(vec3(uv.x * 0.92, uv.y * 0.92, -2.25));
+
+  float yaw = 0.11 + sin(u_time * 0.075) * 0.026 * (1.0 - u_story.z * 0.7);
+  float pitch = -0.055 + cos(u_time * 0.061) * 0.018 * (1.0 - u_story.z * 0.7);
+  rd.xz = rot(yaw) * rd.xz;
+  rd.yz = rot(pitch) * rd.yz;
+
+  vec3 accum = vec3(0.0);
+  float alpha = 0.0;
+  float t = 1.45;
+  float stepSize = mix(0.092, 0.074, 1.0 - u_mobile);
+
+  for (int i = 0; i < STEPS; i++) {
+    if (alpha > 0.965) break;
+    vec3 p = ro + rd * t;
+    vec4 field = sampleField(p, u_time);
+
+    float depthFade = smoothstep(4.8, 2.0, t);
+    float d = field.a * depthFade;
+    float absorption = 1.0 - exp(-d * stepSize * 4.15);
+
+    if (absorption > 0.001) {
+      float sideLight = 0.68 + 0.32 * saturate(0.5 + p.x * 0.32 - p.z * 0.12);
+      float topLight = 0.74 + 0.26 * saturate(0.5 + p.y * 0.16);
+      float optical = 0.82 + 0.18 * sin(p.y * 3.2 + p.z * 2.1 + u_time * 0.08);
+      vec3 sampleColour = field.rgb * sideLight * topLight * optical;
+      sampleColour += vec3(0.05, 0.075, 0.062) * d * 0.35;
+
+      float contribution = (1.0 - alpha) * absorption;
+      accum += sampleColour * contribution;
+      alpha += contribution;
+    }
+
+    t += stepSize;
+  }
+
+  float vignette = 1.0 - smoothstep(0.68, 1.58, length(uv * vec2(0.72, 0.88)));
+  accum *= mix(0.74, 1.0, vignette);
+
+  float softPresence = alpha * 0.035;
+  accum += vec3(0.12, 0.17, 0.145) * softPresence;
+  accum = pow(accum, vec3(0.92));
+
+  outColor = vec4(accum, alpha * 0.92);
+}
+`;
+
+function compileShader(gl: WebGL2RenderingContext, type: number, source: string) {
+  const shader = gl.createShader(type);
+  if (!shader) throw new Error("Unable to create WebGL shader");
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    const message = gl.getShaderInfoLog(shader) ?? "Unknown shader compilation error";
+    gl.deleteShader(shader);
+    throw new Error(message);
+  }
+  return shader;
 }
 
-function bezierPoint(a: Vec3, control: Vec3, b: Vec3, t: number): Vec3 {
-  const inverse = 1 - t;
-  return {
-    x: inverse * inverse * a.x + 2 * inverse * t * control.x + t * t * b.x,
-    y: inverse * inverse * a.y + 2 * inverse * t * control.y + t * t * b.y,
-    z: inverse * inverse * a.z + 2 * inverse * t * control.z + t * t * b.z,
-  };
+function createProgram(gl: WebGL2RenderingContext) {
+  const vertex = compileShader(gl, gl.VERTEX_SHADER, VERTEX_SHADER);
+  const fragment = compileShader(gl, gl.FRAGMENT_SHADER, FRAGMENT_SHADER);
+  const program = gl.createProgram();
+  if (!program) throw new Error("Unable to create WebGL program");
+  gl.attachShader(program, vertex);
+  gl.attachShader(program, fragment);
+  gl.linkProgram(program);
+  gl.deleteShader(vertex);
+  gl.deleteShader(fragment);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    const message = gl.getProgramInfoLog(program) ?? "Unknown WebGL link error";
+    gl.deleteProgram(program);
+    throw new Error(message);
+  }
+  return program;
 }
 
 export function CortexLivingField({ className = "" }: CortexLivingFieldProps) {
@@ -297,39 +345,84 @@ export function CortexLivingField({ className = "" }: CortexLivingFieldProps) {
     const canvas = canvasRef.current;
     const host = hostRef.current;
     if (!canvas || !host) return undefined;
-    const context = canvas.getContext("2d", { alpha: true });
-    if (!context) return undefined;
 
-    let width = 1;
-    let height = 1;
-    let compact = false;
-    let scene = buildScene(false);
+    const gl = canvas.getContext("webgl2", {
+      alpha: true,
+      antialias: false,
+      depth: false,
+      stencil: false,
+      powerPreference: "high-performance",
+      premultipliedAlpha: true,
+    });
+
+    if (!gl) {
+      host.dataset.webglFallback = "true";
+      return undefined;
+    }
+
+    let program: WebGLProgram;
+    try {
+      program = createProgram(gl);
+    } catch (error) {
+      console.warn("[CortexLivingField] WebGL shader unavailable", error);
+      host.dataset.webglFallback = "true";
+      return undefined;
+    }
+
+    const positionLocation = gl.getAttribLocation(program, "a_position");
+    const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+    const timeLocation = gl.getUniformLocation(program, "u_time");
+    const storyLocation = gl.getUniformLocation(program, "u_story");
+    const pointerLocation = gl.getUniformLocation(program, "u_pointer");
+    const mobileLocation = gl.getUniformLocation(program, "u_mobile");
+
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array([-1, -1, 3, -1, -1, 3]),
+      gl.STATIC_DRAW,
+    );
+
+    gl.useProgram(program);
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.CULL_FACE);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+    let cssWidth = 1;
+    let cssHeight = 1;
+    let renderWidth = 1;
+    let renderHeight = 1;
     let frameHandle = 0;
     let visible = true;
-    let lastFrame = 0;
     let pointerX = 0;
     let pointerY = 0;
     let smoothPointerX = 0;
     let smoothPointerY = 0;
+    let lastFrame = 0;
     const startedAt = performance.now();
     const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     let reducedMotion = reducedMotionQuery.matches;
 
     const resize = () => {
       const rect = host.getBoundingClientRect();
-      width = Math.max(1, rect.width);
-      height = Math.max(1, rect.height);
-      const dpr = Math.min(window.devicePixelRatio || 1, width < 760 ? 1.45 : 1.85);
-      canvas.width = Math.round(width * dpr);
-      canvas.height = Math.round(height * dpr);
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-      context.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const nextCompact = width < 760;
-      if (nextCompact !== compact) {
-        compact = nextCompact;
-        scene = buildScene(compact);
+      cssWidth = Math.max(1, rect.width);
+      cssHeight = Math.max(1, rect.height);
+      const mobile = window.innerWidth < 760;
+      const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.15 : 1.45);
+      const renderScale = mobile ? 0.72 : 0.86;
+      renderWidth = Math.max(1, Math.round(cssWidth * dpr * renderScale));
+      renderHeight = Math.max(1, Math.round(cssHeight * dpr * renderScale));
+      if (canvas.width !== renderWidth || canvas.height !== renderHeight) {
+        canvas.width = renderWidth;
+        canvas.height = renderHeight;
       }
+      canvas.style.width = `${cssWidth}px`;
+      canvas.style.height = `${cssHeight}px`;
+      gl.viewport(0, 0, renderWidth, renderHeight);
     };
 
     const resizeObserver = new ResizeObserver(resize);
@@ -348,223 +441,61 @@ export function CortexLivingField({ className = "" }: CortexLivingFieldProps) {
       pointerX = clamp((event.clientX / window.innerWidth - 0.5) * 2, -1, 1);
       pointerY = clamp((event.clientY / window.innerHeight - 0.5) * 2, -1, 1);
     };
+
     const onReducedMotionChange = (event: MediaQueryListEvent) => {
       reducedMotion = event.matches;
     };
+
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     reducedMotionQuery.addEventListener("change", onReducedMotionChange);
-
-    const project = (point: Vec3, centerX: number, centerY: number, focal: number) => {
-      const cameraDistance = 5.1;
-      const depth = Math.max(2.9, cameraDistance - point.z);
-      const scale = focal / depth;
-      return { x: centerX + point.x * scale, y: centerY - point.y * scale, z: point.z };
-    };
-
-    const drawFilaments = (
-      time: number,
-      state: StoryState,
-      centerX: number,
-      centerY: number,
-      focal: number,
-      rx: number,
-      ry: number,
-      rz: number,
-    ) => {
-      const samples = compact ? 22 : 30;
-      for (const filament of scene.filaments) {
-        const tone = clusterConfig(filament.cluster).tone;
-        context.beginPath();
-        for (let index = 0; index <= samples; index += 1) {
-          const u = index / samples;
-          const synthetic: FieldPoint = {
-            cluster: filament.cluster,
-            u,
-            v: (filament.phase + filament.offset * Math.sin(u * Math.PI)) % 1,
-            phase: filament.phase * TAU,
-            energy: filament.energy,
-            shell: 0.92 + Math.sin(u * Math.PI) * 0.06,
-            jitter: { x: 0, y: 0, z: 0 },
-          };
-          const raw = livingPosition(synthetic, time, state, reducedMotion);
-          const rotated = rotatePoint(raw, rx, ry, rz);
-          const screen = project(rotated, centerX, centerY, focal);
-          if (index === 0) context.moveTo(screen.x, screen.y);
-          else context.lineTo(screen.x, screen.y);
-        }
-        const strength = 0.018 + state.approach * 0.012 + state.braid * 0.028;
-        context.strokeStyle = `rgba(${tone[0]}, ${tone[1]}, ${tone[2]}, ${strength * filament.energy})`;
-        context.lineWidth = compact ? 0.62 : 0.72;
-        context.stroke();
-      }
-    };
-
-    const drawDialogue = (
-      elapsed: number,
-      state: StoryState,
-      centerX: number,
-      centerY: number,
-      focal: number,
-      rx: number,
-      ry: number,
-      rz: number,
-    ) => {
-      const visibilityAmount = state.approach * (1 - state.braid * 0.72);
-      if (visibilityAmount < 0.025) return;
-
-      for (let pair = 0; pair < 2; pair += 1) {
-        const fromConfig = clusterConfig(pair as ClusterId);
-        const toConfig = clusterConfig((pair + 1) as ClusterId);
-        const from = mixVec(fromConfig.anchor, fromConfig.approachAnchor, state.approach);
-        const to = mixVec(toConfig.anchor, toConfig.approachAnchor, state.approach);
-        const control: Vec3 = {
-          x: (from.x + to.x) * 0.5 + (pair === 0 ? -0.12 : 0.12),
-          y: (from.y + to.y) * 0.5,
-          z: (from.z + to.z) * 0.5 + 0.17,
-        };
-        const samples = compact ? 24 : 32;
-        context.beginPath();
-        for (let index = 0; index <= samples; index += 1) {
-          const t = index / samples;
-          const rotated = rotatePoint(bezierPoint(from, control, to, t), rx, ry, rz);
-          const screen = project(rotated, centerX, centerY, focal);
-          if (index === 0) context.moveTo(screen.x, screen.y);
-          else context.lineTo(screen.x, screen.y);
-        }
-        context.strokeStyle = `rgba(226, 233, 228, ${0.012 + visibilityAmount * 0.038})`;
-        context.lineWidth = compact ? 0.48 : 0.56;
-        context.stroke();
-
-        const signalCount = compact ? 1 : 2;
-        for (let signal = 0; signal < signalCount; signal += 1) {
-          const signalT = reducedMotion
-            ? 0.48
-            : (elapsed * (0.038 + signal * 0.006) + pair * 0.29 + signal * 0.41) % 1;
-          const rotated = rotatePoint(bezierPoint(from, control, to, signalT), rx, ry, rz);
-          const screen = project(rotated, centerX, centerY, focal);
-          context.beginPath();
-          context.arc(screen.x, screen.y, compact ? 0.72 : 0.9, 0, TAU);
-          context.fillStyle = `rgba(244, 247, 243, ${0.18 + visibilityAmount * 0.42})`;
-          context.fill();
-        }
-      }
-    };
 
     const draw = (timestamp: number) => {
       frameHandle = window.requestAnimationFrame(draw);
       if (!visible) return;
-      const minInterval = compact ? 1000 / 42 : 1000 / 60;
+
+      const mobile = window.innerWidth < 760;
+      const minInterval = mobile ? 1000 / 34 : 1000 / 55;
       if (timestamp - lastFrame < minInterval) return;
       lastFrame = timestamp;
 
-      const time = reducedMotion ? 0 : timestamp * 0.001;
+      smoothPointerX += (pointerX - smoothPointerX) * 0.025;
+      smoothPointerY += (pointerY - smoothPointerY) * 0.025;
+
       const elapsed = reducedMotion ? STORY.settledAt : Math.max(0, (timestamp - startedAt) * 0.001);
       const state = storyState(elapsed, reducedMotion);
-      smoothPointerX += (pointerX - smoothPointerX) * 0.026;
-      smoothPointerY += (pointerY - smoothPointerY) * 0.026;
-      context.clearRect(0, 0, width, height);
+      const time = reducedMotion ? 18 : timestamp * 0.001;
 
-      const centerX = compact ? width * 0.56 : width * 0.745;
-      const centerY = compact ? height * 0.49 : height * 0.5;
-      const focal = Math.min(width, height) * (compact ? 1.13 : 1.22);
-      const stability = state.braid * 0.6 + state.cohere * 0.32;
-      const rx = -0.12 + Math.sin(time * 0.11) * 0.019 * (1 - stability) - smoothPointerY * 0.028;
-      const ry = 0.31 + Math.sin(time * 0.09) * 0.035 * (1 - stability * 0.6) + smoothPointerX * 0.052;
-      const rz = -0.02 + Math.sin(time * 0.075) * 0.011;
-
-      const auraRadius = Math.min(width, height) * (compact ? 0.52 : 0.56);
-      const aura = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, auraRadius);
-      aura.addColorStop(0, `rgba(91, 104, 97, ${0.018 + state.braid * 0.016})`);
-      aura.addColorStop(0.46, "rgba(40, 48, 44, 0.012)");
-      aura.addColorStop(1, "rgba(0, 0, 0, 0)");
-      context.fillStyle = aura;
-      context.fillRect(0, 0, width, height);
-
-      drawFilaments(time, state, centerX, centerY, focal, rx, ry, rz);
-
-      const projected: Array<ProjectedPoint | undefined> = new Array(scene.points.length);
-      for (let index = 0; index < scene.points.length; index += 1) {
-        const point = scene.points[index];
-        if (!point) continue;
-        const raw = livingPosition(point, time, state, reducedMotion);
-        const rotated = rotatePoint(raw, rx, ry, rz);
-        const screen = project(rotated, centerX, centerY, focal);
-        const depthLight = clamp((rotated.z + 1.15) / 2.3, 0.045, 1);
-        const calmPulse = reducedMotion ? 1 : 0.94 + Math.sin(time * 0.72 + point.phase) * 0.06;
-        const structureGain = 0.9 + state.braid * 0.12 + state.cohere * 0.04;
-        projected[index] = {
-          x: screen.x,
-          y: screen.y,
-          z: screen.z,
-          alpha: clamp((0.035 + depthLight * 0.72) * point.energy * calmPulse * structureGain, 0.018, 0.88),
-          size: clamp((0.48 + depthLight * 1.25) * (0.78 + point.energy * 0.42), 0.44, 2.05),
-          energy: point.energy,
-          cluster: point.cluster,
-        };
-      }
-
-      const ordered = projected
-        .filter((point): point is ProjectedPoint => Boolean(point))
-        .sort((a, b) => a.z - b.z);
-
-      for (const point of ordered) {
-        const tone = clusterConfig(point.cluster).tone;
-        const front = clamp((point.z + 1.05) / 2.1, 0, 1);
-        const haloAlpha = point.alpha * front * point.energy * 0.055;
-        if (haloAlpha > 0.008 && point.energy > 0.62) {
-          context.beginPath();
-          context.arc(point.x, point.y, point.size * 2.15, 0, TAU);
-          context.fillStyle = `rgba(${tone[0]}, ${tone[1]}, ${tone[2]}, ${haloAlpha})`;
-          context.fill();
-        }
-      }
-
-      for (const point of ordered) {
-        const tone = clusterConfig(point.cluster).tone;
-        const brightness = Math.round(point.energy * 8);
-        const red = Math.min(255, tone[0] + brightness);
-        const green = Math.min(255, tone[1] + brightness);
-        const blue = Math.min(255, tone[2] + brightness);
-        context.beginPath();
-        context.arc(point.x, point.y, point.size * 0.46, 0, TAU);
-        context.fillStyle = `rgba(${red}, ${green}, ${blue}, ${point.alpha})`;
-        context.fill();
-      }
-
-      drawDialogue(elapsed, state, centerX, centerY, focal, rx, ry, rz);
-
-      for (const mote of scene.motes) {
-        const config = clusterConfig(mote.cluster);
-        const storyAnchor = mixVec(config.anchor, config.approachAnchor, state.approach * (1 - state.braid * 0.7));
-        const drift = time * (0.025 + mote.energy * 0.025) + mote.phase;
-        const raw: Vec3 = {
-          x: storyAnchor.x + Math.cos(drift) * mote.radius * (1 - state.braid * 0.46),
-          y: storyAnchor.y + mote.vertical * 1.22 + Math.sin(drift * 0.7) * 0.08,
-          z: storyAnchor.z + mote.depth * 0.86 + Math.sin(drift) * 0.1,
-        };
-        const rotated = rotatePoint(raw, rx * 0.46, ry * 0.4, rz * 0.35);
-        const screen = project(rotated, centerX, centerY, focal);
-        const depth = clamp((rotated.z + 2) / 4, 0.08, 1);
-        const alpha = mote.energy * depth * (1 - state.cohere * 0.4) * 0.42;
-        context.beginPath();
-        context.arc(screen.x, screen.y, compact ? 0.34 : 0.42, 0, TAU);
-        context.fillStyle = `rgba(${config.tone[0]}, ${config.tone[1]}, ${config.tone[2]}, ${alpha})`;
-        context.fill();
-      }
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.useProgram(program);
+      gl.uniform2f(resolutionLocation, renderWidth, renderHeight);
+      gl.uniform1f(timeLocation, time);
+      gl.uniform3f(storyLocation, state.approach, state.braid, state.cohere);
+      gl.uniform2f(pointerLocation, smoothPointerX, -smoothPointerY);
+      gl.uniform1f(mobileLocation, mobile ? 1 : 0);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
 
     frameHandle = window.requestAnimationFrame(draw);
+
     return () => {
       window.cancelAnimationFrame(frameHandle);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
       window.removeEventListener("pointermove", onPointerMove);
       reducedMotionQuery.removeEventListener("change", onReducedMotionChange);
+      if (buffer) gl.deleteBuffer(buffer);
+      gl.deleteProgram(program);
     };
   }, []);
 
   return (
-    <div ref={hostRef} className={`relative h-full w-full overflow-hidden ${className}`} aria-hidden="true">
+    <div
+      ref={hostRef}
+      className={`relative h-full w-full overflow-hidden ${className}`}
+      aria-hidden="true"
+    >
+      <div className="absolute inset-[16%] rounded-full bg-[radial-gradient(circle,rgba(113,132,122,0.075),rgba(31,37,34,0.025)_42%,transparent_72%)] blur-3xl [div[data-webgl-fallback=true]_&]:opacity-100 opacity-40" />
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
     </div>
   );
