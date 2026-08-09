@@ -239,14 +239,14 @@ export function HeroLabScreen() {
   };
 
   return (
-    <main className="hero-lab relative min-h-[100dvh] bg-[#2b1a2e] text-white" data-typeface={typeface} aria-labelledby="hero-lab-title">
+    <main className="hero-lab relative min-h-[100dvh] bg-[#293a40] text-white" data-typeface={typeface} aria-labelledby="hero-lab-title">
       <div className="hero-lab__journey" ref={journeyRef}>
         <section className="hero-lab__stage" aria-label="Cortex introduction">
           <div className="hero-lab__field pointer-events-auto absolute inset-0" data-hero-layer="field" aria-hidden="true">
             <Dither
-              waveColor={[0.42, 0.24, 0.39]}
-              baseColor={[0.10, 0.055, 0.12]}
-              highlightColor={[0.80, 0.70, 0.78]}
+              waveColor={[0.36, 0.47, 0.50]}
+              baseColor={[0.09, 0.14, 0.16]}
+              highlightColor={[0.77, 0.82, 0.76]}
               colorNum={16}
               pixelSize={1.5}
               ditherBias={0.035}
