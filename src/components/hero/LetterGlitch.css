@@ -3,9 +3,10 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
+  pointer-events: none;
   background:
-    radial-gradient(ellipse at 26% 30%, rgba(72, 92, 84, 0.05), transparent 32%),
-    radial-gradient(ellipse at 72% 64%, rgba(88, 108, 99, 0.085), transparent 38%),
+    radial-gradient(ellipse at 22% 28%, rgba(72, 92, 84, 0.045), transparent 35%),
+    radial-gradient(ellipse at 76% 64%, rgba(88, 108, 99, 0.065), transparent 42%),
     #010202;
 }
 
@@ -13,8 +14,8 @@
   display: block;
   width: 100%;
   height: 100%;
-  opacity: 0.97;
-  filter: saturate(0.52) contrast(1.16) brightness(0.93);
+  opacity: 0.98;
+  filter: saturate(0.56) contrast(1.1) brightness(0.97);
 }
 
 .letter-glitch__depth,
@@ -27,10 +28,9 @@
 
 .letter-glitch__depth {
   background:
-    radial-gradient(ellipse at 21% 52%, rgba(0,0,0,.44) 0%, rgba(0,0,0,.18) 26%, rgba(0,0,0,0) 51%),
-    radial-gradient(ellipse at 76% 48%, rgba(171,194,183,.028) 0%, transparent 53%),
-    repeating-linear-gradient(90deg, transparent 0, transparent calc(12.5% - 1px), rgba(226,235,230,.012) 12.5%),
-    linear-gradient(180deg, rgba(0,0,0,.24) 0%, transparent 15%, transparent 83%, rgba(0,0,0,.38) 100%);
+    radial-gradient(ellipse at 22% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.06) 28%, rgba(0,0,0,0) 55%),
+    radial-gradient(ellipse at 76% 48%, rgba(171,194,183,.022) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(0,0,0,.12) 0%, transparent 16%, transparent 82%, rgba(0,0,0,.24) 100%);
 }
 
 .letter-glitch__outer-vignette {
@@ -38,23 +38,23 @@
 }
 
 .letter-glitch__center-vignette {
-  background: radial-gradient(ellipse at 24% 52%, rgba(0,0,0,.56) 0%, rgba(0,0,0,.26) 27%, rgba(0,0,0,.06) 48%, transparent 68%);
+  background: radial-gradient(ellipse at 24% 52%, rgba(0,0,0,.22) 0%, rgba(0,0,0,.08) 31%, transparent 69%);
 }
 
 @media (max-width: 767px) {
   .letter-glitch__canvas {
-    opacity: 0.94;
-    filter: saturate(0.48) contrast(1.12) brightness(0.91);
+    opacity: 0.96;
+    filter: saturate(0.54) contrast(1.08) brightness(0.96);
   }
 
   .letter-glitch__depth {
     background:
-      radial-gradient(ellipse at 50% 24%, rgba(0,0,0,.5) 0%, rgba(0,0,0,.2) 30%, transparent 57%),
-      linear-gradient(180deg, rgba(0,0,0,.18) 0%, transparent 16%, transparent 82%, rgba(0,0,0,.4) 100%);
+      radial-gradient(ellipse at 50% 26%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.06) 30%, transparent 59%),
+      linear-gradient(180deg, rgba(0,0,0,.11) 0%, transparent 18%, transparent 82%, rgba(0,0,0,.25) 100%);
   }
 
   .letter-glitch__center-vignette {
-    background: radial-gradient(ellipse at 50% 23%, rgba(0,0,0,.64) 0%, rgba(0,0,0,.32) 24%, rgba(0,0,0,.08) 48%, transparent 69%);
+    background: radial-gradient(ellipse at 50% 23%, rgba(0,0,0,.25) 0%, rgba(0,0,0,.09) 29%, transparent 69%);
   }
 }
 

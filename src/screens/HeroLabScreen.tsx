@@ -8,7 +8,7 @@ export function HeroLabScreen() {
         <LetterGlitch
           glitchColors={["#121715", "#31413a", "#82978d"]}
           glitchSpeed={120}
-          centerVignette={true}
+          centerVignette={false}
           outerVignette={false}
           smooth={true}
           characters="CORTEX0123456789<>/{}[]+-_=.:"
@@ -51,7 +51,7 @@ export function HeroLabScreen() {
         </footer>
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/48 to-transparent" />
     </main>
   );
 }
