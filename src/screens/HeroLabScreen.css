@@ -1,3 +1,6 @@
+@import "@fontsource-variable/plus-jakarta-sans/wght.css";
+@import "@fontsource-variable/plus-jakarta-sans/wght-italic.css";
+
 @font-face {
   font-family: "Cortex Inter";
   src: url("../fonts/inter/Inter-Variable.woff2") format("woff2");
@@ -8,8 +11,43 @@
 
 .hero-lab {
   color-scheme: dark;
-  font-family: "Cortex Inter", Inter, system-ui, -apple-system, sans-serif;
+  font-family: "Plus Jakarta Sans Variable", "Cortex Inter", Inter, system-ui, -apple-system, sans-serif;
+  font-synthesis: none;
   isolation: isolate;
+}
+
+.hero-lab__logo {
+  width: clamp(30px, 2.55vw, 38px);
+  height: clamp(30px, 2.55vw, 38px);
+  object-fit: contain;
+  object-position: center;
+  filter: brightness(1.02) contrast(0.98);
+}
+
+.hero-lab__headline {
+  display: grid;
+  gap: 0.02em;
+  font-size: clamp(3.25rem, 5.25vw, 5.8rem);
+  font-weight: 520;
+  line-height: 0.88;
+  letter-spacing: -0.075em;
+  text-wrap: balance;
+}
+
+.hero-lab__headline > span {
+  display: block;
+}
+
+.hero-lab__headline-italic {
+  margin-left: 0.22em;
+  font-style: italic;
+  font-weight: 420;
+  letter-spacing: -0.082em;
+}
+
+.hero-lab__headline-strong {
+  font-weight: 760;
+  letter-spacing: -0.086em;
 }
 
 .hero-lab__veil {
@@ -21,15 +59,6 @@
 .hero-lab__frame {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   border-bottom: 1px solid rgba(255, 255, 255, 0.045);
-}
-
-.hero-lab__status-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #9aafa4;
-  box-shadow: 0 0 0 3px rgba(154, 175, 164, 0.08);
-  animation: hero-status-breathe 4s ease-in-out infinite;
 }
 
 .hero-lab__copy {
@@ -47,12 +76,17 @@
   }
 }
 
-@keyframes hero-status-breathe {
-  0%, 100% { opacity: 0.42; }
-  50% { opacity: 0.9; }
-}
-
 @media (max-width: 767px) {
+  .hero-lab__logo {
+    width: 30px;
+    height: 30px;
+  }
+
+  .hero-lab__headline {
+    font-size: clamp(3.1rem, 14vw, 4.7rem);
+    line-height: 0.9;
+  }
+
   .hero-lab__veil {
     background:
       linear-gradient(180deg, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0.08) 34%, rgba(0, 0, 0, 0.2) 100%),
@@ -61,8 +95,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-lab__copy,
-  .hero-lab__status-dot {
+  .hero-lab__copy {
     animation: none;
   }
 }
