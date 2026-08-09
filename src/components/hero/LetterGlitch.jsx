@@ -40,70 +40,39 @@ const LetterGlitch = ({
     return t * t * (3 - 2 * t);
   };
 
-  // Sparse computational field: quiet editorial space on the left, increasing
-  // information density toward a controlled processing region on the right.
   const activityAt = (x, y) => {
     const nx = x / Math.max(1, dimensions.current.width);
     const ny = y / Math.max(1, dimensions.current.height);
-    const enter = smoothstep((nx - 0.2) / 0.5);
-    const processor = Math.exp(-(((nx - 0.79) / 0.27) ** 2 + ((ny - 0.51) / 0.38) ** 2));
-    const upper = Math.exp(-(((nx - 0.72) / 0.2) ** 2 + ((ny - 0.25) / 0.18) ** 2));
-    const lower = Math.exp(-(((nx - 0.86) / 0.19) ** 2 + ((ny - 0.78) / 0.17) ** 2));
-    return Math.max(0.025, Math.min(1, enter * (0.2 + processor * 0.66 + upper * 0.18 + lower * 0.16)));
+    const enter = smoothstep((nx - 0.13) / 0.56);
+    const processor = Math.exp(-(((nx - 0.76) / 0.31) ** 2 + ((ny - 0.51) / 0.42) ** 2));
+    const upper = Math.exp(-(((nx - 0.66) / 0.24) ** 2 + ((ny - 0.22) / 0.2) ** 2));
+    const lower = Math.exp(-(((nx - 0.88) / 0.2) ** 2 + ((ny - 0.8) / 0.19) ** 2));
+    return Math.max(0.03, Math.min(1, enter * (0.19 + processor * 0.7 + upper * 0.15 + lower * 0.14)));
   };
 
-  // High-tech without sci-fi iconography: transient alignment is expressed as
-  // timing, addressing and ordered lanes rather than glowing circuits or HUDs.
-  const protocolAt = (column, row, time) => {
+  // CORTEX is not overlaid as UI. Six existing cells gradually settle into the
+  // word, each on its own timing, hold briefly, then lose coherence one-by-one.
+  const cortexAt = (column, row, time) => {
     const { columns, rows } = grid.current;
-    if (!columns || !rows) return { influence: 0, char: '', alpha: 0 };
-    const nx = column / columns;
-    const ny = row / rows;
+    if (!columns || !rows) return { influence: 0, char: '' };
+
     const compact = dimensions.current.width < 760;
+    const word = ['C', 'O', 'R', 'T', 'E', 'X'];
+    const wordRow = Math.floor(rows * (compact ? 0.58 : 0.51));
+    const startColumn = Math.floor(columns * (compact ? 0.57 : 0.7));
+    const index = column - startColumn;
+    if (row !== wordRow || index < 0 || index >= word.length) return { influence: 0, char: '' };
 
-    // A slow scan window travels through the active field. It is intentionally
-    // broad and faint: more oscilloscope / compute fabric than laser scanner.
-    const scan = (time * 0.026) % 1;
-    const scanY = 0.18 + scan * 0.66;
-    const scanBand = Math.exp(-(((ny - scanY) / 0.018) ** 2));
-    const scanMask = smoothstep((nx - (compact ? 0.43 : 0.57)) / 0.16) * (1 - smoothstep((nx - 0.97) / 0.04));
+    const cycle = (time % 15.5) / 15.5;
+    const stagger = index * 0.018;
+    const rise = smoothstep((cycle - (0.2 + stagger)) / 0.095);
+    const fall = 1 - smoothstep((cycle - (0.7 + stagger * 0.38)) / 0.13);
+    const envelope = Math.max(0, rise * fall);
 
-    // Deterministic address lanes wake in sequence. They never form a literal
-    // interface; they simply make the random field behave like a system.
-    const lanePhase = Math.floor(time / 2.8) % 4;
-    const laneRows = compact
-      ? [Math.floor(rows * 0.34), Math.floor(rows * 0.48), Math.floor(rows * 0.62), Math.floor(rows * 0.76)]
-      : [Math.floor(rows * 0.28), Math.floor(rows * 0.42), Math.floor(rows * 0.56), Math.floor(rows * 0.7)];
-    const laneDistance = Math.abs(row - laneRows[lanePhase]);
-    const lane = laneDistance === 0 && nx > (compact ? 0.5 : 0.62) && nx < 0.94 ? 1 : 0;
-
-    // Short vertical registration marks establish precision without drawing a
-    // box, grid, circuit, crosshair or any other familiar futurist trope.
-    const registerColumn = Math.floor(columns * (compact ? 0.78 : 0.81));
-    const register = Math.abs(column - registerColumn) === 0 && row % 7 <= 1 && ny > 0.2 && ny < 0.82 ? 1 : 0;
-
-    // Every few seconds a tiny packet resolves into a stable 6-cell sequence,
-    // then disappears. This gives the impression of computation completing.
-    const packetCycle = (time % 9.6) / 9.6;
-    const packetEnvelope = smoothstep((packetCycle - 0.2) / 0.1) * (1 - smoothstep((packetCycle - 0.7) / 0.12));
-    const packetRow = Math.floor(rows * (compact ? 0.56 : 0.51));
-    const packetStart = Math.floor(columns * (compact ? 0.63 : 0.72));
-    const packetIndex = column - packetStart;
-    const packet = row === packetRow && packetIndex >= 0 && packetIndex < 6 ? packetEnvelope : 0;
-    const packetChars = ['C', '0', 'R', 'T', 'E', 'X'];
-
-    const scanInfluence = scanBand * scanMask * 0.2;
-    const laneInfluence = lane * 0.38;
-    const registerInfluence = register * 0.22;
-    const packetInfluence = packet * 0.62;
-    const influence = Math.min(1, scanInfluence + laneInfluence + registerInfluence + packetInfluence);
-
-    let char = '';
-    if (packetInfluence > 0.1) char = packetChars[packetIndex];
-    else if (laneInfluence > 0) char = column % 9 === 0 ? ':' : column % 4 === 0 ? '·' : '─';
-    else if (registerInfluence > 0) char = row % 7 === 0 ? '┆' : '·';
-
-    return { influence, char, alpha: influence };
+    return {
+      influence: envelope * (0.62 + index * 0.025),
+      char: word[index]
+    };
   };
 
   const calculateGrid = (width, height) => ({
@@ -136,6 +105,7 @@ const LetterGlitch = ({
     const { width, height } = canvasRef.current.getBoundingClientRect();
     const { fontSize, charWidth, charHeight } = metrics.current;
     const time = (timestamp || performance.now()) * 0.001;
+
     ctx.clearRect(0, 0, width, height);
     ctx.font = `500 ${fontSize}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
     ctx.textBaseline = 'top';
@@ -145,16 +115,17 @@ const LetterGlitch = ({
       const row = Math.floor(index / grid.current.columns);
       const x = column * charWidth;
       const y = row * charHeight;
-      const breath = 0.96 + Math.sin(time * 0.21 + letter.phase) * 0.04;
-      const protocol = protocolAt(column, row, time);
+      const breath = 0.96 + Math.sin(time * 0.2 + letter.phase) * 0.04;
+      const cortex = cortexAt(column, row, time);
       const ambient = letter.opacity * letter.activity * breath;
-      const alpha = Math.min(0.84, ambient + protocol.alpha);
+      const alpha = Math.min(0.86, ambient + cortex.influence * 0.72);
       if (alpha < 0.022) return;
 
       ctx.globalAlpha = alpha;
-      ctx.fillStyle = protocol.influence > 0.16 ? '#a8bbb1' : letter.color;
-      ctx.fillText(protocol.char || letter.char, x, y);
+      ctx.fillStyle = cortex.influence > 0.08 ? '#afc0b7' : letter.color;
+      ctx.fillText(cortex.influence > 0.16 ? cortex.char : letter.char, x, y);
     });
+
     ctx.globalAlpha = 1;
   };
 
@@ -183,6 +154,7 @@ const LetterGlitch = ({
     const updateCount = Math.max(1, Math.floor(letters.current.length * 0.01));
     let attempts = 0;
     let updated = 0;
+
     while (updated < updateCount && attempts < updateCount * 14) {
       attempts += 1;
       const index = Math.floor(Math.random() * letters.current.length);
@@ -195,7 +167,9 @@ const LetterGlitch = ({
       if (!smooth) {
         letter.color = letter.targetColor;
         letter.colorProgress = 1;
-      } else letter.colorProgress = 0;
+      } else {
+        letter.colorProgress = 0;
+      }
       updated += 1;
     }
   };
@@ -220,6 +194,7 @@ const LetterGlitch = ({
     if (!canvas) return undefined;
     context.current = canvas.getContext('2d', { alpha: true });
     resizeCanvas();
+
     let resizeTimeout;
     let running = true;
     let visible = true;
