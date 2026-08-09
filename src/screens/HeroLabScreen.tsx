@@ -5,8 +5,8 @@ export function HeroLabScreen() {
     <main className="relative min-h-[100dvh] overflow-hidden bg-black text-white">
       <div className="absolute inset-0">
         <LetterGlitch
-          glitchColors={["#1b211f", "#46534e", "#9aa8a2"]}
-          glitchSpeed={72}
+          glitchColors={["#161c1a", "#394841", "#8b9b93"]}
+          glitchSpeed={96}
           centerVignette={true}
           outerVignette={false}
           smooth={true}
@@ -14,8 +14,8 @@ export function HeroLabScreen() {
         />
       </div>
 
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.98)_0%,rgba(0,0,0,0.88)_22%,rgba(0,0,0,0.52)_48%,rgba(0,0,0,0.12)_76%,rgba(0,0,0,0.02)_100%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_48%,rgba(130,155,145,0.06),transparent_34%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.58)_0%,rgba(0,0,0,0.24)_38%,rgba(0,0,0,0.02)_72%,rgba(0,0,0,0.06)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_72%_48%,rgba(128,151,141,0.035),transparent_42%)]" />
 
       <div className="relative z-10 mx-auto flex min-h-[100dvh] max-w-[1480px] items-center px-6 py-24 sm:px-10 lg:px-16">
         <section className="max-w-[590px] lg:-translate-y-3">
@@ -32,7 +32,7 @@ export function HeroLabScreen() {
         </section>
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black via-black/36 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black via-black/30 to-transparent" />
     </main>
   );
 }
