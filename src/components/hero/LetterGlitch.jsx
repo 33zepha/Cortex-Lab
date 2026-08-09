@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import './LetterGlitch.css';
 
+const STRUCTURE_CHARS = ['·', '│', '─', '┆', '┄', '◇', '◦', ':'];
+
 const LetterGlitch = ({
   glitchColors = ['#2b4539', '#61dca3', '#61b3dc'],
   className = '',
@@ -64,8 +66,13 @@ const LetterGlitch = ({
     return t * t * (3 - 2 * t);
   };
 
-  // Cortex art direction: the field is deliberately quiet on the left and
-  // gathers into several overlapping zones of activity on the right.
+  const pulse = (time, offset = 0) => {
+    const cycle = ((time + offset) % 13.5) / 13.5;
+    const rise = smoothstep((cycle - 0.16) / 0.18);
+    const fall = 1 - smoothstep((cycle - 0.7) / 0.2);
+    return Math.max(0, rise * fall);
+  };
+
   const activityAt = (x, y) => {
     const nx = x / Math.max(1, dimensions.current.width);
     const ny = y / Math.max(1, dimensions.current.height);
@@ -77,6 +84,65 @@ const LetterGlitch = ({
     const structure = Math.min(1, basinA * 0.74 + basinB * 0.58 + basinC * 0.52);
 
     return Math.max(0.035, Math.min(1, calmLeft * (0.26 + structure * 0.92)));
+  };
+
+  const structureAt = (x, y, time) => {
+    const width = Math.max(1, dimensions.current.width);
+    const height = Math.max(1, dimensions.current.height);
+    const nx = x / width;
+    const ny = y / height;
+    const compact = width < 760;
+    const line = compact ? 0.018 : 0.01;
+
+    const aperturePulse = pulse(time, 0);
+    const railPulse = pulse(time, 4.5);
+    const convergencePulse = pulse(time, 9);
+
+    const apertureLeft = compact ? 0.57 : 0.66;
+    const apertureRight = compact ? 0.92 : 0.9;
+    const apertureTop = 0.29;
+    const apertureBottom = 0.71;
+    const apertureEdge = Math.min(
+      Math.abs(nx - apertureLeft),
+      Math.abs(nx - apertureRight),
+      Math.abs(ny - apertureTop),
+      Math.abs(ny - apertureBottom)
+    );
+    const insideAperture = nx >= apertureLeft && nx <= apertureRight && ny >= apertureTop && ny <= apertureBottom;
+    const aperture = insideAperture ? Math.exp(-((apertureEdge / line) ** 2)) * aperturePulse : 0;
+
+    const spine = Math.exp(-(((nx - (compact ? 0.76 : 0.78)) / line) ** 2)) *
+      smoothstep((ny - 0.16) / 0.12) * (1 - smoothstep((ny - 0.84) / 0.12));
+    const crossA = Math.exp(-(((ny - 0.39) / line) ** 2)) * Math.exp(-(((nx - 0.79) / 0.17) ** 2));
+    const crossB = Math.exp(-(((ny - 0.61) / line) ** 2)) * Math.exp(-(((nx - 0.79) / 0.17) ** 2));
+    const rails = Math.min(1, spine * 0.9 + crossA * 0.66 + crossB * 0.66) * railPulse;
+
+    const centerX = compact ? 0.77 : 0.8;
+    const centerY = 0.5;
+    const dx = nx - centerX;
+    const dy = ny - centerY;
+    const angle = Math.atan2(dy, dx);
+    const radius = Math.sqrt(dx * dx + dy * dy);
+    const threeWay = Math.max(
+      Math.cos(angle * 3) * 0.5 + 0.5,
+      Math.cos((angle + 0.08) * 3) * 0.5 + 0.5
+    );
+    const ring = Math.exp(-(((radius - (compact ? 0.19 : 0.145)) / (line * 1.4)) ** 2));
+    const convergence = ring * Math.pow(threeWay, 10) * convergencePulse;
+
+    const influence = Math.min(1, aperture * 0.92 + rails * 0.9 + convergence * 0.95);
+    let char = '·';
+    if (rails > aperture && rails > convergence) {
+      char = spine > Math.max(crossA, crossB) ? '│' : '─';
+    } else if (aperture > convergence) {
+      const vertical = Math.min(Math.abs(nx - apertureLeft), Math.abs(nx - apertureRight)) <
+        Math.min(Math.abs(ny - apertureTop), Math.abs(ny - apertureBottom));
+      char = vertical ? '│' : '─';
+    } else if (convergence > 0.08) {
+      char = STRUCTURE_CHARS[Math.floor((angle + Math.PI) / (Math.PI * 2) * STRUCTURE_CHARS.length) % STRUCTURE_CHARS.length];
+    }
+
+    return { influence, char };
   };
 
   const calculateGrid = (width, height) => ({
@@ -124,12 +190,14 @@ const LetterGlitch = ({
       const x = (index % grid.current.columns) * charWidth;
       const y = Math.floor(index / grid.current.columns) * charHeight;
       const breath = 0.93 + Math.sin(time * 0.32 + letter.phase) * 0.07;
-      const alpha = letter.opacity * letter.activity * breath;
+      const structure = structureAt(x, y, time);
+      const ambientAlpha = letter.opacity * letter.activity * breath;
+      const alpha = Math.min(0.92, ambientAlpha + structure.influence * 0.58);
       if (alpha < 0.025) return;
 
       ctx.globalAlpha = alpha;
-      ctx.fillStyle = letter.color;
-      ctx.fillText(letter.char, x, y);
+      ctx.fillStyle = structure.influence > 0.08 ? '#aebdb6' : letter.color;
+      ctx.fillText(structure.influence > 0.16 ? structure.char : letter.char, x, y);
     });
 
     ctx.globalAlpha = 1;
@@ -145,8 +213,8 @@ const LetterGlitch = ({
     const rect = parent.getBoundingClientRect();
     const compact = rect.width < 760;
     metrics.current = compact
-      ? { fontSize: 12, charWidth: 7.5, charHeight: 16 }
-      : { fontSize: 13, charWidth: 8.25, charHeight: 17.5 };
+      ? { fontSize: 11, charWidth: 7.2, charHeight: 15.5 }
+      : { fontSize: 12.5, charWidth: 8, charHeight: 17 };
     dimensions.current = { width: rect.width, height: rect.height };
 
     canvas.width = Math.max(1, Math.round(rect.width * dpr));
@@ -166,22 +234,20 @@ const LetterGlitch = ({
   const updateLetters = () => {
     if (letters.current.length === 0) return;
 
-    // Update fewer cells than stock React Bits and heavily bias those updates
-    // toward the active basins. This creates local movement instead of TV static.
-    const updateCount = Math.max(1, Math.floor(letters.current.length * 0.017));
+    const updateCount = Math.max(1, Math.floor(letters.current.length * 0.014));
     let attempts = 0;
     let updated = 0;
 
-    while (updated < updateCount && attempts < updateCount * 10) {
+    while (updated < updateCount && attempts < updateCount * 12) {
       attempts += 1;
       const index = Math.floor(Math.random() * letters.current.length);
       const letter = letters.current[index];
-      if (!letter || Math.random() > letter.activity * 0.92 + 0.04) continue;
+      if (!letter || Math.random() > letter.activity * 0.9 + 0.035) continue;
 
       letter.char = getRandomChar();
       letter.sourceColor = letter.color;
       letter.targetColor = getRandomColor();
-      letter.opacity = 0.18 + Math.random() * 0.52;
+      letter.opacity = 0.16 + Math.random() * 0.5;
 
       if (!smooth) {
         letter.color = letter.targetColor;
@@ -199,7 +265,7 @@ const LetterGlitch = ({
     letters.current.forEach(letter => {
       if (letter.colorProgress >= 1) return;
 
-      letter.colorProgress = Math.min(1, letter.colorProgress + 0.032);
+      letter.colorProgress = Math.min(1, letter.colorProgress + 0.028);
       const startRgb = parseColor(letter.sourceColor);
       const endRgb = parseColor(letter.targetColor);
 
@@ -239,8 +305,7 @@ const LetterGlitch = ({
 
         if (smooth && handleSmoothTransitions()) changed = true;
 
-        // A very slow redraw keeps the field breathing even between glitches.
-        if (changed || timestamp - lastAmbientDraw > 110) {
+        if (changed || timestamp - lastAmbientDraw > 70) {
           drawLetters(timestamp);
           lastAmbientDraw = timestamp;
         }
