@@ -5,13 +5,14 @@ import cortexHeroMark from "@/assets/cortex-hero-mark.png";
 import "./HeroLabScreen.css";
 
 const WAITLIST_REVEALS = [
-  { name: "mark", start: 0, end: 0.34 },
-  { name: "kicker", start: 0.08, end: 0.42 },
-  { name: "title", start: 0.14, end: 0.5 },
-  { name: "copy", start: 0.22, end: 0.58 },
-  { name: "form", start: 0.3, end: 0.68 },
-  { name: "link", start: 0.4, end: 0.76 },
+  { name: "brand", start: 0, end: 0.28 },
+  { name: "title", start: 0.1, end: 0.43 },
+  { name: "copy", start: 0.2, end: 0.53 },
+  { name: "form", start: 0.3, end: 0.64 },
+  { name: "link", start: 0.42, end: 0.74 },
 ] as const;
+
+const TYPEFACES = new Set(["instrument", "inter", "jakarta"]);
 
 function clamp01(value: number) {
   return Math.min(1, Math.max(0, value));
@@ -31,22 +32,28 @@ function phase(progress: number, start: number, end: number) {
 }
 
 function updateJourney(journey: HTMLElement, progress: number) {
-  const intro = 1 - phase(progress, 0.08, 0.42);
-  const waitlist = phase(progress, 0.3, 0.78);
-  const depth = smootherstep(progress);
-  const waitlistReveal = phase(progress, 0.36, 0.84);
+  const intro = 1 - phase(progress, 0.08, 0.36);
+  const waitlist = phase(progress, 0.52, 0.88);
+  const drift = smootherstep(progress);
+  const mistArrives = phase(progress, 0.14, 0.44);
+  const mistLeaves = 1 - phase(progress, 0.5, 0.82);
+  const mist = mistArrives * mistLeaves;
+  const waitlistReveal = phase(progress, 0.5, 0.9);
 
   journey.style.setProperty("--journey-progress", progress.toFixed(4));
-  journey.style.setProperty("--hero-field-scale", mix(1.012, 2.22, depth).toFixed(4));
-  journey.style.setProperty("--hero-field-rotate", `${mix(-0.14, 0.58, depth).toFixed(3)}deg`);
-  journey.style.setProperty("--hero-field-x", `${mix(0, -1.2, depth).toFixed(2)}%`);
-  journey.style.setProperty("--hero-field-y", `${mix(0, -0.65, depth).toFixed(2)}%`);
-  journey.style.setProperty("--hero-glow-opacity", mix(0.72, 0.96, phase(progress, 0.05, 0.72)).toFixed(3));
+  journey.style.setProperty("--hero-field-scale", mix(1.012, 1.1, drift).toFixed(4));
+  journey.style.setProperty("--hero-field-rotate", `${mix(-0.08, 0.12, drift).toFixed(3)}deg`);
+  journey.style.setProperty("--hero-field-x", `${mix(0, -0.8, drift).toFixed(2)}%`);
+  journey.style.setProperty("--hero-field-y", `${mix(0, -0.35, drift).toFixed(2)}%`);
+  journey.style.setProperty("--hero-field-brightness", mix(1, 0.74, phase(progress, 0.46, 0.88)).toFixed(3));
+  journey.style.setProperty("--hero-glow-opacity", mix(0.72, 0.35, phase(progress, 0.42, 0.88)).toFixed(3));
+  journey.style.setProperty("--hero-mist-opacity", mist.toFixed(4));
+  journey.style.setProperty("--hero-mist-scale", mix(0.74, 1.22, mistArrives).toFixed(4));
+  journey.style.setProperty("--hero-mist-x", `${mix(12, -8, phase(progress, 0.12, 0.84)).toFixed(2)}%`);
   journey.style.setProperty("--hero-intro-opacity", intro.toFixed(4));
-  journey.style.setProperty("--hero-intro-y", `${((1 - intro) * -24).toFixed(1)}px`);
+  journey.style.setProperty("--hero-intro-y", `${((1 - intro) * -14).toFixed(1)}px`);
   journey.style.setProperty("--hero-waitlist-opacity", waitlist.toFixed(4));
-  journey.style.setProperty("--hero-waitlist-y", `${((1 - waitlist) * 34).toFixed(2)}px`);
-  journey.style.setProperty("--hero-waitlist-scale", mix(0.96, 1, waitlist).toFixed(4));
+  journey.style.setProperty("--hero-waitlist-y", `${((1 - waitlist) * 18).toFixed(2)}px`);
 
   WAITLIST_REVEALS.forEach(({ name, start, end }) => {
     const reveal = phase(waitlistReveal, start, end);
@@ -68,6 +75,8 @@ function updateJourney(journey: HTMLElement, progress: number) {
 export function HeroLabScreen() {
   const journeyRef = useRef<HTMLDivElement>(null);
   const [joined, setJoined] = useState(false);
+  const requestedTypeface = new URLSearchParams(window.location.search).get("type") ?? "instrument";
+  const typeface = TYPEFACES.has(requestedTypeface) ? requestedTypeface : "instrument";
 
   useEffect(() => {
     const journey = journeyRef.current;
@@ -137,7 +146,7 @@ export function HeroLabScreen() {
   };
 
   return (
-    <main className="hero-lab relative min-h-[100dvh] bg-[#18372c] text-white" aria-labelledby="hero-lab-title">
+    <main className="hero-lab relative min-h-[100dvh] bg-[#18372c] text-white" data-typeface={typeface} aria-labelledby="hero-lab-title">
       <div className="hero-lab__journey" ref={journeyRef}>
         <section className="hero-lab__stage" aria-label="Cortex introduction">
           <div className="hero-lab__field pointer-events-auto absolute inset-0" data-hero-layer="field" aria-hidden="true">
@@ -158,6 +167,7 @@ export function HeroLabScreen() {
 
           <div className="hero-lab__veil pointer-events-none absolute inset-0" />
           <div className="hero-lab__glow pointer-events-none absolute inset-0" aria-hidden="true" />
+          <div className="hero-lab__mist pointer-events-none absolute inset-0" aria-hidden="true"><span /><span /></div>
           <div className="hero-lab__frame pointer-events-none absolute inset-x-6 bottom-6 top-6 sm:inset-x-10 sm:bottom-9 sm:top-9 lg:inset-x-14 xl:inset-x-16" />
 
           <div className="hero-lab__shell relative mx-auto flex min-h-[100dvh] max-w-[1680px] flex-col">
@@ -172,7 +182,6 @@ export function HeroLabScreen() {
                     <span>Intelligence,</span>
                     <span>coordinated.</span>
                   </h1>
-                  <p className="hero-lab__promise">Models, agents and context.<br />One operational layer.</p>
                 </div>
               </section>
             </div>
@@ -182,12 +191,14 @@ export function HeroLabScreen() {
 
           <section className="hero-lab__layer hero-lab__waitlist" aria-labelledby="hero-waitlist-title">
             <div className="hero-lab__layer-inner hero-lab__waitlist-inner">
-              <div className="hero-lab__waitlist-mark" aria-hidden="true">
+              <div className="hero-lab__waitlist-brand" aria-label="Cortex early access">
                 <img src={cortexHeroMark} alt="" draggable={false} />
+                <span>Cortex</span>
+                <i aria-hidden="true" />
+                <small>Early access</small>
               </div>
-              <p className="hero-lab__kicker">Early access</p>
-              <h2 id="hero-waitlist-title">Cortex is<br /><em>taking shape.</em></h2>
-              <p className="hero-lab__waitlist-copy">Join the first people inside the system.</p>
+              <h2 id="hero-waitlist-title">Be first<br />inside Cortex.</h2>
+              <p className="hero-lab__waitlist-copy">Private access opens in small waves.</p>
 
               {joined ? (
                 <div className="hero-lab__waitlist-success" role="status" aria-live="polite">
@@ -198,12 +209,12 @@ export function HeroLabScreen() {
                 <form className="hero-lab__waitlist-form" onSubmit={handleSubmit}>
                   <label className="sr-only" htmlFor="hero-waitlist-email">Email address</label>
                   <input id="hero-waitlist-email" name="email" type="email" autoComplete="email" placeholder="you@company.com" required />
-                  <button type="submit">Join the waitlist <span aria-hidden="true">↗</span></button>
+                  <button type="submit"><span>Request access</span><b aria-hidden="true">↗</b></button>
                 </form>
               )}
 
               <Link className="hero-lab__learn-more" to="/project">
-                Learn more <span aria-hidden="true">↗</span>
+                Discover the project <span aria-hidden="true">↗</span>
               </Link>
             </div>
           </section>
