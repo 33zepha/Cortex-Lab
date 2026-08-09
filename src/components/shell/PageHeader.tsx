@@ -1,5 +1,4 @@
 import type { ComponentType, ReactNode } from "react";
-import { CortexMark } from "@/components/brand/CortexMark";
 
 export function PageHeader({
   title,
@@ -13,31 +12,28 @@ export function PageHeader({
   icon?: ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="relative mb-5 mt-0 laptop:mb-8 laptop:mt-0">
-      <div className="mb-2.5 flex items-center gap-2 text-text-muted" aria-hidden>
-        <CortexMark className="h-[14px] w-[11px] shrink-0" />
-        <span className="text-[8.5px] font-bold uppercase tracking-[0.15em]">Cortex</span>
-        {Icon && (
-          <>
-            <span className="h-3 w-px bg-black/[0.08]" />
-            <Icon className="size-[11px] opacity-45" />
-          </>
-        )}
-      </div>
-
-      <div className="flex items-start justify-between gap-4 laptop:flex-wrap laptop:gap-x-5 laptop:gap-y-3">
-        <div className="min-w-0">
-          <h1 className="truncate text-[29px] font-extrabold leading-[0.98] tracking-[-0.052em] text-text-primary laptop:text-[31px] laptop:leading-[0.98]">
+    <div className="relative mb-5 mt-0 laptop:mb-8 laptop:mt-2">
+      <div className="flex items-center justify-between gap-3 laptop:flex-wrap laptop:gap-x-4 laptop:gap-y-3">
+        <div className="relative min-w-0 py-2 laptop:py-0">
+          {Icon && (
+            <div
+              className="pointer-events-none absolute left-0 top-[-10px] z-0 flex items-center select-none laptop:inset-0 laptop:left-0 laptop:top-0"
+              aria-hidden
+            >
+              <Icon className="size-16 -rotate-6 text-text-primary opacity-[0.045] laptop:size-16 laptop:opacity-[0.05]" />
+            </div>
+          )}
+          <h1 className="relative z-10 truncate text-[28px] font-bold leading-none tracking-[-0.045em] text-text-primary laptop:text-xl laptop:font-semibold laptop:leading-normal laptop:tracking-tight">
             {title}
           </h1>
-          {description && (
-            <p className="mt-2 max-w-2xl text-[12px] font-medium leading-relaxed text-text-secondary laptop:text-[13px]">
-              {description}
-            </p>
-          )}
         </div>
         {action && <div className="relative z-10 shrink-0">{action}</div>}
       </div>
+      {description && (
+        <p className="relative z-10 mt-1.5 max-w-2xl text-[13px] font-medium leading-relaxed text-text-secondary laptop:text-body-text">
+          {description}
+        </p>
+      )}
     </div>
   );
 }

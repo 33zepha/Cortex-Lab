@@ -81,10 +81,10 @@ export function NewMissionDialog({ onCreated }: { onCreated: () => void }) {
         <button
           type="button"
           aria-label="Nouvelle mission"
-          className="group flex h-11 items-center justify-center gap-2 rounded-[13px] border border-white/[0.08] bg-[#141815] px-3 text-[#efeee9] shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_10px_24px_-18px_rgba(0,0,0,0.78)] transition-[background-color,transform,opacity] duration-200 hover:bg-[#1b201c] active:scale-[0.97] active:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/15 laptop:h-10 laptop:px-3.5"
+          className="group flex h-11 items-center justify-center gap-2 rounded-[14px] border border-white/72 bg-white/58 px-3 text-text-primary shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_6px_20px_-13px_rgba(0,0,0,0.32)] backdrop-blur-2xl transition-[background-color,box-shadow,opacity] duration-200 hover:bg-white/80 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_9px_24px_-14px_rgba(0,0,0,0.34)] active:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/15 laptop:h-10 laptop:px-3.5"
         >
-          <Plus className="size-[20px]" strokeWidth={3} aria-hidden />
-          <span className="hidden text-[11px] font-bold tracking-[-0.01em] tablet:inline">Nouvelle mission</span>
+          <Plus className="size-[21px]" strokeWidth={3.4} aria-hidden />
+          <span className="hidden text-[12px] font-bold tracking-[-0.01em] tablet:inline">Nouvelle mission</span>
         </button>
       </DialogTrigger>
 
@@ -182,25 +182,31 @@ export function NewMissionDialog({ onCreated }: { onCreated: () => void }) {
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-2.5 border-t border-black/[0.06] pt-4">
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              disabled={submitting}
-              className="h-10 rounded-[12px] px-3.5 text-[12px] font-bold text-text-secondary transition-colors hover:bg-black/[0.04] hover:text-text-primary disabled:opacity-45"
-            >
-              Annuler
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-[12px] bg-[#141815] px-4 text-[12px] font-bold text-[#efeee9] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-[background-color,opacity,transform] hover:bg-[#1b201c] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-35"
-            >
-              <span>{submitting ? "Lancement…" : "Lancer la mission"}</span>
-              <ArrowUpRight className="size-4" strokeWidth={2.8} aria-hidden />
-            </button>
-          </div>
+          {submitting && (
+            <div className="rounded-[14px] border border-white/60 bg-white/35 px-3.5 py-3 text-[11px] font-semibold leading-relaxed text-text-muted">
+              Cortex planifie la mission avec {selectedModel} · effort {effort}, puis lance l'exécution sur le VPS.
+            </div>
+          )}
+        </div>
+
+        <div className="mt-6 grid grid-cols-[auto_1fr] gap-2.5 border-t border-black/[0.05] pt-4">
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            disabled={submitting}
+            className="min-h-12 rounded-[14px] px-4 text-[12px] font-bold text-text-muted transition-colors hover:bg-black/[0.035] hover:text-text-primary disabled:opacity-45"
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+            className="group flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-text-primary px-4 text-[12px] font-bold text-white shadow-[0_10px_26px_-14px_rgba(0,0,0,0.6)] transition-[opacity,box-shadow] hover:shadow-[0_12px_30px_-14px_rgba(0,0,0,0.7)] active:opacity-80 disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            {submitting ? "Lancement…" : "Lancer la mission"}
+            {!submitting && <ArrowUpRight className="size-4" strokeWidth={3} />}
+          </button>
         </div>
       </DialogContent>
     </Dialog>
