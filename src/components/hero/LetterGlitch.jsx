@@ -16,11 +16,10 @@ const LetterGlitch = ({
   const grid = useRef({ columns: 0, rows: 0 });
   const context = useRef(null);
   const lastGlitchTime = useRef(Date.now());
+  const metrics = useRef({ fontSize: 13, charWidth: 8, charHeight: 17 });
+  const dimensions = useRef({ width: 1, height: 1 });
 
   const lettersAndSymbols = Array.from(characters);
-  const fontSize = 16;
-  const charWidth = 10;
-  const charHeight = 20;
 
   const getRandomChar = () =>
     lettersAndSymbols[Math.floor(Math.random() * lettersAndSymbols.length)];
@@ -60,39 +59,80 @@ const LetterGlitch = ({
     return `rgb(${result.r}, ${result.g}, ${result.b})`;
   };
 
+  const smoothstep = value => {
+    const t = Math.max(0, Math.min(1, value));
+    return t * t * (3 - 2 * t);
+  };
+
+  // Cortex art direction: the field is deliberately quiet on the left and
+  // gathers into several overlapping zones of activity on the right.
+  const activityAt = (x, y) => {
+    const nx = x / Math.max(1, dimensions.current.width);
+    const ny = y / Math.max(1, dimensions.current.height);
+
+    const calmLeft = smoothstep((nx - 0.22) / 0.5);
+    const basinA = Math.exp(-(((nx - 0.77) / 0.2) ** 2 + ((ny - 0.34) / 0.26) ** 2));
+    const basinB = Math.exp(-(((nx - 0.7) / 0.28) ** 2 + ((ny - 0.72) / 0.24) ** 2));
+    const basinC = Math.exp(-(((nx - 0.92) / 0.16) ** 2 + ((ny - 0.53) / 0.36) ** 2));
+    const structure = Math.min(1, basinA * 0.74 + basinB * 0.58 + basinC * 0.52);
+
+    return Math.max(0.035, Math.min(1, calmLeft * (0.26 + structure * 0.92)));
+  };
+
   const calculateGrid = (width, height) => ({
-    columns: Math.ceil(width / charWidth),
-    rows: Math.ceil(height / charHeight)
+    columns: Math.ceil(width / metrics.current.charWidth),
+    rows: Math.ceil(height / metrics.current.charHeight)
   });
 
   const initializeLetters = (columns, rows) => {
     grid.current = { columns, rows };
-    letters.current = Array.from({ length: columns * rows }, () => {
+    const { charWidth, charHeight } = metrics.current;
+
+    letters.current = Array.from({ length: columns * rows }, (_, index) => {
       const color = getRandomColor();
+      const column = index % columns;
+      const row = Math.floor(index / columns);
+      const x = column * charWidth;
+      const y = row * charHeight;
+      const activity = activityAt(x, y);
+
       return {
         char: getRandomChar(),
         color,
+        sourceColor: color,
         targetColor: color,
-        colorProgress: 1
+        colorProgress: 1,
+        activity,
+        phase: Math.random() * Math.PI * 2,
+        opacity: 0.22 + Math.random() * 0.42
       };
     });
   };
 
-  const drawLetters = () => {
+  const drawLetters = timestamp => {
     if (!context.current || !canvasRef.current || letters.current.length === 0) return;
     const ctx = context.current;
     const { width, height } = canvasRef.current.getBoundingClientRect();
+    const { fontSize, charWidth, charHeight } = metrics.current;
+    const time = (timestamp || performance.now()) * 0.001;
 
     ctx.clearRect(0, 0, width, height);
-    ctx.font = `${fontSize}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
+    ctx.font = `500 ${fontSize}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
     ctx.textBaseline = 'top';
 
     letters.current.forEach((letter, index) => {
       const x = (index % grid.current.columns) * charWidth;
       const y = Math.floor(index / grid.current.columns) * charHeight;
+      const breath = 0.93 + Math.sin(time * 0.32 + letter.phase) * 0.07;
+      const alpha = letter.opacity * letter.activity * breath;
+      if (alpha < 0.025) return;
+
+      ctx.globalAlpha = alpha;
       ctx.fillStyle = letter.color;
       ctx.fillText(letter.char, x, y);
     });
+
+    ctx.globalAlpha = 1;
   };
 
   const resizeCanvas = () => {
@@ -103,6 +143,11 @@ const LetterGlitch = ({
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const rect = parent.getBoundingClientRect();
+    const compact = rect.width < 760;
+    metrics.current = compact
+      ? { fontSize: 12, charWidth: 7.5, charHeight: 16 }
+      : { fontSize: 13, charWidth: 8.25, charHeight: 17.5 };
+    dimensions.current = { width: rect.width, height: rect.height };
 
     canvas.width = Math.max(1, Math.round(rect.width * dpr));
     canvas.height = Math.max(1, Math.round(rect.height * dpr));
@@ -120,15 +165,23 @@ const LetterGlitch = ({
 
   const updateLetters = () => {
     if (letters.current.length === 0) return;
-    const updateCount = Math.max(1, Math.floor(letters.current.length * 0.05));
 
-    for (let i = 0; i < updateCount; i += 1) {
+    // Update fewer cells than stock React Bits and heavily bias those updates
+    // toward the active basins. This creates local movement instead of TV static.
+    const updateCount = Math.max(1, Math.floor(letters.current.length * 0.017));
+    let attempts = 0;
+    let updated = 0;
+
+    while (updated < updateCount && attempts < updateCount * 10) {
+      attempts += 1;
       const index = Math.floor(Math.random() * letters.current.length);
       const letter = letters.current[index];
-      if (!letter) continue;
+      if (!letter || Math.random() > letter.activity * 0.92 + 0.04) continue;
 
       letter.char = getRandomChar();
+      letter.sourceColor = letter.color;
       letter.targetColor = getRandomColor();
+      letter.opacity = 0.18 + Math.random() * 0.52;
 
       if (!smooth) {
         letter.color = letter.targetColor;
@@ -136,6 +189,7 @@ const LetterGlitch = ({
       } else {
         letter.colorProgress = 0;
       }
+      updated += 1;
     }
   };
 
@@ -145,8 +199,8 @@ const LetterGlitch = ({
     letters.current.forEach(letter => {
       if (letter.colorProgress >= 1) return;
 
-      letter.colorProgress = Math.min(1, letter.colorProgress + 0.05);
-      const startRgb = parseColor(letter.color);
+      letter.colorProgress = Math.min(1, letter.colorProgress + 0.032);
+      const startRgb = parseColor(letter.sourceColor);
       const endRgb = parseColor(letter.targetColor);
 
       if (startRgb && endRgb) {
@@ -155,30 +209,43 @@ const LetterGlitch = ({
       }
     });
 
-    if (needsRedraw) drawLetters();
+    return needsRedraw;
   };
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
 
-    context.current = canvas.getContext('2d');
+    context.current = canvas.getContext('2d', { alpha: true });
     resizeCanvas();
 
     let resizeTimeout;
     let running = true;
+    let visible = true;
+    let lastAmbientDraw = 0;
 
-    const animate = () => {
+    const animate = timestamp => {
       if (!running) return;
 
-      const now = Date.now();
-      if (now - lastGlitchTime.current >= glitchSpeed) {
-        updateLetters();
-        drawLetters();
-        lastGlitchTime.current = now;
+      if (visible) {
+        const now = Date.now();
+        let changed = false;
+
+        if (now - lastGlitchTime.current >= glitchSpeed) {
+          updateLetters();
+          lastGlitchTime.current = now;
+          changed = true;
+        }
+
+        if (smooth && handleSmoothTransitions()) changed = true;
+
+        // A very slow redraw keeps the field breathing even between glitches.
+        if (changed || timestamp - lastAmbientDraw > 110) {
+          drawLetters(timestamp);
+          lastAmbientDraw = timestamp;
+        }
       }
 
-      if (smooth) handleSmoothTransitions();
       animationRef.current = requestAnimationFrame(animate);
     };
 
@@ -189,19 +256,27 @@ const LetterGlitch = ({
 
     const resizeObserver = new ResizeObserver(handleResize);
     if (canvas.parentElement) resizeObserver.observe(canvas.parentElement);
-    animate();
+
+    const intersectionObserver = new IntersectionObserver(entries => {
+      visible = entries[0]?.isIntersecting ?? true;
+    }, { threshold: 0.02 });
+    intersectionObserver.observe(canvas);
+
+    animate(performance.now());
 
     return () => {
       running = false;
       clearTimeout(resizeTimeout);
       cancelAnimationFrame(animationRef.current);
       resizeObserver.disconnect();
+      intersectionObserver.disconnect();
     };
   }, [characters, glitchColors, glitchSpeed, smooth]);
 
   return (
     <div className={`letter-glitch ${className}`} aria-hidden="true">
       <canvas ref={canvasRef} className="letter-glitch__canvas" />
+      <div className="letter-glitch__depth" />
       {outerVignette && <div className="letter-glitch__outer-vignette" />}
       {centerVignette && <div className="letter-glitch__center-vignette" />}
     </div>
