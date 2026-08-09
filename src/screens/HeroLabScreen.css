@@ -14,8 +14,8 @@
 
 .hero-lab__veil {
   background:
-    radial-gradient(ellipse at 19% 52%, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.06) 29%, transparent 58%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.14) 0%, transparent 18%, transparent 82%, rgba(0, 0, 0, 0.2) 100%);
+    linear-gradient(90deg, rgba(0, 0, 0, 0.46) 0%, rgba(0, 0, 0, 0.24) 36%, rgba(0, 0, 0, 0.06) 72%, transparent 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.16) 0%, transparent 24%, transparent 76%, rgba(0, 0, 0, 0.18) 100%);
 }
 
 .hero-lab__frame {
@@ -55,8 +55,8 @@
 @media (max-width: 767px) {
   .hero-lab__veil {
     background:
-      radial-gradient(ellipse at 45% 71%, rgba(0, 0, 0, 0.24) 0%, rgba(0, 0, 0, 0.08) 31%, transparent 64%),
-      linear-gradient(180deg, rgba(0, 0, 0, 0.11) 0%, transparent 34%, rgba(0, 0, 0, 0.18) 100%);
+      linear-gradient(180deg, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0.08) 34%, rgba(0, 0, 0, 0.2) 100%),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.06) 78%, transparent 100%);
   }
 }
 

@@ -1,17 +1,19 @@
-import LetterGlitch from "@/components/hero/LetterGlitch";
+import Dither from "@/components/hero/Dither";
 import "./HeroLabScreen.css";
 
 export function HeroLabScreen() {
   return (
     <main className="hero-lab relative min-h-[100dvh] overflow-hidden bg-black text-white">
       <div className="absolute inset-0">
-        <LetterGlitch
-          glitchColors={["#121715", "#31413a", "#82978d"]}
-          glitchSpeed={120}
-          centerVignette={false}
-          outerVignette={false}
-          smooth={true}
-          characters="CORTEX0123456789<>/{}[]+-_=.:"
+        <Dither
+          waveColor={[0.48, 0.58, 0.52]}
+          colorNum={11.5}
+          pixelSize={2}
+          waveAmplitude={0.47}
+          waveFrequency={3}
+          waveSpeed={0.03}
+          enableMouseInteraction={true}
+          mouseRadius={0.3}
         />
       </div>
 
