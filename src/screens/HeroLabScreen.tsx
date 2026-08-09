@@ -36,6 +36,8 @@ function updateJourney(journey: HTMLElement, progress: number) {
   const introExit = phase(progress, 0.28, 0.68);
   const intro = 1 - phase(progress, 0.44, 0.73);
   const drift = phase(progress, 0.06, 0.94);
+  const logoRise = phase(progress, 0.5, 0.88);
+  const logoRiseDistance = Math.min(window.innerHeight * 0.13, 118);
   const stage = progress < 0.25 ? "surface" : progress < 0.72 ? "threshold" : "access";
 
   journey.style.setProperty("--journey-progress", progress.toFixed(4));
@@ -44,6 +46,7 @@ function updateJourney(journey: HTMLElement, progress: number) {
   journey.style.setProperty("--hero-access-progress", access.toFixed(4));
   journey.style.setProperty("--hero-lens-progress", lensProgress.toFixed(4));
   journey.style.setProperty("--hero-logo-scale", mix(1, 1.78, phase(progress, 0.14, 0.88)).toFixed(4));
+  journey.style.setProperty("--hero-logo-rise", `${(-logoRiseDistance * logoRise).toFixed(1)}px`);
   journey.style.setProperty("--hero-logo-opacity", mix(1, 0.94, access).toFixed(4));
   journey.style.setProperty("--hero-logo-glow", mix(0.5, 0.88, lensProgress).toFixed(4));
   journey.style.setProperty("--hero-architecture-opacity", mix(0, 0.46, phase(progress, 0.3, 0.72)).toFixed(4));
@@ -236,14 +239,14 @@ export function HeroLabScreen() {
   };
 
   return (
-    <main className="hero-lab relative min-h-[100dvh] bg-[#18372c] text-white" data-typeface={typeface} aria-labelledby="hero-lab-title">
+    <main className="hero-lab relative min-h-[100dvh] bg-[#241f38] text-white" data-typeface={typeface} aria-labelledby="hero-lab-title">
       <div className="hero-lab__journey" ref={journeyRef}>
         <section className="hero-lab__stage" aria-label="Cortex introduction">
           <div className="hero-lab__field pointer-events-auto absolute inset-0" data-hero-layer="field" aria-hidden="true">
             <Dither
-              waveColor={[0.5, 0.63, 0.55]}
-              baseColor={[0.1, 0.16, 0.13]}
-              highlightColor={[0.76, 0.82, 0.77]}
+              waveColor={[0.39, 0.34, 0.56]}
+              baseColor={[0.09, 0.08, 0.15]}
+              highlightColor={[0.77, 0.74, 0.87]}
               colorNum={16}
               pixelSize={1.5}
               ditherBias={0.035}
@@ -289,7 +292,6 @@ export function HeroLabScreen() {
 
           <section id="waitlist" className="hero-lab__access hero-lab__layer" aria-labelledby="hero-access-title">
             <div className="hero-lab__access-inner">
-              <p className="hero-lab__access-kicker">EARLY ACCESS</p>
               <h2 id="hero-access-title">Be first inside Cortex.</h2>
               <p className="hero-lab__access-copy">Private access opens in small waves.</p>
 
@@ -324,12 +326,12 @@ export function HeroLabScreen() {
                       }}
                     />
                     <button type="submit" disabled={waitlistStatus === "loading"}>
-                      {waitlistStatus === "loading" ? "Sending…" : "Request access"}
+                      {waitlistStatus === "loading" ? "Sending…" : "Join early access"}
                     </button>
                   </form>
                 ) : (
                   <button ref={triggerRef} className="hero-lab__access-trigger" type="button" onClick={handleWaitlistOpen}>
-                    Request access
+                    Join early access
                   </button>
                 )}
 
