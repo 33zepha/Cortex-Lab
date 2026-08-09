@@ -4,8 +4,8 @@
   height: 100%;
   overflow: hidden;
   background:
-    radial-gradient(ellipse at 26% 30%, rgba(72, 92, 84, 0.055), transparent 32%),
-    radial-gradient(ellipse at 72% 64%, rgba(88, 108, 99, 0.075), transparent 38%),
+    radial-gradient(ellipse at 26% 30%, rgba(72, 92, 84, 0.05), transparent 32%),
+    radial-gradient(ellipse at 72% 64%, rgba(88, 108, 99, 0.085), transparent 38%),
     #010202;
 }
 
@@ -13,8 +13,8 @@
   display: block;
   width: 100%;
   height: 100%;
-  opacity: 0.96;
-  filter: saturate(0.5) contrast(1.14) brightness(0.92);
+  opacity: 0.97;
+  filter: saturate(0.52) contrast(1.16) brightness(0.93);
 }
 
 .letter-glitch__depth,
@@ -27,9 +27,10 @@
 
 .letter-glitch__depth {
   background:
-    radial-gradient(ellipse at 23% 52%, rgba(0,0,0,.38) 0%, rgba(0,0,0,.16) 24%, rgba(0,0,0,0) 49%),
-    radial-gradient(ellipse at 74% 52%, rgba(171,194,183,.02) 0%, transparent 55%),
-    linear-gradient(180deg, rgba(0,0,0,.2) 0%, transparent 14%, transparent 84%, rgba(0,0,0,.34) 100%);
+    radial-gradient(ellipse at 21% 52%, rgba(0,0,0,.44) 0%, rgba(0,0,0,.18) 26%, rgba(0,0,0,0) 51%),
+    radial-gradient(ellipse at 76% 48%, rgba(171,194,183,.028) 0%, transparent 53%),
+    repeating-linear-gradient(90deg, transparent 0, transparent calc(12.5% - 1px), rgba(226,235,230,.012) 12.5%),
+    linear-gradient(180deg, rgba(0,0,0,.24) 0%, transparent 15%, transparent 83%, rgba(0,0,0,.38) 100%);
 }
 
 .letter-glitch__outer-vignette {
@@ -54,5 +55,11 @@
 
   .letter-glitch__center-vignette {
     background: radial-gradient(ellipse at 50% 23%, rgba(0,0,0,.64) 0%, rgba(0,0,0,.32) 24%, rgba(0,0,0,.08) 48%, transparent 69%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letter-glitch__canvas {
+    opacity: 0.9;
   }
 }

@@ -18,6 +18,8 @@ const LetterGlitch = ({
   const lastGlitchTime = useRef(Date.now());
   const metrics = useRef({ fontSize: 12, charWidth: 7.8, charHeight: 16.5 });
   const cortexEvent = useRef({ row: 0, column: 0, startedAt: -99, duration: 0, nextAt: 1.8 });
+  const pointer = useRef({ x: -1000, y: -1000, movedAt: -99 });
+  const reducedMotion = useRef(false);
 
   const lettersAndSymbols = Array.from(characters);
   const getRandomChar = () => lettersAndSymbols[Math.floor(Math.random() * lettersAndSymbols.length)];
@@ -46,8 +48,8 @@ const LetterGlitch = ({
     const nx = column / columns;
     const ny = row / rows;
 
-    // Full-screen terminal field. Density varies like a live buffer, but no
-    // region is deliberately empty or reserved for the effect itself.
+    // The whole viewport remains alive, with slower pools of density creating
+    // depth instead of a uniform terminal wallpaper.
     const basinA = Math.exp(-(((nx - 0.22) / 0.34) ** 2 + ((ny - 0.3) / 0.38) ** 2));
     const basinB = Math.exp(-(((nx - 0.7) / 0.42) ** 2 + ((ny - 0.57) / 0.44) ** 2));
     const basinC = Math.exp(-(((nx - 0.46) / 0.5) ** 2 + ((ny - 0.88) / 0.18) ** 2));
@@ -61,13 +63,18 @@ const LetterGlitch = ({
     const { columns, rows } = grid.current;
     if (!columns || !rows) return;
 
+    const compact = columns * metrics.current.charWidth < 760;
     const marginX = 5;
     const marginY = 5;
+    const minColumn = compact ? marginX : Math.max(marginX, Math.floor(columns * 0.54));
+    const minRow = compact ? marginY : Math.max(marginY, Math.floor(rows * 0.14));
     const maxColumn = Math.max(marginX, columns - marginX - 7);
-    const maxRow = Math.max(marginY, rows - marginY - 1);
+    const maxRow = compact
+      ? Math.max(minRow, Math.floor(rows * 0.5))
+      : Math.max(minRow, rows - marginY - 1);
 
-    event.column = marginX + Math.floor(Math.random() * Math.max(1, maxColumn - marginX));
-    event.row = marginY + Math.floor(Math.random() * Math.max(1, maxRow - marginY));
+    event.column = minColumn + Math.floor(Math.random() * Math.max(1, maxColumn - minColumn));
+    event.row = minRow + Math.floor(Math.random() * Math.max(1, maxRow - minRow));
     event.startedAt = time;
     event.duration = 5.6 + Math.random() * 2.8;
     event.nextAt = time + event.duration + 3.4 + Math.random() * 6.8;
@@ -123,6 +130,8 @@ const LetterGlitch = ({
     const { width, height } = canvasRef.current.getBoundingClientRect();
     const { fontSize, charWidth, charHeight } = metrics.current;
     const time = (timestamp || performance.now()) * 0.001;
+    const pointerAge = Math.max(0, time - pointer.current.movedAt);
+    const pointerFade = 1 - smoothstep(pointerAge / 2.8);
     scheduleCortexEvent(time);
 
     ctx.clearRect(0, 0, width, height);
@@ -136,8 +145,18 @@ const LetterGlitch = ({
       const y = row * charHeight;
       const breath = 0.95 + Math.sin(time * (0.15 + letter.cadence * 0.035) + letter.phase) * 0.05;
       const rowPulse = 0.94 + Math.sin(time * 0.27 + row * 0.43) * 0.06;
+      const current =
+        Math.sin(column * 0.075 + row * 0.11 - time * 0.19 + letter.phase * 0.18) * 0.5 +
+        Math.sin(column * 0.021 - row * 0.064 + time * 0.11) * 0.5;
+      const currentLift = 0.9 + current * 0.11;
+      let pointerLift = 0;
+      if (pointerFade > 0.001) {
+        const dx = (x - pointer.current.x) / 150;
+        const dy = (y - pointer.current.y) / 110;
+        pointerLift = Math.exp(-(dx * dx + dy * dy)) * pointerFade * 0.34;
+      }
       const cortex = cortexAt(column, row, time);
-      const ambientAlpha = letter.opacity * letter.activity * breath * rowPulse;
+      const ambientAlpha = letter.opacity * letter.activity * breath * rowPulse * currentLift + pointerLift;
       const alpha = cortex ? Math.max(ambientAlpha, cortex.alpha) : ambientAlpha;
       if (alpha < 0.024) return;
 
@@ -168,8 +187,20 @@ const LetterGlitch = ({
     const columns = Math.ceil(rect.width / metrics.current.charWidth);
     const rows = Math.ceil(rect.height / metrics.current.charHeight);
     initializeLetters(columns, rows);
-    cortexEvent.current.nextAt = performance.now() * 0.001 + 1 + Math.random() * 1.6;
-    drawLetters();
+    const now = performance.now() * 0.001;
+    if (reducedMotion.current) {
+      const compactField = rect.width < 760;
+      cortexEvent.current = {
+        column: compactField ? Math.max(5, Math.floor(columns * 0.56)) : Math.max(5, Math.floor(columns * 0.72)),
+        row: compactField ? Math.max(5, Math.floor(rows * 0.28)) : Math.max(5, Math.floor(rows * 0.46)),
+        startedAt: now - 1.8,
+        duration: 100000,
+        nextAt: Number.POSITIVE_INFINITY
+      };
+    } else {
+      cortexEvent.current.nextAt = now + 0.8 + Math.random() * 1.4;
+    }
+    drawLetters(performance.now());
   };
 
   const updateLetters = () => {
@@ -210,6 +241,8 @@ const LetterGlitch = ({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    reducedMotion.current = motionQuery.matches;
     context.current = canvas.getContext('2d', { alpha: true });
     resizeCanvas();
 
@@ -220,7 +253,7 @@ const LetterGlitch = ({
 
     const animate = timestamp => {
       if (!running) return;
-      if (visible) {
+      if (visible && !reducedMotion.current) {
         const now = Date.now();
         let changed = false;
         if (now - lastGlitchTime.current >= glitchSpeed) {
@@ -241,12 +274,24 @@ const LetterGlitch = ({
       clearTimeout(resizeTimeout);
       resizeTimeout = window.setTimeout(resizeCanvas, 100);
     };
+    const handlePointerMove = event => {
+      const rect = canvas.getBoundingClientRect();
+      pointer.current.x = event.clientX - rect.left;
+      pointer.current.y = event.clientY - rect.top;
+      pointer.current.movedAt = performance.now() * 0.001;
+    };
+    const handleMotionChange = event => {
+      reducedMotion.current = event.matches;
+      resizeCanvas();
+    };
     const resizeObserver = new ResizeObserver(handleResize);
     if (canvas.parentElement) resizeObserver.observe(canvas.parentElement);
     const intersectionObserver = new IntersectionObserver(entries => {
       visible = entries[0]?.isIntersecting ?? true;
     }, { threshold: 0.02 });
     intersectionObserver.observe(canvas);
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    motionQuery.addEventListener('change', handleMotionChange);
     animate(performance.now());
 
     return () => {
@@ -255,6 +300,8 @@ const LetterGlitch = ({
       cancelAnimationFrame(animationRef.current);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
+      window.removeEventListener('pointermove', handlePointerMove);
+      motionQuery.removeEventListener('change', handleMotionChange);
     };
   }, [characters, glitchColors, glitchSpeed, smooth]);
 
