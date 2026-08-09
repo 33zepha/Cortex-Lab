@@ -9,6 +9,7 @@ import { VpsProvider } from "@/lib/VpsContext";
 
 const AppShell = lazy(() => import("@/components/shell/AppShell").then(({ AppShell: component }) => ({ default: component })));
 const AuthScreen = lazy(() => import("@/screens/AuthScreen").then(({ AuthScreen: component }) => ({ default: component })));
+const HeroLabScreen = lazy(() => import("@/screens/HeroLabScreen").then(({ HeroLabScreen: component }) => ({ default: component })));
 const OverviewScreen = lazy(() => import("@/screens/OverviewScreen").then(({ OverviewScreen: component }) => ({ default: component })));
 const MissionsScreen = lazy(() => import("@/screens/MissionsScreen").then(({ MissionsScreen: component }) => ({ default: component })));
 const MissionDetailScreen = lazy(() => import("@/screens/MissionDetailScreen").then(({ MissionDetailScreen: component }) => ({ default: component })));
@@ -40,6 +41,7 @@ createRoot(root).render(
       <BrowserRouter>
         <VpsProvider>
           <Routes>
+            <Route path="/hero-lab" element={<Suspense fallback={<LoadingScreen />}><HeroLabScreen /></Suspense>} />
             <Route path="/login" element={<Suspense fallback={<LoadingScreen />}><AuthScreen initialMode="login" /></Suspense>} />
             <Route path="/signup" element={<Suspense fallback={<LoadingScreen />}><AuthScreen initialMode="signup" /></Suspense>} />
             <Route element={<AuthGate />}>
