@@ -5,7 +5,7 @@ import "./HeroLabScreen.css";
 export function HeroLabScreen() {
   return (
     <main className="hero-lab relative min-h-[100dvh] overflow-hidden bg-[#18372c] text-white" aria-labelledby="hero-lab-title">
-      <div className="hero-lab__field pointer-events-auto absolute inset-0" aria-hidden="true">
+      <div className="hero-lab__field pointer-events-auto absolute inset-0" data-hero-layer="field" aria-hidden="true">
         <Dither
           waveColor={[0.5, 0.63, 0.55]}
           baseColor={[0.1, 0.16, 0.13]}
@@ -25,20 +25,16 @@ export function HeroLabScreen() {
       <div className="hero-lab__frame pointer-events-none absolute inset-x-6 bottom-6 top-6 sm:inset-x-10 sm:bottom-9 sm:top-9 lg:inset-x-14 xl:inset-x-16" />
 
       <div className="hero-lab__shell relative z-10 mx-auto flex min-h-[100dvh] max-w-[1680px] flex-col">
-        <header className="flex items-center justify-between" aria-label="Cortex">
-          <img className="hero-lab__logo" src={cortexHeroMark} alt="Cortex mark" draggable={false} />
-        </header>
-
-        <div className="flex flex-1 items-end pb-[8svh] pt-20 sm:items-center sm:pb-0 sm:pt-0">
+        <div className="hero-lab__content flex flex-1 items-center">
           <section className="hero-lab__copy max-w-[470px] lg:-translate-y-2 lg:max-w-[455px]">
+            <div className="hero-lab__brand" aria-label="Cortex">
+              <img className="hero-lab__logo" src={cortexHeroMark} alt="Cortex mark" draggable={false} />
+            </div>
             <h1 id="hero-lab-title" className="hero-lab__headline max-w-[470px] text-balance text-[#f2f4f1]">
               <span>Complexity,</span>
               <span className="hero-lab__headline-italic">made</span>
               <span className="hero-lab__headline-strong">coherent.</span>
             </h1>
-            <p className="hero-lab__dek mt-7 max-w-[375px] text-pretty text-[14px] leading-[1.85] sm:text-[15px]">
-              Cortex coordinates models, agents and context into one operational layer—so complex work moves as one.
-            </p>
           </section>
         </div>
       </div>
