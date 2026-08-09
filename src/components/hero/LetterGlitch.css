@@ -1,0 +1,42 @@
+.letter-glitch {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+.letter-glitch__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0.78;
+  filter: saturate(0.72) contrast(1.04);
+}
+
+.letter-glitch__outer-vignette,
+.letter-glitch__center-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.letter-glitch__outer-vignette {
+  background: radial-gradient(circle, rgba(0, 0, 0, 0) 58%, rgba(0, 0, 0, 0.94) 100%);
+}
+
+.letter-glitch__center-vignette {
+  background:
+    radial-gradient(circle at 42% 50%, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.34) 32%, rgba(0, 0, 0, 0) 64%);
+}
+
+@media (max-width: 767px) {
+  .letter-glitch__canvas {
+    opacity: 0.68;
+  }
+
+  .letter-glitch__center-vignette {
+    background:
+      radial-gradient(circle at 50% 42%, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.26) 38%, rgba(0, 0, 0, 0) 72%);
+  }
+}
