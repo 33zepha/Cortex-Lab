@@ -46,6 +46,10 @@ function updateJourney(journey: HTMLElement, progress: number) {
   journey.style.setProperty("--hero-logo-scale", mix(1, 1.78, phase(progress, 0.14, 0.88)).toFixed(4));
   journey.style.setProperty("--hero-logo-opacity", mix(1, 0.94, access).toFixed(4));
   journey.style.setProperty("--hero-logo-glow", mix(0.5, 0.88, lensProgress).toFixed(4));
+  journey.style.setProperty("--hero-architecture-opacity", mix(0, 0.46, phase(progress, 0.3, 0.72)).toFixed(4));
+  journey.style.setProperty("--hero-architecture-scale", mix(0.84, 1, phase(progress, 0.3, 0.82)).toFixed(4));
+  journey.style.setProperty("--hero-architecture-rotate", `${mix(-7, 1.5, phase(progress, 0.3, 0.86)).toFixed(2)}deg`);
+  journey.style.setProperty("--hero-architecture-blur", `${mix(2.4, 0, phase(progress, 0.3, 0.78)).toFixed(2)}px`);
 
   journey.style.setProperty("--hero-field-scale", mix(1.004, 1.022, drift).toFixed(4));
   journey.style.setProperty("--hero-field-rotate", `${mix(-0.04, 0.04, drift).toFixed(3)}deg`);
@@ -257,6 +261,11 @@ export function HeroLabScreen() {
           <div className="hero-lab__mist pointer-events-none absolute inset-0" aria-hidden="true"><span /><span /><span /></div>
 
           <div className="hero-lab__shared-mark" data-hero-layer="shared-mark" aria-hidden="true">
+            <span className="hero-lab__shared-architecture">
+              <span className="hero-lab__shared-architecture-fragment hero-lab__shared-architecture-fragment--outer" />
+              <span className="hero-lab__shared-architecture-fragment hero-lab__shared-architecture-fragment--middle" />
+              <span className="hero-lab__shared-architecture-fragment hero-lab__shared-architecture-fragment--inner" />
+            </span>
             <span className="hero-lab__shared-mark-shell">
               <img className="hero-lab__shared-logo" src={cortexHeroMark} alt="" draggable={false} />
             </span>
