@@ -3,8 +3,7 @@ import { CortexLivingField } from "@/components/hero/CortexLivingField";
 export function HeroLabScreen() {
   return (
     <main className="relative min-h-[100dvh] overflow-hidden bg-black text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_46%,rgba(55,61,58,0.16),transparent_34%),linear-gradient(90deg,#000_0%,#020303_48%,#000_100%)]" />
-      <div className="absolute inset-0 opacity-[0.16] [background-image:radial-gradient(rgba(255,255,255,0.16)_0.55px,transparent_0.55px)] [background-size:4px_4px]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_76%_46%,rgba(55,65,60,0.13),transparent_35%),linear-gradient(90deg,#000_0%,#020303_50%,#000_100%)]" />
 
       {/*
         Mobile gets a deliberately oversized render surface instead of a CSS zoom.
@@ -30,7 +29,7 @@ export function HeroLabScreen() {
         </section>
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black via-black/36 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black via-black/28 to-transparent" />
     </main>
   );
 }
