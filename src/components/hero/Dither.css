@@ -12,3 +12,14 @@
   width: 100%;
   height: 100%;
 }
+
+.dither-fallback {
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(ellipse 32% 26% at 76% 44%, rgba(224, 241, 226, 0.2) 0%, transparent 72%),
+    radial-gradient(ellipse 42% 36% at 90% 78%, rgba(125, 187, 146, 0.26) 0%, transparent 74%),
+    radial-gradient(ellipse 52% 48% at 28% 66%, rgba(52, 108, 78, 0.4) 0%, transparent 76%),
+    repeating-radial-gradient(circle at 72% 52%, rgba(227, 242, 229, 0.1) 0 1px, transparent 1px 6px),
+    linear-gradient(135deg, #17392d 0%, #285744 52%, #1b4534 100%);
+}

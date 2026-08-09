@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unknown-property */
-import { forwardRef, useEffect, useRef } from "react";
+import { forwardRef, useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { EffectComposer, wrapEffect } from "@react-three/postprocessing";
 import { Effect } from "postprocessing";
@@ -194,6 +194,17 @@ const RetroEffect = forwardRef(function RetroEffect({ colorNum, pixelSize, dithe
 
 RetroEffect.displayName = "RetroEffect";
 
+function supportsWebGL() {
+  if (typeof document === "undefined") return true;
+
+  try {
+    const canvas = document.createElement("canvas");
+    return Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl") || canvas.getContext("experimental-webgl"));
+  } catch {
+    return false;
+  }
+}
+
 function DitheredWaves({
   waveSpeed,
   waveFrequency,
@@ -330,6 +341,12 @@ export default function Dither({
   enableMouseInteraction = true,
   mouseRadius = 1
 }) {
+  const webglSupported = useMemo(supportsWebGL, []);
+
+  if (!webglSupported) {
+    return <div className="dither-fallback" aria-hidden="true" />;
+  }
+
   return (
     <Canvas
       className="dither-container"
