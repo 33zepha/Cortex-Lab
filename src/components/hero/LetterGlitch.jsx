@@ -1,10 +1,8 @@
 import { useEffect, useRef } from 'react';
 import './LetterGlitch.css';
 
-const STRUCTURE_CHARS = ['·', '│', '─', '┆', '┄', '◇', '◦', ':'];
-
 const LetterGlitch = ({
-  glitchColors = ['#2b4539', '#61dca3', '#61b3dc'],
+  glitchColors = ['#26342f', '#536c62', '#8fa69b'],
   className = '',
   glitchSpeed = 50,
   centerVignette = false,
@@ -18,131 +16,94 @@ const LetterGlitch = ({
   const grid = useRef({ columns: 0, rows: 0 });
   const context = useRef(null);
   const lastGlitchTime = useRef(Date.now());
-  const metrics = useRef({ fontSize: 13, charWidth: 8, charHeight: 17 });
+  const metrics = useRef({ fontSize: 12, charWidth: 8, charHeight: 17 });
   const dimensions = useRef({ width: 1, height: 1 });
 
   const lettersAndSymbols = Array.from(characters);
-
-  const getRandomChar = () =>
-    lettersAndSymbols[Math.floor(Math.random() * lettersAndSymbols.length)];
-
-  const getRandomColor = () =>
-    glitchColors[Math.floor(Math.random() * glitchColors.length)];
+  const getRandomChar = () => lettersAndSymbols[Math.floor(Math.random() * lettersAndSymbols.length)];
+  const getRandomColor = () => glitchColors[Math.floor(Math.random() * glitchColors.length)];
 
   const parseColor = color => {
-    const rgbMatch = /^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i.exec(color);
-    if (rgbMatch) {
-      return {
-        r: Number(rgbMatch[1]),
-        g: Number(rgbMatch[2]),
-        b: Number(rgbMatch[3])
-      };
-    }
-
-    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    const normalized = color.replace(shorthandRegex, (_match, r, g, b) => `${r}${r}${g}${g}${b}${b}`);
+    const rgb = /^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i.exec(color);
+    if (rgb) return { r: +rgb[1], g: +rgb[2], b: +rgb[3] };
+    const short = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    const normalized = color.replace(short, (_m, r, g, b) => `${r}${r}${g}${g}${b}${b}`);
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(normalized);
-
-    return result
-      ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16)
-        }
-      : null;
+    return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : null;
   };
 
-  const interpolateColor = (start, end, factor) => {
-    const result = {
-      r: Math.round(start.r + (end.r - start.r) * factor),
-      g: Math.round(start.g + (end.g - start.g) * factor),
-      b: Math.round(start.b + (end.b - start.b) * factor)
-    };
-    return `rgb(${result.r}, ${result.g}, ${result.b})`;
-  };
+  const interpolateColor = (start, end, factor) =>
+    `rgb(${Math.round(start.r + (end.r - start.r) * factor)}, ${Math.round(start.g + (end.g - start.g) * factor)}, ${Math.round(start.b + (end.b - start.b) * factor)})`;
 
   const smoothstep = value => {
     const t = Math.max(0, Math.min(1, value));
     return t * t * (3 - 2 * t);
   };
 
-  const pulse = (time, offset = 0) => {
-    const cycle = ((time + offset) % 13.5) / 13.5;
-    const rise = smoothstep((cycle - 0.16) / 0.18);
-    const fall = 1 - smoothstep((cycle - 0.7) / 0.2);
-    return Math.max(0, rise * fall);
-  };
-
+  // Sparse computational field: quiet editorial space on the left, increasing
+  // information density toward a controlled processing region on the right.
   const activityAt = (x, y) => {
     const nx = x / Math.max(1, dimensions.current.width);
     const ny = y / Math.max(1, dimensions.current.height);
-
-    const calmLeft = smoothstep((nx - 0.22) / 0.5);
-    const basinA = Math.exp(-(((nx - 0.77) / 0.2) ** 2 + ((ny - 0.34) / 0.26) ** 2));
-    const basinB = Math.exp(-(((nx - 0.7) / 0.28) ** 2 + ((ny - 0.72) / 0.24) ** 2));
-    const basinC = Math.exp(-(((nx - 0.92) / 0.16) ** 2 + ((ny - 0.53) / 0.36) ** 2));
-    const structure = Math.min(1, basinA * 0.74 + basinB * 0.58 + basinC * 0.52);
-
-    return Math.max(0.035, Math.min(1, calmLeft * (0.26 + structure * 0.92)));
+    const enter = smoothstep((nx - 0.2) / 0.5);
+    const processor = Math.exp(-(((nx - 0.79) / 0.27) ** 2 + ((ny - 0.51) / 0.38) ** 2));
+    const upper = Math.exp(-(((nx - 0.72) / 0.2) ** 2 + ((ny - 0.25) / 0.18) ** 2));
+    const lower = Math.exp(-(((nx - 0.86) / 0.19) ** 2 + ((ny - 0.78) / 0.17) ** 2));
+    return Math.max(0.025, Math.min(1, enter * (0.2 + processor * 0.66 + upper * 0.18 + lower * 0.16)));
   };
 
-  const structureAt = (x, y, time) => {
-    const width = Math.max(1, dimensions.current.width);
-    const height = Math.max(1, dimensions.current.height);
-    const nx = x / width;
-    const ny = y / height;
-    const compact = width < 760;
-    const line = compact ? 0.018 : 0.01;
+  // High-tech without sci-fi iconography: transient alignment is expressed as
+  // timing, addressing and ordered lanes rather than glowing circuits or HUDs.
+  const protocolAt = (column, row, time) => {
+    const { columns, rows } = grid.current;
+    if (!columns || !rows) return { influence: 0, char: '', alpha: 0 };
+    const nx = column / columns;
+    const ny = row / rows;
+    const compact = dimensions.current.width < 760;
 
-    const aperturePulse = pulse(time, 0);
-    const railPulse = pulse(time, 4.5);
-    const convergencePulse = pulse(time, 9);
+    // A slow scan window travels through the active field. It is intentionally
+    // broad and faint: more oscilloscope / compute fabric than laser scanner.
+    const scan = (time * 0.026) % 1;
+    const scanY = 0.18 + scan * 0.66;
+    const scanBand = Math.exp(-(((ny - scanY) / 0.018) ** 2));
+    const scanMask = smoothstep((nx - (compact ? 0.43 : 0.57)) / 0.16) * (1 - smoothstep((nx - 0.97) / 0.04));
 
-    const apertureLeft = compact ? 0.57 : 0.66;
-    const apertureRight = compact ? 0.92 : 0.9;
-    const apertureTop = 0.29;
-    const apertureBottom = 0.71;
-    const apertureEdge = Math.min(
-      Math.abs(nx - apertureLeft),
-      Math.abs(nx - apertureRight),
-      Math.abs(ny - apertureTop),
-      Math.abs(ny - apertureBottom)
-    );
-    const insideAperture = nx >= apertureLeft && nx <= apertureRight && ny >= apertureTop && ny <= apertureBottom;
-    const aperture = insideAperture ? Math.exp(-((apertureEdge / line) ** 2)) * aperturePulse : 0;
+    // Deterministic address lanes wake in sequence. They never form a literal
+    // interface; they simply make the random field behave like a system.
+    const lanePhase = Math.floor(time / 2.8) % 4;
+    const laneRows = compact
+      ? [Math.floor(rows * 0.34), Math.floor(rows * 0.48), Math.floor(rows * 0.62), Math.floor(rows * 0.76)]
+      : [Math.floor(rows * 0.28), Math.floor(rows * 0.42), Math.floor(rows * 0.56), Math.floor(rows * 0.7)];
+    const laneDistance = Math.abs(row - laneRows[lanePhase]);
+    const lane = laneDistance === 0 && nx > (compact ? 0.5 : 0.62) && nx < 0.94 ? 1 : 0;
 
-    const spine = Math.exp(-(((nx - (compact ? 0.76 : 0.78)) / line) ** 2)) *
-      smoothstep((ny - 0.16) / 0.12) * (1 - smoothstep((ny - 0.84) / 0.12));
-    const crossA = Math.exp(-(((ny - 0.39) / line) ** 2)) * Math.exp(-(((nx - 0.79) / 0.17) ** 2));
-    const crossB = Math.exp(-(((ny - 0.61) / line) ** 2)) * Math.exp(-(((nx - 0.79) / 0.17) ** 2));
-    const rails = Math.min(1, spine * 0.9 + crossA * 0.66 + crossB * 0.66) * railPulse;
+    // Short vertical registration marks establish precision without drawing a
+    // box, grid, circuit, crosshair or any other familiar futurist trope.
+    const registerColumn = Math.floor(columns * (compact ? 0.78 : 0.81));
+    const register = Math.abs(column - registerColumn) === 0 && row % 7 <= 1 && ny > 0.2 && ny < 0.82 ? 1 : 0;
 
-    const centerX = compact ? 0.77 : 0.8;
-    const centerY = 0.5;
-    const dx = nx - centerX;
-    const dy = ny - centerY;
-    const angle = Math.atan2(dy, dx);
-    const radius = Math.sqrt(dx * dx + dy * dy);
-    const threeWay = Math.max(
-      Math.cos(angle * 3) * 0.5 + 0.5,
-      Math.cos((angle + 0.08) * 3) * 0.5 + 0.5
-    );
-    const ring = Math.exp(-(((radius - (compact ? 0.19 : 0.145)) / (line * 1.4)) ** 2));
-    const convergence = ring * Math.pow(threeWay, 10) * convergencePulse;
+    // Every few seconds a tiny packet resolves into a stable 6-cell sequence,
+    // then disappears. This gives the impression of computation completing.
+    const packetCycle = (time % 9.6) / 9.6;
+    const packetEnvelope = smoothstep((packetCycle - 0.2) / 0.1) * (1 - smoothstep((packetCycle - 0.7) / 0.12));
+    const packetRow = Math.floor(rows * (compact ? 0.56 : 0.51));
+    const packetStart = Math.floor(columns * (compact ? 0.63 : 0.72));
+    const packetIndex = column - packetStart;
+    const packet = row === packetRow && packetIndex >= 0 && packetIndex < 6 ? packetEnvelope : 0;
+    const packetChars = ['C', '0', 'R', 'T', 'E', 'X'];
 
-    const influence = Math.min(1, aperture * 0.92 + rails * 0.9 + convergence * 0.95);
-    let char = '·';
-    if (rails > aperture && rails > convergence) {
-      char = spine > Math.max(crossA, crossB) ? '│' : '─';
-    } else if (aperture > convergence) {
-      const vertical = Math.min(Math.abs(nx - apertureLeft), Math.abs(nx - apertureRight)) <
-        Math.min(Math.abs(ny - apertureTop), Math.abs(ny - apertureBottom));
-      char = vertical ? '│' : '─';
-    } else if (convergence > 0.08) {
-      char = STRUCTURE_CHARS[Math.floor((angle + Math.PI) / (Math.PI * 2) * STRUCTURE_CHARS.length) % STRUCTURE_CHARS.length];
-    }
+    const scanInfluence = scanBand * scanMask * 0.2;
+    const laneInfluence = lane * 0.38;
+    const registerInfluence = register * 0.22;
+    const packetInfluence = packet * 0.62;
+    const influence = Math.min(1, scanInfluence + laneInfluence + registerInfluence + packetInfluence);
 
-    return { influence, char };
+    let char = '';
+    if (packetInfluence > 0.1) char = packetChars[packetIndex];
+    else if (laneInfluence > 0) char = column % 9 === 0 ? ':' : column % 4 === 0 ? '·' : '─';
+    else if (registerInfluence > 0) char = row % 7 === 0 ? '┆' : '·';
+
+    return { influence, char, alpha: influence };
   };
 
   const calculateGrid = (width, height) => ({
@@ -152,25 +113,19 @@ const LetterGlitch = ({
 
   const initializeLetters = (columns, rows) => {
     grid.current = { columns, rows };
-    const { charWidth, charHeight } = metrics.current;
-
     letters.current = Array.from({ length: columns * rows }, (_, index) => {
       const color = getRandomColor();
       const column = index % columns;
       const row = Math.floor(index / columns);
-      const x = column * charWidth;
-      const y = row * charHeight;
-      const activity = activityAt(x, y);
-
       return {
         char: getRandomChar(),
         color,
         sourceColor: color,
         targetColor: color,
         colorProgress: 1,
-        activity,
+        activity: activityAt(column * metrics.current.charWidth, row * metrics.current.charHeight),
         phase: Math.random() * Math.PI * 2,
-        opacity: 0.22 + Math.random() * 0.42
+        opacity: 0.16 + Math.random() * 0.4
       };
     });
   };
@@ -181,110 +136,90 @@ const LetterGlitch = ({
     const { width, height } = canvasRef.current.getBoundingClientRect();
     const { fontSize, charWidth, charHeight } = metrics.current;
     const time = (timestamp || performance.now()) * 0.001;
-
     ctx.clearRect(0, 0, width, height);
     ctx.font = `500 ${fontSize}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
     ctx.textBaseline = 'top';
 
     letters.current.forEach((letter, index) => {
-      const x = (index % grid.current.columns) * charWidth;
-      const y = Math.floor(index / grid.current.columns) * charHeight;
-      const breath = 0.93 + Math.sin(time * 0.32 + letter.phase) * 0.07;
-      const structure = structureAt(x, y, time);
-      const ambientAlpha = letter.opacity * letter.activity * breath;
-      const alpha = Math.min(0.92, ambientAlpha + structure.influence * 0.58);
-      if (alpha < 0.025) return;
+      const column = index % grid.current.columns;
+      const row = Math.floor(index / grid.current.columns);
+      const x = column * charWidth;
+      const y = row * charHeight;
+      const breath = 0.96 + Math.sin(time * 0.21 + letter.phase) * 0.04;
+      const protocol = protocolAt(column, row, time);
+      const ambient = letter.opacity * letter.activity * breath;
+      const alpha = Math.min(0.84, ambient + protocol.alpha);
+      if (alpha < 0.022) return;
 
       ctx.globalAlpha = alpha;
-      ctx.fillStyle = structure.influence > 0.08 ? '#aebdb6' : letter.color;
-      ctx.fillText(structure.influence > 0.16 ? structure.char : letter.char, x, y);
+      ctx.fillStyle = protocol.influence > 0.16 ? '#a8bbb1' : letter.color;
+      ctx.fillText(protocol.char || letter.char, x, y);
     });
-
     ctx.globalAlpha = 1;
   };
 
   const resizeCanvas = () => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const parent = canvas.parentElement;
-    if (!parent) return;
-
+    if (!canvas || !canvas.parentElement) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const rect = parent.getBoundingClientRect();
+    const rect = canvas.parentElement.getBoundingClientRect();
     const compact = rect.width < 760;
     metrics.current = compact
-      ? { fontSize: 11, charWidth: 7.2, charHeight: 15.5 }
-      : { fontSize: 12.5, charWidth: 8, charHeight: 17 };
+      ? { fontSize: 10.5, charWidth: 7, charHeight: 15 }
+      : { fontSize: 12, charWidth: 7.8, charHeight: 16.5 };
     dimensions.current = { width: rect.width, height: rect.height };
-
     canvas.width = Math.max(1, Math.round(rect.width * dpr));
     canvas.height = Math.max(1, Math.round(rect.height * dpr));
     canvas.style.width = `${rect.width}px`;
     canvas.style.height = `${rect.height}px`;
-
-    if (context.current) {
-      context.current.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-
-    const { columns, rows } = calculateGrid(rect.width, rect.height);
-    initializeLetters(columns, rows);
+    if (context.current) context.current.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const nextGrid = calculateGrid(rect.width, rect.height);
+    initializeLetters(nextGrid.columns, nextGrid.rows);
     drawLetters();
   };
 
   const updateLetters = () => {
-    if (letters.current.length === 0) return;
-
-    const updateCount = Math.max(1, Math.floor(letters.current.length * 0.014));
+    if (!letters.current.length) return;
+    const updateCount = Math.max(1, Math.floor(letters.current.length * 0.01));
     let attempts = 0;
     let updated = 0;
-
-    while (updated < updateCount && attempts < updateCount * 12) {
+    while (updated < updateCount && attempts < updateCount * 14) {
       attempts += 1;
       const index = Math.floor(Math.random() * letters.current.length);
       const letter = letters.current[index];
-      if (!letter || Math.random() > letter.activity * 0.9 + 0.035) continue;
-
+      if (!letter || Math.random() > letter.activity * 0.86 + 0.025) continue;
       letter.char = getRandomChar();
       letter.sourceColor = letter.color;
       letter.targetColor = getRandomColor();
-      letter.opacity = 0.16 + Math.random() * 0.5;
-
+      letter.opacity = 0.14 + Math.random() * 0.44;
       if (!smooth) {
         letter.color = letter.targetColor;
         letter.colorProgress = 1;
-      } else {
-        letter.colorProgress = 0;
-      }
+      } else letter.colorProgress = 0;
       updated += 1;
     }
   };
 
   const handleSmoothTransitions = () => {
     let needsRedraw = false;
-
     letters.current.forEach(letter => {
       if (letter.colorProgress >= 1) return;
-
-      letter.colorProgress = Math.min(1, letter.colorProgress + 0.028);
-      const startRgb = parseColor(letter.sourceColor);
-      const endRgb = parseColor(letter.targetColor);
-
-      if (startRgb && endRgb) {
-        letter.color = interpolateColor(startRgb, endRgb, letter.colorProgress);
+      letter.colorProgress = Math.min(1, letter.colorProgress + 0.024);
+      const start = parseColor(letter.sourceColor);
+      const end = parseColor(letter.targetColor);
+      if (start && end) {
+        letter.color = interpolateColor(start, end, letter.colorProgress);
         needsRedraw = true;
       }
     });
-
     return needsRedraw;
   };
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
-
     context.current = canvas.getContext('2d', { alpha: true });
     resizeCanvas();
-
     let resizeTimeout;
     let running = true;
     let visible = true;
@@ -292,25 +227,20 @@ const LetterGlitch = ({
 
     const animate = timestamp => {
       if (!running) return;
-
       if (visible) {
         const now = Date.now();
         let changed = false;
-
         if (now - lastGlitchTime.current >= glitchSpeed) {
           updateLetters();
           lastGlitchTime.current = now;
           changed = true;
         }
-
         if (smooth && handleSmoothTransitions()) changed = true;
-
-        if (changed || timestamp - lastAmbientDraw > 70) {
+        if (changed || timestamp - lastAmbientDraw > 62) {
           drawLetters(timestamp);
           lastAmbientDraw = timestamp;
         }
       }
-
       animationRef.current = requestAnimationFrame(animate);
     };
 
@@ -318,15 +248,12 @@ const LetterGlitch = ({
       clearTimeout(resizeTimeout);
       resizeTimeout = window.setTimeout(resizeCanvas, 100);
     };
-
     const resizeObserver = new ResizeObserver(handleResize);
     if (canvas.parentElement) resizeObserver.observe(canvas.parentElement);
-
     const intersectionObserver = new IntersectionObserver(entries => {
       visible = entries[0]?.isIntersecting ?? true;
     }, { threshold: 0.02 });
     intersectionObserver.observe(canvas);
-
     animate(performance.now());
 
     return () => {
