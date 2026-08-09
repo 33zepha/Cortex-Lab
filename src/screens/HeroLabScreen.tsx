@@ -5,7 +5,15 @@ export function HeroLabScreen() {
     <main className="relative min-h-[100dvh] overflow-hidden bg-black text-white">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_46%,rgba(55,61,58,0.16),transparent_34%),linear-gradient(90deg,#000_0%,#020303_48%,#000_100%)]" />
       <div className="absolute inset-0 opacity-[0.16] [background-image:radial-gradient(rgba(255,255,255,0.16)_0.55px,transparent_0.55px)] [background-size:4px_4px]" />
-      <div className="absolute inset-0"><CortexLivingField /></div>
+
+      {/*
+        Mobile gets a deliberately oversized render surface instead of a CSS zoom.
+        CortexLivingField sizes its canvas from this host, so the sculpture gains real
+        drawing resolution and presence while the main viewport keeps the crop clean.
+      */}
+      <div className="absolute -inset-x-[42%] -inset-y-[12%] sm:inset-0">
+        <CortexLivingField />
+      </div>
 
       <div className="relative z-10 mx-auto flex min-h-[100dvh] max-w-[1480px] items-center px-6 py-24 sm:px-10 lg:px-16">
         <section className="max-w-[590px] lg:-translate-y-3">
