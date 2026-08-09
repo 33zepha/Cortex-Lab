@@ -51,6 +51,10 @@
   --hero-logo-scale: 1;
   --hero-logo-opacity: 1;
   --hero-logo-glow: 0.5;
+  --hero-architecture-opacity: 0;
+  --hero-architecture-scale: 0.84;
+  --hero-architecture-rotate: 0deg;
+  --hero-architecture-blur: 2.4px;
   --hero-field-scale: 1.008;
   --hero-field-rotate: 0deg;
   --hero-field-x: 0%;
@@ -202,6 +206,49 @@
   will-change: transform, opacity;
 }
 
+.hero-lab__shared-architecture {
+  position: absolute;
+  inset: -38%;
+  opacity: var(--hero-architecture-opacity);
+  pointer-events: none;
+  transform: scale(var(--hero-architecture-scale)) rotate(var(--hero-architecture-rotate));
+  transform-origin: center;
+  filter: blur(var(--hero-architecture-blur));
+  transition: opacity 220ms ease-out, filter 220ms ease-out;
+  will-change: transform, opacity, filter;
+}
+
+.hero-lab__shared-architecture-fragment {
+  position: absolute;
+  display: block;
+  border: 1px solid rgba(225, 241, 228, 0.24);
+  border-radius: 50%;
+  content: "";
+}
+
+.hero-lab__shared-architecture-fragment--outer {
+  inset: 13%;
+  border-top-color: transparent;
+  border-right-color: rgba(225, 241, 228, 0.11);
+  border-bottom-color: transparent;
+  transform: rotate(26deg);
+}
+
+.hero-lab__shared-architecture-fragment--middle {
+  inset: 25%;
+  border-left-color: transparent;
+  border-bottom-color: rgba(225, 241, 228, 0.13);
+  transform: rotate(-38deg);
+}
+
+.hero-lab__shared-architecture-fragment--inner {
+  inset: 39%;
+  border-top-color: rgba(225, 241, 228, 0.15);
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  transform: rotate(64deg);
+}
+
 .hero-lab__shared-mark-shell {
   position: relative;
   display: grid;
@@ -213,7 +260,7 @@
   background: radial-gradient(circle, rgba(226, 241, 230, 0.13), rgba(226, 241, 230, 0.018) 68%, transparent 73%);
   box-shadow: 0 0 0 8px rgba(231, 245, 233, 0.018), 0 18px 52px rgba(4, 17, 12, 0.2);
   filter: drop-shadow(0 8px 18px rgba(4, 17, 12, 0.18));
-  animation: hero-mark-breathe 7s ease-in-out 1.3s infinite;
+  animation: hero-mark-breathe 9s ease-in-out 1.3s infinite;
 }
 
 .hero-lab__shared-mark-shell::before,
@@ -658,8 +705,8 @@
 }
 
 @keyframes hero-mark-breathe {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-3px) scale(1.014); }
+  0%, 100% { opacity: 0.985; transform: translateY(0) scale(1); }
+  50% { opacity: 1; transform: translateY(-1.5px) scale(1.006); }
 }
 
 @keyframes hero-generation {
@@ -736,6 +783,7 @@
   .hero-lab__field,
   .hero-lab__mist,
   .hero-lab__copy,
-  .hero-lab__shared-mark { will-change: auto; }
+  .hero-lab__shared-mark,
+  .hero-lab__shared-architecture { will-change: auto; }
   .hero-lab__headline-line { transition: none; }
 }
