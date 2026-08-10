@@ -89,10 +89,6 @@ const WORLD_HEIGHT = 1200;
 const PATH_D =
   "M220 620 C520 620 700 505 1020 515 C1260 522 1420 610 1670 565 C1880 528 2010 420 2240 410 C2500 398 2670 480 2880 575 C3110 680 3350 660 3540 555 C3740 445 3920 420 4100 495 C4270 565 4390 720 4320 835 C4250 950 4050 925 4020 790 C3980 620 4140 505 4340 520 C4610 540 4740 705 4970 690 C5180 676 5290 550 5480 530 C5670 510 5820 575 6030 620";
 
-function clamp(value: number, min = 0, max = 1) {
-  return Math.min(max, Math.max(min, value));
-}
-
 function interpolateKeyframes(progress: number, points: number[], values: number[]) {
   if (progress <= points[0]!) return values[0]!;
   if (progress >= points[points.length - 1]!) return values[values.length - 1]!;
