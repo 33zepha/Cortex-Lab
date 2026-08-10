@@ -1,98 +1,71 @@
-import { useEffect, useRef, useState, type FormEvent, type RefObject } from "react";
-import { ArrowDownRight, ArrowUpRight, Check } from "lucide-react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+  type RefObject,
+} from "react";
+import { Check } from "lucide-react";
 import { Link } from "react-router-dom";
-import cortexLogoSource from "@/assets/cortex-hero-mark.png";
 import { CortexLogo } from "@/components/brand/CortexLogo";
 import "./HeroLabScreen.css";
 
 type WaitlistStatus = "idle" | "invalid" | "loading" | "success" | "error";
 
-function SignalField() {
-  return (
-    <div
-      className="signal-field"
-      data-reveal
-      role="img"
-      aria-label="A living operational field where one business objective coordinates multiple capabilities"
-    >
-      <svg className="signal-field__art" viewBox="0 0 820 720" aria-hidden="true">
-        <defs>
-          <radialGradient id="field-core" cx="50%" cy="50%" r="54%">
-            <stop offset="0" stopColor="#b6f6cb" stopOpacity="0.78" />
-            <stop offset="0.28" stopColor="#2fca83" stopOpacity="0.26" />
-            <stop offset="1" stopColor="#0b4b38" stopOpacity="0" />
-          </radialGradient>
-          <linearGradient id="field-line" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0" stopColor="#d9ffe4" stopOpacity="0.08" />
-            <stop offset="0.5" stopColor="#7af4ad" stopOpacity="0.86" />
-            <stop offset="1" stopColor="#1a9b6b" stopOpacity="0.08" />
-          </linearGradient>
-          <linearGradient id="field-structure" x1="0" x2="1">
-            <stop offset="0" stopColor="#d5f3dc" stopOpacity="0.12" />
-            <stop offset="0.5" stopColor="#79efad" stopOpacity="0.76" />
-            <stop offset="1" stopColor="#d5f3dc" stopOpacity="0.1" />
-          </linearGradient>
-          <pattern id="field-grid" width="32" height="32" patternUnits="userSpaceOnUse">
-            <path d="M32 0H0V32" fill="none" stroke="#a9ffd0" strokeOpacity="0.1" strokeWidth="0.7" />
-            <circle cx="1.5" cy="1.5" r="0.8" fill="#baffd6" fillOpacity="0.18" />
-          </pattern>
-          <filter id="field-glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="8" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
+type JourneyStage = {
+  key: string;
+  number: string;
+  title: string;
+  statement: string;
+  description: string;
+};
 
-        <ellipse className="signal-field__halo" cx="470" cy="348" rx="315" ry="282" fill="url(#field-core)" />
-        <rect className="signal-field__grid" x="72" y="54" width="680" height="606" fill="url(#field-grid)" />
+const journeyStages: JourneyStage[] = [
+  {
+    key: "direction",
+    number: "01",
+    title: "Direction",
+    statement: "Give the system a direction.",
+    description:
+      "A business objective enters Cortex with its priorities, constraints and definition of done.",
+  },
+  {
+    key: "architecture",
+    number: "02",
+    title: "Architecture",
+    statement: "The right structure takes shape.",
+    description:
+      "Cortex breaks the mission into accountable work and establishes the dependencies between every capability.",
+  },
+  {
+    key: "orchestration",
+    number: "03",
+    title: "Orchestration",
+    statement: "Every capability moves as one.",
+    description:
+      "People, software and AI receive the context they need while the whole mission stays aligned.",
+  },
+  {
+    key: "control",
+    number: "04",
+    title: "Control",
+    statement: "Control stays where it matters.",
+    description:
+      "Sensitive decisions pause at a clear human checkpoint. You see what changed, why it changed and what happens next.",
+  },
+  {
+    key: "proof",
+    number: "05",
+    title: "Proof",
+    statement: "A result you can inspect.",
+    description:
+      "The work converges into one outcome, complete with its history, decisions and evidence.",
+  },
+];
 
-        <g className="signal-field__orbit" fill="none">
-          <ellipse cx="442" cy="356" rx="270" ry="148" transform="rotate(-22 442 356)" />
-          <ellipse cx="442" cy="356" rx="270" ry="148" transform="rotate(22 442 356)" />
-          <ellipse cx="442" cy="356" rx="226" ry="108" transform="rotate(-58 442 356)" />
-        </g>
-
-        <g className="signal-field__architecture" fill="none" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M98 523L236 146L443 86L675 184L735 570L516 656L98 523Z" />
-          <path d="M236 146L516 656" />
-          <path d="M443 86L443 614" />
-          <path d="M675 184L236 566" />
-          <path d="M166 484L284 202L443 155L622 226L675 506L515 593L166 484Z" />
-        </g>
-
-        <g className="signal-field__routes" fill="none" stroke="url(#field-line)" strokeLinecap="round">
-          <path d="M36 468C163 468 208 374 303 374C397 374 420 488 537 488C645 488 671 396 804 396" />
-          <path d="M128 204C234 204 274 281 367 281C452 281 500 184 608 184C694 184 728 236 799 236" />
-        </g>
-
-        <g className="signal-field__nodes">
-          <circle cx="236" cy="146" r="5" />
-          <circle cx="443" cy="86" r="5" />
-          <circle cx="675" cy="184" r="5" />
-          <circle cx="735" cy="570" r="5" />
-          <circle cx="516" cy="656" r="5" />
-          <circle cx="98" cy="523" r="5" />
-          <circle className="signal-field__node--core" cx="443" cy="356" r="8" />
-        </g>
-
-        <g className="signal-field__core" transform="translate(443 356)">
-          <circle className="signal-field__core-shell" r="68" />
-          <circle className="signal-field__core-ring" r="48" />
-          <image
-            className="signal-field__core-logo"
-            href={cortexLogoSource}
-            x="-50"
-            y="-50"
-            width="100"
-            height="100"
-            preserveAspectRatio="xMidYMid meet"
-          />
-        </g>
-      </svg>
-    </div>
-  );
+function clamp(value: number, min = 0, max = 1) {
+  return Math.min(max, Math.max(min, value));
 }
 
 function AccessForm({
@@ -112,10 +85,10 @@ function AccessForm({
 }) {
   if (status === "success") {
     return (
-      <div className="access-form access-form--success" role="status" aria-live="polite">
+      <div className="inside-access inside-access--success" role="status" aria-live="polite">
         <Check aria-hidden="true" />
         <div>
-          <strong>Request received.</strong>
+          <strong>Request received</strong>
           <span>We will be in touch when the next wave opens.</span>
         </div>
       </div>
@@ -125,38 +98,28 @@ function AccessForm({
   const hasMessage = status === "invalid" || status === "error";
 
   return (
-    <form id="access" className="access-form" noValidate onSubmit={onSubmit}>
-      <div className="access-form__field">
-        <label className="sr-only" htmlFor="landing-request-email">Work email</label>
-        <input
-          ref={emailRef}
-          id="landing-request-email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          placeholder="Your work email"
-          value={email}
-          aria-invalid={status === "invalid"}
-          aria-describedby={hasMessage ? "landing-request-message" : undefined}
-          required
-          onChange={(event) => onEmailChange(event.target.value)}
-        />
-      </div>
+    <form className="inside-access" noValidate onSubmit={onSubmit}>
+      <label className="sr-only" htmlFor="cortex-access-email">
+        Work email
+      </label>
+      <input
+        ref={emailRef}
+        id="cortex-access-email"
+        name="email"
+        type="email"
+        autoComplete="email"
+        placeholder="Work email"
+        value={email}
+        aria-invalid={status === "invalid"}
+        aria-describedby={hasMessage ? "cortex-access-message" : undefined}
+        required
+        onChange={(event) => onEmailChange(event.target.value)}
+      />
       <button type="submit" disabled={status === "loading"}>
-        {status === "loading" ? (
-          <>
-            <span className="access-form__spinner" aria-hidden="true" />
-            Sending
-          </>
-        ) : (
-          <>
-            Request access
-            <ArrowUpRight aria-hidden="true" />
-          </>
-        )}
+        {status === "loading" ? "Sending" : "Request access"}
       </button>
       {hasMessage && (
-        <p id="landing-request-message" role="alert">
+        <p id="cortex-access-message" role="alert">
           {status === "invalid" ? "Enter a valid work email." : error}
         </p>
       )}
@@ -164,78 +127,90 @@ function AccessForm({
   );
 }
 
-function SystemMap() {
+function ArchitectureScene({ activeStage }: { activeStage: number }) {
   return (
-    <div
-      className="system-map"
-      data-reveal
-      role="img"
-      aria-label="A business objective enters Cortex, is coordinated, and returns as a reviewable result"
-    >
-      <svg className="system-map__svg" viewBox="0 0 1000 340" aria-hidden="true">
+    <div className={`inside-scene inside-scene--${activeStage}`} aria-hidden="true">
+      <svg className="inside-scene__svg" viewBox="0 0 1200 760" fill="none">
         <defs>
-          <linearGradient id="map-line" x1="0" x2="1">
-            <stop offset="0" stopColor="#8eeeb3" stopOpacity="0.05" />
-            <stop offset="0.5" stopColor="#49d995" stopOpacity="0.86" />
-            <stop offset="1" stopColor="#8eeeb3" stopOpacity="0.05" />
+          <linearGradient id="inside-path" x1="120" y1="380" x2="1080" y2="380" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#9df0bd" stopOpacity="0" />
+            <stop offset="0.2" stopColor="#9df0bd" stopOpacity="0.62" />
+            <stop offset="0.5" stopColor="#d9f8df" />
+            <stop offset="0.8" stopColor="#9df0bd" stopOpacity="0.62" />
+            <stop offset="1" stopColor="#9df0bd" stopOpacity="0" />
           </linearGradient>
-          <filter id="map-glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="5" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          <radialGradient id="inside-core">
+            <stop stopColor="#b8f3c9" stopOpacity="0.22" />
+            <stop offset="1" stopColor="#2ca36e" stopOpacity="0" />
+          </radialGradient>
+          <pattern id="inside-dots" width="9" height="9" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="0.8" fill="#b9eac8" fillOpacity="0.22" />
+          </pattern>
+          <filter id="inside-soft">
+            <feGaussianBlur stdDeviation="18" />
           </filter>
         </defs>
-        <path className="system-map__path" d="M68 84C248 84 286 170 458 170C630 170 704 84 932 84" />
-        <path className="system-map__path system-map__path--second" d="M68 256C248 256 286 170 458 170C630 170 704 256 932 256" />
-        <path className="system-map__path system-map__path--center" d="M458 36V304" />
-        <circle className="system-map__node" cx="68" cy="84" r="5" />
-        <circle className="system-map__node" cx="68" cy="256" r="5" />
-        <circle className="system-map__node" cx="932" cy="84" r="5" />
-        <circle className="system-map__node" cx="932" cy="256" r="5" />
-        <circle className="system-map__node system-map__node--core" cx="458" cy="170" r="9" filter="url(#map-glow)" />
+
+        <path className="inside-scene__contour inside-scene__contour--outer" d="M126 562C202 190 388 84 600 84s398 106 474 478" />
+        <path className="inside-scene__contour inside-scene__contour--inner" d="M220 568C278 276 426 178 600 178s322 98 380 390" />
+        <path className="inside-scene__floor" d="M88 584H1112" />
+
+        <g className="inside-layer inside-layer--direction">
+          <circle className="inside-scene__wash" cx="600" cy="382" r="184" fill="url(#inside-core)" filter="url(#inside-soft)" />
+          <path className="inside-scene__objective-line" d="M160 382H512" />
+          <circle className="inside-scene__objective" cx="600" cy="382" r="17" />
+          <circle className="inside-scene__objective-ring" cx="600" cy="382" r="52" />
+        </g>
+
+        <g className="inside-layer inside-layer--architecture">
+          <path className="inside-scene__structure" d="M600 382L364 220L240 382L364 544L600 382Z" />
+          <path className="inside-scene__structure" d="M600 382L836 220L960 382L836 544L600 382Z" />
+          <path className="inside-scene__structure inside-scene__structure--solid" d="M364 220L600 138L836 220M364 544L600 626L836 544" />
+          <path className="inside-scene__structure" d="M364 220L364 544M836 220V544" />
+        </g>
+
+        <g className="inside-layer inside-layer--orchestration">
+          <path className="inside-scene__route inside-scene__route--one" d="M150 264C336 264 388 382 600 382S864 264 1050 264" />
+          <path className="inside-scene__route inside-scene__route--two" d="M150 382H1050" />
+          <path className="inside-scene__route inside-scene__route--three" d="M150 500C336 500 388 382 600 382S864 500 1050 500" />
+          <g className="inside-scene__moving-dots">
+            <circle cx="150" cy="264" r="4" />
+            <circle cx="150" cy="382" r="4" />
+            <circle cx="150" cy="500" r="4" />
+          </g>
+        </g>
+
+        <g className="inside-layer inside-layer--control">
+          <path className="inside-scene__threshold" d="M600 142V622" />
+          <rect className="inside-scene__gate" x="552" y="334" width="96" height="96" rx="48" />
+          <path className="inside-scene__gate-mark" d="M578 382L594 398L624 366" />
+          <path className="inside-scene__control-path" d="M168 382H530M670 382H1032" />
+        </g>
+
+        <g className="inside-layer inside-layer--proof">
+          <path className="inside-scene__proof-path" d="M146 212C350 212 394 382 600 382C806 382 850 212 1054 212" />
+          <path className="inside-scene__proof-path" d="M146 552C350 552 394 382 600 382C806 382 850 552 1054 552" />
+          <path className="inside-scene__proof-path inside-scene__proof-path--center" d="M146 382H1054" />
+          <circle className="inside-scene__proof-ring" cx="600" cy="382" r="116" />
+          <circle className="inside-scene__proof-ring inside-scene__proof-ring--inner" cx="600" cy="382" r="76" />
+        </g>
+
+        <rect className="inside-scene__halftone" x="0" y="0" width="1200" height="760" fill="url(#inside-dots)" />
       </svg>
-      <div className="system-map__core">
-        <CortexLogo aria-hidden="true" />
+      <div className="inside-scene__mark">
+        <CortexLogo />
       </div>
     </div>
   );
 }
 
-const systemStages = [
-  {
-    title: "Objective",
-    description: "Start with the result your business needs, not a prompt.",
-  },
-  {
-    title: "Context",
-    description: "Bring together the people, tools and constraints around it.",
-  },
-  {
-    title: "Coordination",
-    description: "Cortex directs the right capabilities through the work.",
-  },
-  {
-    title: "Proof",
-    description: "Review the path, the decisions and the result before sign-off.",
-  },
-] as const;
-
-const controlStages = [
-  {
-    title: "Set the direction",
-    description: "Your team defines what good looks like.",
-  },
-  {
-    title: "Let the system move",
-    description: "Cortex keeps the work aligned as it changes.",
-  },
-  {
-    title: "Keep the decision",
-    description: "People stay accountable for the outcome.",
-  },
-] as const;
-
 export function HeroLabScreen() {
+  const entryRef = useRef<HTMLElement>(null);
+  const journeyRef = useRef<HTMLElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
+  const [entryProgress, setEntryProgress] = useState(0);
+  const [journeyProgress, setJourneyProgress] = useState(0);
+  const [activeStage, setActiveStage] = useState(0);
   const [requestStatus, setRequestStatus] = useState<WaitlistStatus>("idle");
   const [requestError, setRequestError] = useState("");
   const [email, setEmail] = useState("");
@@ -251,26 +226,38 @@ export function HeroLabScreen() {
   }, []);
 
   useEffect(() => {
-    const elements = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
-    if (prefersReducedMotion || !("IntersectionObserver" in window)) {
-      elements.forEach((element) => element.classList.add("is-visible"));
-      return;
-    }
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const viewportHeight = window.innerHeight;
+      const entry = entryRef.current?.getBoundingClientRect();
+      const journey = journeyRef.current?.getBoundingClientRect();
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-visible");
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.14, rootMargin: "0px 0px -8%" },
-    );
+      if (entry && !prefersReducedMotion) {
+        const distance = Math.max(entry.height - viewportHeight, 1);
+        setEntryProgress(clamp(-entry.top / distance));
+      }
 
-    elements.forEach((element) => observer.observe(element));
-    return () => observer.disconnect();
+      if (journey) {
+        const distance = Math.max(journey.height - viewportHeight, 1);
+        const progress = clamp(-journey.top / distance);
+        setJourneyProgress(progress);
+        setActiveStage(Math.min(journeyStages.length - 1, Math.floor(progress * journeyStages.length)));
+      }
+    };
+
+    const requestUpdate = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+    return () => {
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, [prefersReducedMotion]);
 
   const handleEmailChange = (value: string) => {
@@ -296,9 +283,7 @@ export function HeroLabScreen() {
 
     try {
       const endpoint = import.meta.env.VITE_WAITLIST_ENDPOINT?.trim();
-      if (!endpoint) {
-        throw new Error("Waitlist endpoint is not configured");
-      }
+      if (!endpoint) throw new Error("Waitlist endpoint is not configured");
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -317,134 +302,106 @@ export function HeroLabScreen() {
     }
   };
 
+  const entryStyle = { "--entry-progress": entryProgress } as CSSProperties;
+  const journeyStyle = { "--journey-progress": journeyProgress } as CSSProperties;
+  const stage = journeyStages[activeStage] ?? journeyStages[0]!;
+
   return (
-    <main className="landing" data-reduced-motion={prefersReducedMotion} aria-labelledby="landing-title">
-      <div className="landing__grain" aria-hidden="true" />
-
-      <section className="landing__hero">
-        <header className="landing__nav landing__container">
-          <Link className="landing__brand" to="/" aria-label="Cortex home">
-            <CortexLogo aria-hidden="true" />
-            <span>CORTEX</span>
-          </Link>
-          <nav className="landing__nav-actions" aria-label="Landing navigation">
-            <a href="#system" aria-label="How it works">
-              <span>How it works</span>
-              <ArrowDownRight aria-hidden="true" />
-            </a>
-            <Link to="/login">
-              <span>Sign in</span>
-              <ArrowUpRight aria-hidden="true" />
-            </Link>
-          </nav>
-        </header>
-
-        <div className="landing__hero-grid landing__container">
-          <div className="landing__copy" data-reveal>
-            <p className="landing__eyebrow">AI, organized around your business</p>
-            <h1 id="landing-title">
-              <span>Make complex</span>
-              <span className="landing__title-accent">work move.</span>
-            </h1>
-            <p className="landing__lead">
-              Cortex coordinates the people, software and AI behind a business objective — so your team can see progress, make decisions and trust the result.
-            </p>
-            <AccessForm
-              email={email}
-              emailRef={emailRef}
-              status={requestStatus}
-              error={requestError}
-              onEmailChange={handleEmailChange}
-              onSubmit={handleSubmit}
-            />
-          </div>
-
-          <SignalField />
-        </div>
-
-        <a className="landing__scroll-cue" href="#system" aria-label="See how Cortex works">
-          <span>See the operating layer</span>
-          <ArrowDownRight aria-hidden="true" />
-        </a>
-      </section>
-
-      <section id="system" className="landing__system">
-        <div className="landing__container">
-          <div className="landing__system-intro" data-reveal>
-            <div>
-              <p className="landing__section-label">The operating layer</p>
-              <h2>Complex work.<br /><span>One direction.</span></h2>
-            </div>
-            <p>
-              You bring the objective. Cortex keeps the brief, the context, the work and the evidence aligned — without asking your team to understand the machinery underneath.
-            </p>
-          </div>
-
-          <SystemMap />
-
-          <ol className="system-stages" data-reveal>
-            {systemStages.map((stage, index) => (
-              <li key={stage.title}>
-                <span className="system-stages__index">0{index + 1}</span>
-                <div>
-                  <strong>{stage.title}</strong>
-                  <p>{stage.description}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section className="landing__control">
-        <div className="landing__container landing__control-grid">
-          <div className="landing__control-intro" data-reveal>
-            <p className="landing__section-label">What changes for your team</p>
-            <h2>You keep the<br /><span>decision.</span></h2>
-            <p>
-              The system handles coordination. Your people keep the judgment, the context and the accountability that make the work worth doing.
-            </p>
-          </div>
-
-          <ol className="control-stages" data-reveal>
-            {controlStages.map((stage, index) => (
-              <li key={stage.title}>
-                <span className="control-stages__index">0{index + 1}</span>
-                <div>
-                  <strong>{stage.title}</strong>
-                  <p>{stage.description}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section className="landing__closing" data-reveal>
-        <div className="landing__container landing__closing-grid">
-          <CortexLogo className="landing__closing-mark" aria-hidden="true" />
-          <div>
-            <p className="landing__section-label">Private walkthrough</p>
-            <h2>Bring one difficult<br /><span>workflow.</span></h2>
-            <p>We will show you the system behind it.</p>
-            <a className="landing__closing-action" href="#access">
-              Request access
-              <ArrowUpRight aria-hidden="true" />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <footer className="landing__footer landing__container">
-        <Link className="landing__brand" to="/" aria-label="Cortex home">
+    <main className="inside" data-reduced-motion={prefersReducedMotion} aria-labelledby="inside-title">
+      <header className="inside-nav">
+        <Link className="inside-nav__brand" to="/" aria-label="Cortex home">
           <CortexLogo aria-hidden="true" />
           <span>CORTEX</span>
         </Link>
-        <span>Operational intelligence for the work that matters.</span>
-        <Link className="landing__footer-link" to="/login">
+        <Link className="inside-nav__signin" to="/login">
           Sign in
-          <ArrowUpRight aria-hidden="true" />
         </Link>
+      </header>
+
+      <section ref={entryRef} className="inside-entry" style={entryStyle}>
+        <div className="inside-entry__sticky">
+          <div className="inside-frame" aria-hidden="true">
+            <span className="inside-frame__corner inside-frame__corner--tl" />
+            <span className="inside-frame__corner inside-frame__corner--tr" />
+            <span className="inside-frame__corner inside-frame__corner--bl" />
+            <span className="inside-frame__corner inside-frame__corner--br" />
+          </div>
+
+          <div className="inside-entry__contour" aria-hidden="true">
+            <span />
+            <span />
+          </div>
+
+          <div className="inside-entry__content">
+            <div className="inside-entry__mark">
+              <CortexLogo />
+            </div>
+            <h1 id="inside-title">
+              <span>One objective.</span>
+              <span>Every capability aligned.</span>
+            </h1>
+            <p>Cortex turns complex work into one directed, inspectable system.</p>
+          </div>
+
+          <a className="inside-entry__cue" href="#journey">
+            <span>Enter Cortex</span>
+            <i aria-hidden="true" />
+          </a>
+        </div>
+      </section>
+
+      <section id="journey" ref={journeyRef} className="inside-journey" style={journeyStyle}>
+        <div className="inside-journey__sticky">
+          <ArchitectureScene activeStage={activeStage} />
+
+          <div className="inside-checkpoint" key={stage.key} aria-live="polite">
+            <div className="inside-checkpoint__meta">
+              <span>{stage.number}</span>
+              <span>{stage.title}</span>
+            </div>
+            <h2>{stage.statement}</h2>
+            <p>{stage.description}</p>
+          </div>
+
+          <ol className="inside-progress" aria-label="Cortex architecture journey">
+            {journeyStages.map((item, index) => (
+              <li key={item.key} className={index === activeStage ? "is-active" : index < activeStage ? "is-past" : ""}>
+                <span className="sr-only">{item.title}</span>
+              </li>
+            ))}
+          </ol>
+
+          <span className="inside-journey__counter" aria-hidden="true">
+            {stage.number} / 05
+          </span>
+        </div>
+      </section>
+
+      <section className="inside-closing" id="access">
+        <div className="inside-closing__architecture" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+        <div className="inside-closing__content">
+          <CortexLogo className="inside-closing__mark" />
+          <p className="inside-closing__eyebrow">Private access</p>
+          <h2>Build with intelligence<br />you can direct.</h2>
+          <p className="inside-closing__copy">Bring one difficult workflow. We will show you the system behind it.</p>
+          <AccessForm
+            email={email}
+            emailRef={emailRef}
+            status={requestStatus}
+            error={requestError}
+            onEmailChange={handleEmailChange}
+            onSubmit={handleSubmit}
+          />
+        </div>
+      </section>
+
+      <footer className="inside-footer">
+        <span>© {new Date().getFullYear()} Cortex</span>
+        <span>Operational intelligence for consequential work.</span>
       </footer>
     </main>
   );
