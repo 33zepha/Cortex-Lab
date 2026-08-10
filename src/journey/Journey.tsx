@@ -3,6 +3,7 @@ import {
   useRef,
   useState,
   type ComponentType,
+  type CSSProperties,
   type SVGProps,
 } from "react";
 import {
@@ -104,9 +105,21 @@ function interpolateKeyframes(progress: number, points: number[], values: number
   return values[values.length - 1]!;
 }
 
+function viewportScale(width: number) {
+  if (width <= 560) return 0.7;
+  if (width <= 900) return 0.84;
+  if (width <= 1180) return 0.92;
+  return 1;
+}
+
+function viewportFocus(width: number) {
+  if (width <= 720) return { x: 0.5, y: 0.34 };
+  return { x: 0.48, y: 0.52 };
+}
+
 function Chapter({ stage, index }: { stage: JourneyStage; index: number }) {
   return (
-    <article className={`cortex-chapter cortex-chapter--${stage.key}`} data-chapter={index}>
+    <article id={`journey-${stage.key}`} className={`cortex-chapter cortex-chapter--${stage.key}`} data-chapter={index}>
       <div className="cortex-chapter__sticky">
         <div className="cortex-chapter__copy">
           <div className="cortex-chapter__meta">
@@ -183,16 +196,21 @@ export function Journey() {
     const before = path.getPointAtLength(Math.max(0, pathLength - 2));
     const after = path.getPointAtLength(Math.min(length, pathLength + 2));
     const tangentAngle = Math.atan2(after.y - before.y, after.x - before.x) * (180 / Math.PI);
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const responsiveScale = viewportScale(viewportWidth);
 
-    const scale = interpolateKeyframes(
+    const scale = responsiveScale * interpolateKeyframes(
       rawProgress,
       [0, 0.16, 0.31, 0.42, 0.56, 0.69, 0.84, 1],
       [1, 0.98, 0.91, 1.03, 1.08, 0.93, 0.98, 1.02],
     );
-    const focusX = interpolateKeyframes(rawProgress, [0, 0.2, 0.4, 0.7, 1], [0.5, 0.48, 0.45, 0.48, 0.5]);
-    const focusY = interpolateKeyframes(rawProgress, [0, 0.35, 0.58, 0.78, 1], [0.52, 0.5, 0.54, 0.52, 0.5]);
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+
+    const desktopFocusX = interpolateKeyframes(rawProgress, [0, 0.2, 0.4, 0.7, 1], [0.5, 0.48, 0.45, 0.48, 0.5]);
+    const desktopFocusY = interpolateKeyframes(rawProgress, [0, 0.35, 0.58, 0.78, 1], [0.52, 0.5, 0.54, 0.52, 0.5]);
+    const mobileFocus = viewportFocus(viewportWidth);
+    const focusX = viewportWidth <= 720 ? mobileFocus.x : desktopFocusX;
+    const focusY = viewportWidth <= 720 ? mobileFocus.y : desktopFocusY;
 
     missionX.set(point.x);
     missionY.set(point.y);
@@ -201,7 +219,7 @@ export function Journey() {
     cameraX.set(viewportWidth * focusX - point.x * scale);
     cameraY.set(viewportHeight * focusY - point.y * scale);
     cameraRotate.set(
-      prefersReducedMotion
+      prefersReducedMotion || viewportWidth <= 720
         ? 0
         : interpolateKeyframes(rawProgress, [0, 0.24, 0.4, 0.58, 0.72, 0.9, 1], [0, -0.35, 0.2, -0.25, 0.35, 0, 0]),
     );
@@ -220,9 +238,16 @@ export function Journey() {
         ? stageFromProgress(progress) / Math.max(stages.length - 1, 1)
         : clamp((progress - 0.012) / 0.976);
       const point = path.getPointAtLength(path.getTotalLength() * effectiveProgress);
-      const scale = cameraScale.get();
-      cameraX.set(window.innerWidth * 0.48 - point.x * scale);
-      cameraY.set(window.innerHeight * 0.52 - point.y * scale);
+      const width = window.innerWidth;
+      const focus = viewportFocus(width);
+      const scale = viewportScale(width) * interpolateKeyframes(
+        progress,
+        [0, 0.16, 0.31, 0.42, 0.56, 0.69, 0.84, 1],
+        [1, 0.98, 0.91, 1.03, 1.08, 0.93, 0.98, 1.02],
+      );
+      cameraScale.set(scale);
+      cameraX.set(width * focus.x - point.x * scale);
+      cameraY.set(window.innerHeight * focus.y - point.y * scale);
     };
 
     syncCamera();
@@ -250,11 +275,6 @@ export function Journey() {
                 <stop stopColor="#4054E8" />
                 <stop offset="0.48" stopColor="#7772F2" />
                 <stop offset="1" stopColor="#A5AEFF" />
-              </linearGradient>
-              <linearGradient id="cortex-faint-gradient" x1="0" y1="0" x2="1" y2="0">
-                <stop stopColor="#586AF2" stopOpacity="0" />
-                <stop offset="0.5" stopColor="#586AF2" stopOpacity="0.18" />
-                <stop offset="1" stopColor="#8B7CF6" stopOpacity="0" />
               </linearGradient>
               <filter id="cortex-path-soft" x="-30%" y="-30%" width="160%" height="160%">
                 <feGaussianBlur stdDeviation="7" />
@@ -322,9 +342,9 @@ export function Journey() {
           <div className="cortex-world__overlay cortex-world__overlay--routing">
             <span className="cortex-world__kicker">ROUTE ANALYSIS</span>
             <div className="cortex-route-signals">
-              <span><i style={{ "--signal": ".91" } as React.CSSProperties} />reasoning <b>.91</b></span>
-              <span><i style={{ "--signal": ".73" } as React.CSSProperties} />research <b>.73</b></span>
-              <span><i style={{ "--signal": ".48" } as React.CSSProperties} />execution <b>.48</b></span>
+              <span><i style={{ "--signal": ".91" } as CSSProperties} />reasoning <b>.91</b></span>
+              <span><i style={{ "--signal": ".73" } as CSSProperties} />research <b>.73</b></span>
+              <span><i style={{ "--signal": ".48" } as CSSProperties} />execution <b>.48</b></span>
             </div>
             <div className="cortex-provider-row">
               {providers.map(({ name, signal, Mark }) => (
