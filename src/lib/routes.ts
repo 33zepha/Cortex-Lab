@@ -1,5 +1,5 @@
 export const ROUTES = {
-  home: "/",
+  home: "/app",
   missions: "/missions",
   missionDetail: (id: string) => `/missions/${id}`,
   console: "/console",

@@ -42,13 +42,14 @@ createRoot(root).render(
       <BrowserRouter>
         <VpsProvider>
           <Routes>
+            <Route path="/" element={<Suspense fallback={<LoadingScreen />}><HeroLabScreen /></Suspense>} />
             <Route path="/hero-lab" element={<Suspense fallback={<LoadingScreen />}><HeroLabScreen /></Suspense>} />
             <Route path="/project" element={<Suspense fallback={<LoadingScreen />}><ProjectScreen /></Suspense>} />
             <Route path="/login" element={<Suspense fallback={<LoadingScreen />}><AuthScreen initialMode="login" /></Suspense>} />
             <Route path="/signup" element={<Suspense fallback={<LoadingScreen />}><AuthScreen initialMode="signup" /></Suspense>} />
             <Route element={<AuthGate />}>
               <Route element={<Suspense fallback={<LoadingScreen />}><AppShell /></Suspense>}>
-                <Route path="/" element={<Suspense fallback={<LoadingScreen />}><OverviewScreen /></Suspense>} />
+                <Route path="/app" element={<Suspense fallback={<LoadingScreen />}><OverviewScreen /></Suspense>} />
                 <Route path="/missions" element={<Suspense fallback={<LoadingScreen />}><MissionsScreen /></Suspense>} />
                 <Route path="/missions/:id" element={<Suspense fallback={<LoadingScreen />}><MissionDetailScreen /></Suspense>} />
                 <Route path="/console" element={<Suspense fallback={<LoadingScreen />}><ConsoleScreen /></Suspense>} />

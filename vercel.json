@@ -8,12 +8,15 @@
   },
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/proxy?path=:path*" },
+    { "source": "/", "destination": "/index.html" },
     { "source": "/hero-lab", "destination": "/index.html" },
     { "source": "/project", "destination": "/index.html" },
     { "source": "/login", "destination": "/index.html" },
     { "source": "/signup", "destination": "/index.html" },
+    { "source": "/app", "destination": "/index.html" },
     { "source": "/missions", "destination": "/index.html" },
     { "source": "/missions/(.*)", "destination": "/index.html" },
+    { "source": "/console", "destination": "/index.html" },
     { "source": "/system", "destination": "/index.html" },
     { "source": "/profile", "destination": "/index.html" }
   ]

@@ -5,7 +5,7 @@ import { cn } from "@/lib/cn";
 import { Tooltip } from "@/components/ui";
 
 const navItems = [
-  { to: "/", label: "Overview", icon: LayoutGrid, end: true },
+  { to: "/app", label: "Overview", icon: LayoutGrid, end: true },
   { to: "/missions", label: "Missions", icon: ListChecks, end: false },
   { to: "/system", label: "System", icon: Activity, end: false },
 ];
@@ -14,7 +14,7 @@ export function IconRail({ onOpenPalette }: { onOpenPalette: () => void }) {
   return (
     <aside className="hidden laptop:flex laptop:w-16 shrink-0 flex-col items-center border-r border-border bg-surface-1 py-3">
       <NavLink
-        to="/"
+        to="/app"
         aria-label="CortexLab — Overview"
         className="mb-3 flex size-10 items-center justify-center rounded-md text-text-primary transition-colors duration-fast ease-standard hover:bg-surface-2"
       >

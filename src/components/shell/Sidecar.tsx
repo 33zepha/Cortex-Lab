@@ -18,6 +18,7 @@ import { cn } from "@/lib/cn";
 import { formatMissionTitle } from "@/lib/mission-naming";
 import { allMissions, missionActive, findMission } from "@/fixtures/missions";
 import type { MissionFilter } from "@/lib/types";
+import { ROUTES } from "@/lib/routes";
 
 /**
  * Panneau contextuel accolé à IconRail. Son contenu dépend de la route active —
@@ -31,7 +32,7 @@ export function Sidecar() {
   const { id } = useParams<{ id?: string }>();
 
   if (id) return <MissionDetailSidecar id={id} />;
-  if (location.pathname === "/") return <OverviewSidecar />;
+  if (location.pathname === ROUTES.home) return <OverviewSidecar />;
   if (location.pathname.startsWith("/missions")) return <MissionsSidecar />;
   if (location.pathname === "/system") return <SystemSidecar />;
   return null;

@@ -104,7 +104,7 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
 
       try {
         await authenticate(email.trim(), password);
-        window.location.assign("/");
+        window.location.assign("/app");
       } catch (error) {
         setLoginError(
           error instanceof Error && error.message === "Invalid credentials"
@@ -510,7 +510,7 @@ export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
                           )}
                         </AnimatePresence>
                       </motion.div>
-                      <button className="auth-skip" type="button" onClick={setupSaved ? () => window.location.assign("/") : finishWithoutConnection} disabled={setupState === "saving"}>
+                      <button className="auth-skip" type="button" onClick={setupSaved ? () => window.location.assign("/app") : finishWithoutConnection} disabled={setupState === "saving"}>
                         {setupSaved ? "Enter Cortex" : setupState === "saving" ? "Saving setup…" : "Continue without connection"}
                       </button>
                     </div>

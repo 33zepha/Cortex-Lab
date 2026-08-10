@@ -1,3 +1,4 @@
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import cortexHeroMark from "@/assets/cortex-hero-mark.png";
 import "./ProjectScreen.css";
@@ -27,11 +28,14 @@ export function ProjectScreen() {
   return (
     <main className="project-story">
       <header className="project-story__header">
-        <Link className="project-story__brand" to="/hero-lab" aria-label="Back to Cortex">
+        <Link className="project-story__brand" to="/" aria-label="Back to Cortex">
           <img src={cortexHeroMark} alt="" draggable={false} />
           <span>Cortex</span>
         </Link>
-        <Link className="project-story__back" to="/hero-lab">Back <span aria-hidden="true">↙</span></Link>
+        <Link className="project-story__back" to="/">
+          Back
+          <ArrowLeft aria-hidden="true" />
+        </Link>
       </header>
 
       <section className="project-story__intro" aria-labelledby="project-title">
@@ -60,7 +64,10 @@ export function ProjectScreen() {
         <img src={cortexHeroMark} alt="" draggable={false} />
         <p className="project-story__eyebrow">Early access</p>
         <h2 id="project-closing-title">See what takes<br /><em>shape next.</em></h2>
-        <Link className="project-story__cta" to="/hero-lab#waitlist">Join the waitlist <span aria-hidden="true">↗</span></Link>
+        <Link className="project-story__cta" to="/#access">
+          Join the waitlist
+          <ArrowUpRight aria-hidden="true" />
+        </Link>
       </section>
     </main>
   );
