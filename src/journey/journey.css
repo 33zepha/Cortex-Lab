@@ -22,6 +22,19 @@
   pointer-events: none;
 }
 
+.cortex-journey::after {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 50svh;
+  background: linear-gradient(to bottom, rgba(88,106,242,0), rgba(88,106,242,.18) 46%, rgba(88,106,242,.34));
+  content: "";
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
 .cortex-journey__world {
   position: sticky;
   z-index: 1;
@@ -108,7 +121,7 @@
 }
 
 .cortex-world__layer {
-  opacity: .09;
+  opacity: .025;
   transition: opacity 520ms cubic-bezier(.22,1,.36,1), transform 700ms cubic-bezier(.22,1,.36,1);
   transform-origin: center;
 }
@@ -140,7 +153,7 @@
 .cortex-journey[data-stage="3"] .cortex-world__layer--execution,
 .cortex-journey[data-stage="4"] .cortex-world__layer--execution,
 .cortex-journey[data-stage="4"] .cortex-world__layer--verify {
-  opacity: .22;
+  opacity: .16;
 }
 
 .cortex-world__input {
@@ -242,7 +255,7 @@
   position: absolute;
   z-index: 10;
   width: 430px;
-  opacity: .08;
+  opacity: 0;
   transition: opacity 420ms ease, transform 620ms cubic-bezier(.22,1,.36,1), filter 420ms ease;
   filter: blur(1.5px);
 }
@@ -254,6 +267,17 @@
 .cortex-journey[data-stage="4"] .cortex-world__overlay--return {
   opacity: 1;
   filter: none;
+}
+
+.cortex-journey[data-stage="1"] .cortex-world__overlay--objective,
+.cortex-journey[data-stage="2"] .cortex-world__overlay--objective,
+.cortex-journey[data-stage="2"] .cortex-world__overlay--routing,
+.cortex-journey[data-stage="3"] .cortex-world__overlay--routing,
+.cortex-journey[data-stage="3"] .cortex-world__overlay--execution,
+.cortex-journey[data-stage="4"] .cortex-world__overlay--execution,
+.cortex-journey[data-stage="4"] .cortex-world__overlay--verify {
+  opacity: .08;
+  filter: blur(.8px);
 }
 
 .cortex-world__kicker {
@@ -566,6 +590,7 @@
 .cortex-chapter {
   position: relative;
   height: 176svh;
+  scroll-margin-top: 1px;
 }
 
 .cortex-chapter__sticky {
@@ -752,6 +777,10 @@
     opacity: .7;
   }
 
+  .cortex-journey::after {
+    height: 34svh;
+  }
+
   .cortex-chapter {
     height: 168svh;
   }
@@ -759,6 +788,17 @@
   .cortex-chapter__sticky {
     align-items: flex-end;
     padding: 1.25rem 1.25rem 7rem;
+  }
+
+  .cortex-chapter__sticky::before {
+    position: absolute;
+    z-index: -1;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 44%;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,.82) 34%, rgba(255,255,255,.98) 78%);
+    content: "";
   }
 
   .cortex-chapter__copy,
