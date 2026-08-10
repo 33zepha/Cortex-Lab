@@ -31,47 +31,47 @@ const journeyStages: JourneyStage[] = [
   {
     key: "cortex",
     number: "01",
-    navLabel: "Cortex",
-    eyebrow: "DIRECTED WORK",
-    title: "Complex work, made visible.",
+    navLabel: "Objective",
+    eyebrow: "OBJECTIVE LOCKED",
+    title: "One objective enters the system.",
     description:
-      "Cortex gives one objective a visible path — the right intelligence, the right roles and a result you can trust.",
+      "Cortex captures intent, context and constraints, then turns them into a visible mission that can move through the whole system.",
   },
   {
     key: "hermes",
     number: "02",
-    navLabel: "Hermes",
-    eyebrow: "THE CONTROL LAYER",
-    title: "Hermes routes the right intelligence.",
+    navLabel: "Route",
+    eyebrow: "INTELLIGENCE ROUTING",
+    title: "Hermes chooses how the mission should think.",
     description:
-      "One operating layer coordinates the runtimes your mission needs — Claude, Codex, DeepSeek, Gemini, Mistral and more.",
+      "The operating layer selects and coordinates the runtimes that fit the work — without exposing the user to provider-by-provider orchestration.",
   },
   {
     key: "teams",
     number: "03",
-    navLabel: "Teams",
-    eyebrow: "THE WORKFORCE",
-    title: "A brief becomes a team.",
+    navLabel: "Team",
+    eyebrow: "WORK DISTRIBUTION",
+    title: "The mission becomes coordinated work.",
     description:
-      "A CLI command, API request or connected key becomes organized work: clear roles, dependencies and shared context.",
+      "Roles receive only the context they need, dependencies stay explicit and every contribution remains attached to the same objective.",
   },
   {
     key: "review",
     number: "04",
-    navLabel: "Review",
-    eyebrow: "THE QUALITY LOOP",
-    title: "Every result is challenged before it ships.",
+    navLabel: "Verify",
+    eyebrow: "QUALITY GATE",
+    title: "The system challenges its own work.",
     description:
-      "The work is produced, inspected, tested and revised against the objective, constraints and evidence.",
+      "Outputs loop through inspection, testing and revision until the evidence and constraints agree with the objective.",
   },
   {
     key: "result",
     number: "05",
-    navLabel: "Result",
-    eyebrow: "THE HANDOFF",
-    title: "You get the result — and the time back.",
+    navLabel: "Return",
+    eyebrow: "VERIFIED HANDOFF",
+    title: "One verified result comes back out.",
     description:
-      "Cortex returns the work, its evidence and the decisions that matter, so people can move forward with less coordination.",
+      "The result returns with its evidence and important decisions intact — a finished handoff instead of another coordination problem.",
   },
 ];
 
@@ -82,12 +82,20 @@ const providers: Array<{
   descriptor: string;
   Mark: ProviderMark;
 }> = [
-  { name: "Claude", descriptor: "Anthropic", Mark: ClaudeMark },
-  { name: "Codex", descriptor: "OpenAI", Mark: OpenAiMark },
-  { name: "DeepSeek", descriptor: "model runtime", Mark: DeepSeekMark },
-  { name: "Gemini", descriptor: "Google", Mark: GeminiMark },
-  { name: "Mistral", descriptor: "Mistral AI", Mark: MistralMark },
+  { name: "Claude", descriptor: "reason", Mark: ClaudeMark },
+  { name: "Codex", descriptor: "build", Mark: OpenAiMark },
+  { name: "DeepSeek", descriptor: "runtime", Mark: DeepSeekMark },
+  { name: "Gemini", descriptor: "context", Mark: GeminiMark },
+  { name: "Mistral", descriptor: "runtime", Mark: MistralMark },
 ];
+
+const circuitStops = [
+  { number: "01", label: "objective", x: 150, y: 380 },
+  { number: "02", label: "route", x: 370, y: 258 },
+  { number: "03", label: "team", x: 600, y: 380 },
+  { number: "04", label: "verify", x: 830, y: 502 },
+  { number: "05", label: "return", x: 1050, y: 380 },
+] as const;
 
 function clamp(value: number, min = 0, max = 1) {
   return Math.min(max, Math.max(min, value));
@@ -167,10 +175,15 @@ function ArchitectureScene({
         <defs>
           <linearGradient id="inside-route-gradient" x1="120" y1="380" x2="1080" y2="380" gradientUnits="userSpaceOnUse">
             <stop stopColor="#586AF2" stopOpacity="0" />
-            <stop offset="0.18" stopColor="#586AF2" stopOpacity="0.32" />
-            <stop offset="0.5" stopColor="#D9DEFF" stopOpacity="0.9" />
-            <stop offset="0.82" stopColor="#586AF2" stopOpacity="0.32" />
+            <stop offset="0.18" stopColor="#586AF2" stopOpacity="0.36" />
+            <stop offset="0.5" stopColor="#D9DEFF" stopOpacity="0.95" />
+            <stop offset="0.82" stopColor="#586AF2" stopOpacity="0.36" />
             <stop offset="1" stopColor="#586AF2" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="inside-circuit-gradient" x1="150" y1="258" x2="1050" y2="502" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#4054E8" />
+            <stop offset="0.5" stopColor="#7A75F4" />
+            <stop offset="1" stopColor="#AEB7FF" />
           </linearGradient>
           <radialGradient id="inside-core-wash">
             <stop stopColor="#AAB4FF" stopOpacity="0.22" />
@@ -197,60 +210,84 @@ function ArchitectureScene({
         <path className="inside-scene__contour inside-scene__contour--outer" d="M136 600C188 220 376 70 600 70s412 150 464 530" />
         <path className="inside-scene__contour inside-scene__contour--inner" d="M230 600C275 310 425 176 600 176s325 134 370 424" />
         <path className="inside-scene__spine" d="M600 100V660" />
-        <path className="inside-scene__path inside-scene__path--primary" d="M118 380C272 380 332 258 470 258S532 380 600 380s130-122 270-122 198 122 212 122" />
-        <path className="inside-scene__path inside-scene__path--return" d="M118 380C272 380 332 502 470 502S532 380 600 380s130 122 270 122 198-122 212-122" />
         <path className="inside-scene__floor" d="M80 620H1120" />
 
+        <path className="inside-scene__circuit-rail" pathLength="1" d="M150 380C240 380 280 258 370 258S510 380 600 380 740 502 830 502s130-122 220-122" />
+        <path className="inside-scene__circuit-progress" pathLength="1" d="M150 380C240 380 280 258 370 258S510 380 600 380 740 502 830 502s130-122 220-122" />
+        <path className="inside-scene__circuit-echo" pathLength="1" d="M150 380C240 380 280 502 370 502S510 380 600 380 740 258 830 258s130 122 220 122" />
+
+        {circuitStops.map((stop, index) => (
+          <g key={stop.number} className={`inside-scene__stop inside-scene__stop--${index + 1}`}>
+            <circle cx={stop.x} cy={stop.y} r="18" />
+            <circle cx={stop.x} cy={stop.y} r="4" />
+          </g>
+        ))}
+
         <g className="inside-scene__layer inside-scene__layer--cortex">
-          <circle className="inside-scene__wash" cx="600" cy="380" r="188" fill="url(#inside-core-wash)" filter="url(#inside-soft)" />
-          <path className="inside-scene__objective-line" d="M150 380H506" />
-          <path className="inside-scene__cortex-signal inside-scene__cortex-signal--top" d="M148 380C258 380 320 300 438 300c56 0 82 39 118 80" />
-          <path className="inside-scene__cortex-signal inside-scene__cortex-signal--bottom" d="M148 380C258 380 320 460 438 460c56 0 82-39 118-80" />
-          <circle className="inside-scene__cortex-signal-dot inside-scene__cortex-signal-dot--one" cx="148" cy="380" r="4" />
-          <circle className="inside-scene__cortex-signal-dot inside-scene__cortex-signal-dot--two" cx="326" cy="300" r="3" />
-          <circle className="inside-scene__cortex-signal-dot inside-scene__cortex-signal-dot--three" cx="326" cy="460" r="3" />
-          <circle className="inside-scene__cortex-pulse" cx="600" cy="380" r="94" />
-          <circle className="inside-scene__cortex-pulse inside-scene__cortex-pulse--outer" cx="600" cy="380" r="132" />
-          <circle className="inside-scene__objective" cx="600" cy="380" r="16" />
-          <circle className="inside-scene__objective-ring" cx="600" cy="380" r="58" />
+          <circle className="inside-scene__wash" cx="150" cy="380" r="154" fill="url(#inside-core-wash)" filter="url(#inside-soft)" />
+          <path className="inside-scene__objective-line" d="M78 380H150" />
+          <path className="inside-scene__cortex-signal inside-scene__cortex-signal--top" d="M82 380C104 380 114 342 150 342" />
+          <path className="inside-scene__cortex-signal inside-scene__cortex-signal--bottom" d="M82 380C104 380 114 418 150 418" />
+          <circle className="inside-scene__cortex-signal-dot inside-scene__cortex-signal-dot--one" cx="82" cy="380" r="4" />
+          <circle className="inside-scene__cortex-signal-dot inside-scene__cortex-signal-dot--two" cx="118" cy="342" r="3" />
+          <circle className="inside-scene__cortex-signal-dot inside-scene__cortex-signal-dot--three" cx="118" cy="418" r="3" />
+          <circle className="inside-scene__cortex-pulse" cx="150" cy="380" r="58" />
+          <circle className="inside-scene__cortex-pulse inside-scene__cortex-pulse--outer" cx="150" cy="380" r="90" />
         </g>
 
         <g className="inside-scene__layer inside-scene__layer--hermes">
-          <circle className="inside-scene__provider-orbit" cx="600" cy="380" r="172" />
-          <circle className="inside-scene__provider-orbit inside-scene__provider-orbit--outer" cx="600" cy="380" r="226" />
-          <path className="inside-scene__provider-axis" d="M600 154V208M600 552V606" />
+          <circle className="inside-scene__provider-orbit" cx="370" cy="258" r="98" />
+          <circle className="inside-scene__provider-orbit inside-scene__provider-orbit--outer" cx="370" cy="258" r="134" />
+          <path className="inside-scene__provider-axis" d="M370 102V144M370 372V414" />
         </g>
 
         <g className="inside-scene__layer inside-scene__layer--teams">
-          <path className="inside-scene__team-link" d="M600 380L320 224M600 380L880 224M600 380L320 536M600 380L880 536" />
-          <path className="inside-scene__team-link inside-scene__team-link--input" d="M126 380H260" />
-          <circle className="inside-scene__team-node" cx="320" cy="224" r="8" />
-          <circle className="inside-scene__team-node" cx="880" cy="224" r="8" />
-          <circle className="inside-scene__team-node" cx="320" cy="536" r="8" />
-          <circle className="inside-scene__team-node" cx="880" cy="536" r="8" />
+          <path className="inside-scene__team-link" d="M600 380L488 290M600 380L712 290M600 380L488 470M600 380L712 470" />
+          <circle className="inside-scene__team-node" cx="488" cy="290" r="8" />
+          <circle className="inside-scene__team-node" cx="712" cy="290" r="8" />
+          <circle className="inside-scene__team-node" cx="488" cy="470" r="8" />
+          <circle className="inside-scene__team-node" cx="712" cy="470" r="8" />
         </g>
 
         <g className="inside-scene__layer inside-scene__layer--review">
-          <path className="inside-scene__review-loop" d="M600 176C796 176 900 260 900 380s-104 204-300 204-300-84-300-204 104-204 300-204Z" />
-          <path className="inside-scene__review-gate" d="M600 202V254M600 506V558" />
-          <circle className="inside-scene__review-node" cx="600" cy="176" r="7" />
-          <circle className="inside-scene__review-node" cx="900" cy="380" r="7" />
-          <circle className="inside-scene__review-node" cx="600" cy="584" r="7" />
-          <circle className="inside-scene__review-node" cx="300" cy="380" r="7" />
+          <path className="inside-scene__review-loop" d="M830 394C918 394 970 438 970 502s-52 108-140 108-140-44-140-108 52-108 140-108Z" />
+          <path className="inside-scene__review-gate" d="M830 410V438M830 566V594" />
+          <circle className="inside-scene__review-node" cx="830" cy="394" r="7" />
+          <circle className="inside-scene__review-node" cx="970" cy="502" r="7" />
+          <circle className="inside-scene__review-node" cx="830" cy="610" r="7" />
+          <circle className="inside-scene__review-node" cx="690" cy="502" r="7" />
         </g>
 
         <g className="inside-scene__layer inside-scene__layer--result">
-          <rect className="inside-scene__output-frame" x="388" y="244" width="424" height="272" rx="4" />
-          <path className="inside-scene__output-line" d="M432 316H768M432 356H678M432 396H724M432 454H588" />
-          <path className="inside-scene__output-check" d="M714 452L733 471L768 430" />
+          <rect className="inside-scene__output-frame" x="954" y="294" width="196" height="172" rx="4" />
+          <path className="inside-scene__output-line" d="M982 338H1120M982 368H1086M982 398H1102" />
+          <path className="inside-scene__output-check" d="M1076 430L1090 444L1118 414" />
         </g>
 
         <rect className="inside-scene__halftone" x="0" y="0" width="1200" height="760" fill="url(#inside-dots)" mask="url(#inside-pixel-mask)" />
       </svg>
 
-      <div className="inside-scene__center">
+      <div className="inside-circuit-stops">
+        {circuitStops.map((stop, index) => (
+          <div
+            key={stop.number}
+            className={`inside-circuit-stop inside-circuit-stop--${index + 1} ${index === activeStage ? "is-active" : index < activeStage ? "is-past" : ""}`}
+          >
+            <span>{stop.number}</span>
+            <strong>{stop.label}</strong>
+          </div>
+        ))}
+      </div>
+
+      <div className="inside-scene__traveler">
+        <span className="inside-scene__traveler-halo" />
         <CortexLogo />
-        <span>{stage.key === "hermes" ? "HERMES" : "CORTEX"}</span>
+        <span className="inside-scene__traveler-label">mission</span>
+      </div>
+
+      <div className="inside-scene__center-marker">
+        <span>{stage.number}</span>
+        <strong>{stage.navLabel}</strong>
       </div>
 
       {stage.key === "cortex" && (
@@ -261,16 +298,16 @@ function ArchitectureScene({
               <i />
               <span>context</span>
               <i />
-              <span>outcome</span>
+              <span>constraints</span>
             </div>
-            <p><span>CORTEX</span><small>one directed system</small></p>
+            <p><span>MISSION CREATED</span><small>one objective · one system</small></p>
           </div>
         </div>
       )}
 
       {stage.key === "hermes" && (
         <div key="hermes" className="inside-scene__stage-overlay inside-scene__stage-overlay--hermes">
-          <span className="inside-provider-ring__eyebrow">RUNTIME ECOSYSTEM</span>
+          <span className="inside-provider-ring__eyebrow">AVAILABLE INTELLIGENCE</span>
           <div className="inside-provider-ring">
             {providers.map(({ name, descriptor, Mark }) => (
               <div className="inside-provider" key={name}>
@@ -282,31 +319,31 @@ function ArchitectureScene({
               </div>
             ))}
           </div>
-          <span className="inside-provider-ring__note">Connect the runtimes your mission needs.</span>
+          <span className="inside-provider-ring__note">Hermes composes the runtime path for this mission.</span>
         </div>
       )}
 
       {stage.key === "teams" && (
         <div key="teams" className="inside-scene__stage-overlay inside-scene__stage-overlay--teams">
           <div className="inside-team-map__input">
-            <span>MISSION INPUT</span>
-            <strong>CLI&nbsp; / &nbsp;API&nbsp; / &nbsp;KEY</strong>
+            <span>SHARED OBJECTIVE</span>
+            <strong>context stays attached</strong>
           </div>
           <div className="inside-team-map__node inside-team-map__node--planner"><strong>Planner</strong><small>route</small></div>
           <div className="inside-team-map__node inside-team-map__node--researcher"><strong>Researcher</strong><small>context</small></div>
           <div className="inside-team-map__node inside-team-map__node--builder"><strong>Builder</strong><small>produce</small></div>
           <div className="inside-team-map__node inside-team-map__node--reviewer"><strong>Reviewer</strong><small>challenge</small></div>
-          <span className="inside-team-map__mission">one directed mission</span>
+          <span className="inside-team-map__mission">distributed work · one mission state</span>
         </div>
       )}
 
       {stage.key === "review" && (
         <div key="review" className="inside-scene__stage-overlay inside-scene__stage-overlay--review">
-          <div className="inside-review-loop__step inside-review-loop__step--produce"><strong>01</strong><span>produce</span></div>
-          <div className="inside-review-loop__step inside-review-loop__step--inspect"><strong>02</strong><span>inspect</span></div>
-          <div className="inside-review-loop__step inside-review-loop__step--test"><strong>03</strong><span>test</span></div>
+          <div className="inside-review-loop__step inside-review-loop__step--produce"><strong>01</strong><span>inspect</span></div>
+          <div className="inside-review-loop__step inside-review-loop__step--inspect"><strong>02</strong><span>test</span></div>
+          <div className="inside-review-loop__step inside-review-loop__step--test"><strong>03</strong><span>compare</span></div>
           <div className="inside-review-loop__step inside-review-loop__step--revise"><strong>04</strong><span>revise</span></div>
-          <span className="inside-review-loop__gate-label">quality gate</span>
+          <span className="inside-review-loop__gate-label">objective held constant</span>
         </div>
       )}
 
@@ -315,11 +352,11 @@ function ArchitectureScene({
           <div className="inside-result-surface">
             <div className="inside-result-surface__topline"><span>VERIFIED OUTPUT</span><span>READY</span></div>
             <strong>Result returned</strong>
-            <p>Work · evidence · decisions</p>
+            <p>work · evidence · decisions</p>
             <div className="inside-result-surface__signals">
-              <span>time recovered</span>
-              <span>coordination reduced</span>
-              <span>cost avoided</span>
+              <span>traceable</span>
+              <span>reviewed</span>
+              <span>handoff ready</span>
             </div>
           </div>
         </div>
@@ -501,17 +538,10 @@ export function HeroLabScreen() {
           <ArchitectureScene activeStage={activeStage} sceneRef={sceneRef} />
 
           <div className={`inside-checkpoint inside-checkpoint--${stage.key}`} key={stage.key} role="region" aria-live="polite" aria-label={`${stage.number} ${stage.navLabel}`}>
-            {stage.key === "cortex" ? (
-              <div className="inside-checkpoint__meta inside-checkpoint__meta--cortex">
-                <span className="inside-checkpoint__signal" aria-hidden="true"><i /><i /><i /></span>
-                <span>{stage.eyebrow}</span>
-              </div>
-            ) : (
-              <div className="inside-checkpoint__meta">
-                <span>{stage.number}</span>
-                <span>{stage.eyebrow}</span>
-              </div>
-            )}
+            <div className="inside-checkpoint__meta">
+              <span>{stage.number}</span>
+              <span>{stage.eyebrow}</span>
+            </div>
             <h2>{stage.title}</h2>
             <p>{stage.description}</p>
           </div>
