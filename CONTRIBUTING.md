@@ -22,6 +22,14 @@ git push origin main
 
 Keep `main` deployable. Use small, coherent commits instead of long-lived test branches. If a visual experiment needs a separate surface, keep it behind an application route or a local query parameter; do not create a new remote branch for every variation.
 
+## Autopush des passes visuelles
+
+Pour les passes UI/UX du frontend, le push sur `main` est automatique en fin de passe : aucune validation intermédiaire n’est nécessaire lorsque les fichiers modifiés restent dans `src/screens/**`, `src/components/**`, `src/assets/**` ou `public/**`.
+
+Le contrôle reste systématique : `git diff --check`, `npm run typecheck`, `npm test`, puis `npm run build`. Une passe cohérente produit un seul commit et un seul déploiement Vercel ; les sauvegardes intermédiaires ne sont pas publiées.
+
+Les changements touchant le backend, l’API, l’authentification, les dépendances, les scripts de déploiement, la configuration Vercel, les secrets ou les données persistantes nécessitent encore une validation explicite avant push.
+
 ## Deployment contract
 
 | Event | Result |

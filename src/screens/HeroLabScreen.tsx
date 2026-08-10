@@ -1,112 +1,141 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type RefObject } from "react";
 import { Link } from "react-router-dom";
-import Dither from "@/components/hero/Dither";
-import cortexHeroMark from "@/assets/cortex-hero-mark.png";
+import { CortexMark } from "@/components/brand/CortexMark";
 import "./HeroLabScreen.css";
-
-const TYPEFACES = new Set(["jakarta", "syne", "unbounded", "newsreader"]);
 
 type WaitlistStatus = "idle" | "invalid" | "loading" | "success" | "error";
 
-function clamp01(value: number) {
-  return Math.min(1, Math.max(0, value));
+function OperatingDiagram() {
+  return (
+    <figure className="landing-diagram" data-reveal aria-labelledby="diagram-title">
+      <div className="landing-diagram__topline">
+        <span id="diagram-title">One business objective</span>
+        <span>One accountable result</span>
+      </div>
+
+      <div className="landing-diagram__canvas">
+        <svg className="landing-diagram__flow" viewBox="0 0 640 480" role="img" aria-label="An objective moves through Cortex and returns as a reviewable result">
+          <path className="landing-diagram__path landing-diagram__path--input" d="M28 102C150 102 155 238 302 238" />
+          <path className="landing-diagram__path landing-diagram__path--context" d="M28 238C145 238 182 238 302 238" />
+          <path className="landing-diagram__path landing-diagram__path--judgement" d="M28 374C150 374 155 238 302 238" />
+          <path className="landing-diagram__path landing-diagram__path--work" d="M302 238C440 238 442 112 612 112" />
+          <path className="landing-diagram__path landing-diagram__path--proof" d="M302 238C440 238 442 364 612 364" />
+          <circle className="landing-diagram__node landing-diagram__node--input" cx="28" cy="102" r="4" />
+          <circle className="landing-diagram__node landing-diagram__node--context" cx="28" cy="238" r="4" />
+          <circle className="landing-diagram__node landing-diagram__node--judgement" cx="28" cy="374" r="4" />
+          <circle className="landing-diagram__node landing-diagram__node--core" cx="302" cy="238" r="8" />
+          <circle className="landing-diagram__node landing-diagram__node--work" cx="612" cy="112" r="4" />
+          <circle className="landing-diagram__node landing-diagram__node--proof" cx="612" cy="364" r="4" />
+        </svg>
+
+        <div className="landing-diagram__label landing-diagram__label--input">
+          <span>01 / Objective</span>
+          <strong>Launch the next offer.</strong>
+        </div>
+        <div className="landing-diagram__label landing-diagram__label--context">
+          <span>02 / Context</span>
+          <strong>Keep the constraints in view.</strong>
+        </div>
+        <div className="landing-diagram__label landing-diagram__label--judgement">
+          <span>03 / Judgment</span>
+          <strong>Leave the decision with people.</strong>
+        </div>
+
+        <div className="landing-diagram__core" aria-hidden="true">
+          <CortexMark />
+          <span>Cortex</span>
+        </div>
+
+        <div className="landing-diagram__label landing-diagram__label--work">
+          <span>04 / Work</span>
+          <strong>Right capability, right moment.</strong>
+        </div>
+        <div className="landing-diagram__label landing-diagram__label--proof">
+          <span>05 / Proof</span>
+          <strong>A result your team can review.</strong>
+        </div>
+      </div>
+
+      <figcaption>Many moving parts. One place to keep the outcome in view.</figcaption>
+    </figure>
+  );
 }
 
-function smootherstep(value: number) {
-  const t = clamp01(value);
-  return t * t * t * (t * (t * 6 - 15) + 10);
-}
-
-function mix(from: number, to: number, amount: number) {
-  return from + (to - from) * amount;
-}
-
-function phase(progress: number, start: number, end: number) {
-  return smootherstep((progress - start) / (end - start));
-}
-
-function updateJourney(journey: HTMLElement, progress: number) {
-  const surface = 1 - phase(progress, 0.2, 0.36);
-  const threshold = phase(progress, 0.16, 0.38) * (1 - phase(progress, 0.62, 0.78));
-  const access = phase(progress, 0.58, 0.84);
-  const lensProgress = phase(progress, 0.14, 0.86);
-  const mistArrives = phase(progress, 0.1, 0.4);
-  const mistLeaves = 1 - phase(progress, 0.58, 0.88);
-  const mist = clamp01(mistArrives * mistLeaves);
-  const introExit = phase(progress, 0.28, 0.68);
-  const intro = 1 - phase(progress, 0.44, 0.73);
-  const drift = phase(progress, 0.06, 0.94);
-  const logoRise = phase(progress, 0.5, 0.88);
-  const logoRiseDistance = Math.min(window.innerHeight * 0.13, 118);
-  const stage = progress < 0.25 ? "surface" : progress < 0.72 ? "threshold" : "access";
-
-  journey.style.setProperty("--journey-progress", progress.toFixed(4));
-  journey.style.setProperty("--hero-surface-progress", surface.toFixed(4));
-  journey.style.setProperty("--hero-threshold-progress", threshold.toFixed(4));
-  journey.style.setProperty("--hero-access-progress", access.toFixed(4));
-  journey.style.setProperty("--hero-lens-progress", lensProgress.toFixed(4));
-  journey.style.setProperty("--hero-logo-scale", mix(1, 1.78, phase(progress, 0.14, 0.88)).toFixed(4));
-  journey.style.setProperty("--hero-logo-rise", `${(-logoRiseDistance * logoRise).toFixed(1)}px`);
-  journey.style.setProperty("--hero-logo-opacity", mix(1, 0.94, access).toFixed(4));
-  journey.style.setProperty("--hero-logo-glow", mix(0.5, 0.88, lensProgress).toFixed(4));
-  journey.style.setProperty("--hero-architecture-opacity", mix(0, 0.46, phase(progress, 0.3, 0.72)).toFixed(4));
-  journey.style.setProperty("--hero-architecture-scale", mix(0.84, 1, phase(progress, 0.3, 0.82)).toFixed(4));
-  journey.style.setProperty("--hero-architecture-rotate", `${mix(-7, 1.5, phase(progress, 0.3, 0.86)).toFixed(2)}deg`);
-  journey.style.setProperty("--hero-architecture-blur", `${mix(2.4, 0, phase(progress, 0.3, 0.78)).toFixed(2)}px`);
-
-  journey.style.setProperty("--hero-field-scale", mix(1.004, 1.022, drift).toFixed(4));
-  journey.style.setProperty("--hero-field-rotate", `${mix(-0.04, 0.04, drift).toFixed(3)}deg`);
-  journey.style.setProperty("--hero-field-x", `${mix(0, -0.45, drift).toFixed(2)}%`);
-  journey.style.setProperty("--hero-field-y", `${mix(0, -0.25, drift).toFixed(2)}%`);
-  journey.style.setProperty("--hero-field-brightness", mix(1, 0.9, clamp01(mist * 0.38 + access * 0.08)).toFixed(3));
-  journey.style.setProperty("--hero-field-saturate", mix(1, 0.92, clamp01(mist * 0.38 + access * 0.06)).toFixed(3));
-
-  journey.style.setProperty("--hero-glow-opacity", mix(0.72, 0.38, clamp01(mist * 0.78 + access * 0.12)).toFixed(3));
-  journey.style.setProperty("--hero-mist-opacity", (mist * 0.62 + access * 0.06).toFixed(4));
-  journey.style.setProperty("--hero-mist-scale", mix(0.92, 1.06, mistArrives).toFixed(4));
-  journey.style.setProperty("--hero-mist-x", `${mix(7, -5, phase(progress, 0.12, 0.84)).toFixed(2)}%`);
-  journey.style.setProperty("--hero-mist-y", `${mix(4, -4, phase(progress, 0.16, 0.78)).toFixed(2)}%`);
-  journey.style.setProperty("--hero-mist-rotate", `${mix(-2, 2, phase(progress, 0.14, 0.82)).toFixed(2)}deg`);
-  journey.style.setProperty("--hero-lens-radius", `${mix(5.5, 24, lensProgress).toFixed(2)}%`);
-
-  journey.style.setProperty("--hero-intro-opacity", intro.toFixed(4));
-  journey.style.setProperty("--hero-intro-y", `${mix(0, -28, introExit).toFixed(1)}px`);
-  journey.style.setProperty("--hero-intro-scale", mix(1, 0.94, introExit).toFixed(4));
-  journey.style.setProperty("--hero-intro-rotate", `${mix(0, -0.7, introExit).toFixed(2)}deg`);
-  journey.style.setProperty("--hero-intro-blur", `${mix(0, 3.2, introExit).toFixed(2)}px`);
-  journey.style.setProperty("--hero-text-drift", `${mix(0, -3.5, threshold).toFixed(2)}px`);
-  journey.style.setProperty("--hero-scroll-opacity", (1 - phase(progress, 0.04, 0.24)).toFixed(4));
-
-  journey.style.setProperty("--hero-access-opacity", access.toFixed(4));
-  journey.style.setProperty("--hero-access-y", `${mix(26, 0, access).toFixed(1)}px`);
-  journey.style.setProperty("--hero-access-scale", mix(0.975, 1, access).toFixed(4));
-  journey.style.setProperty("--hero-access-blur", `${mix(3.2, 0, access).toFixed(2)}px`);
-
-  if (journey.dataset.journeyStage !== stage) {
-    journey.dataset.journeyStage = stage;
-    const accessLayer = journey.querySelector<HTMLElement>(".hero-lab__access");
-    if (accessLayer) {
-      const active = stage === "access";
-      accessLayer.inert = !active;
-      accessLayer.setAttribute("aria-hidden", String(!active));
-    }
+function RequestForm({
+  email,
+  emailRef,
+  status,
+  error,
+  onEmailChange,
+  onSubmit,
+  onClose,
+  onReset,
+}: {
+  email: string;
+  emailRef: RefObject<HTMLInputElement>;
+  status: WaitlistStatus;
+  error: string;
+  onEmailChange: (value: string) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onClose: () => void;
+  onReset: () => void;
+}) {
+  if (status === "success") {
+    return (
+      <div className="landing-request__success" role="status" aria-live="polite">
+        <CortexMark aria-hidden="true" />
+        <div>
+          <strong>Request received.</strong>
+          <p>We’ll be in touch when there is a useful conversation to have.</p>
+        </div>
+        <button type="button" onClick={onReset}>Send another</button>
+      </div>
+    );
   }
+
+  return (
+    <form className="landing-request__form" noValidate onSubmit={onSubmit}>
+      <label htmlFor="landing-request-email">Where should we send the walkthrough?</label>
+      <div className="landing-request__row">
+        <input
+          ref={emailRef}
+          id="landing-request-email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          placeholder="you@company.com"
+          value={email}
+          aria-invalid={status === "invalid"}
+          aria-describedby={status === "invalid" || status === "error" ? "landing-request-error" : undefined}
+          required
+          onInvalid={() => onEmailChange(email)}
+          onChange={(event) => onEmailChange(event.target.value)}
+        />
+        <button type="submit" disabled={status === "loading"}>
+          {status === "loading" ? "Sending…" : "Send request ↗"}
+        </button>
+      </div>
+      <div className="landing-request__meta">
+        <p id="landing-request-error" role={status === "invalid" || status === "error" ? "alert" : undefined}>
+          {status === "invalid" ? "Enter a valid work email." : status === "error" ? error : "No pitch deck. We start with one real workflow."}
+        </p>
+        <button type="button" onClick={onClose}>Close</button>
+      </div>
+    </form>
+  );
 }
 
 export function HeroLabScreen() {
-  const journeyRef = useRef<HTMLDivElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const timeoutRef = useRef<number | null>(null);
-  const [waitlistOpen, setWaitlistOpen] = useState(false);
-  const [waitlistStatus, setWaitlistStatus] = useState<WaitlistStatus>("idle");
-  const [waitlistError, setWaitlistError] = useState("");
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [requestStatus, setRequestStatus] = useState<WaitlistStatus>("idle");
+  const [requestError, setRequestError] = useState("");
   const [email, setEmail] = useState("");
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
     typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
-  const requestedTypeface = new URLSearchParams(window.location.search).get("type") ?? "jakarta";
-  const typeface = TYPEFACES.has(requestedTypeface) ? requestedTypeface : "jakarta";
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -116,73 +145,37 @@ export function HeroLabScreen() {
   }, []);
 
   useEffect(() => {
-    if (!waitlistOpen) return;
-    window.requestAnimationFrame(() => emailRef.current?.focus());
-  }, [waitlistOpen]);
+    if (window.location.hash === "#waitlist") setRequestOpen(true);
+  }, []);
 
   useEffect(() => {
-    const journey = journeyRef.current;
-    if (!journey) return;
+    if (requestOpen && requestStatus !== "success") {
+      window.requestAnimationFrame(() => emailRef.current?.focus());
+    }
+  }, [requestOpen, requestStatus]);
 
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let frame = 0;
-    let currentProgress = 0;
-    let targetProgress = 0;
-    let lastTime = performance.now();
-
-    const readProgress = () => {
-      const travel = Math.max(1, journey.offsetHeight - window.innerHeight);
-      return clamp01(-journey.getBoundingClientRect().top / travel);
-    };
-
-    const render = (time: number) => {
-      const delta = Math.min(0.04, Math.max(0.001, (time - lastTime) / 1000));
-      lastTime = time;
-      const distance = targetProgress - currentProgress;
-      const follow = reducedMotion.matches ? 1 : 1 - Math.exp(-delta * 10.5);
-      currentProgress += distance * follow;
-
-      if (Math.abs(distance) < 0.00008) currentProgress = targetProgress;
-      updateJourney(journey, currentProgress);
-
-      if (currentProgress !== targetProgress) frame = window.requestAnimationFrame(render);
-      else frame = 0;
-    };
-
-    const scheduleRender = () => {
-      targetProgress = readProgress();
-      if (reducedMotion.matches) currentProgress = targetProgress;
-      if (frame === 0) {
-        lastTime = performance.now();
-        frame = window.requestAnimationFrame(render);
-      }
-    };
-
-    currentProgress = readProgress();
-    targetProgress = currentProgress;
-    updateJourney(journey, currentProgress);
-
-    if (window.location.hash === "#waitlist") {
-      setWaitlistOpen(true);
-      window.requestAnimationFrame(() => {
-        window.scrollTo({
-          top: journey.offsetHeight - window.innerHeight,
-          behavior: reducedMotion.matches ? "auto" : "smooth",
-        });
-      });
+  useEffect(() => {
+    const elements = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
+    if (prefersReducedMotion || !("IntersectionObserver" in window)) {
+      elements.forEach((element) => element.classList.add("is-visible"));
+      return;
     }
 
-    window.addEventListener("scroll", scheduleRender, { passive: true });
-    window.addEventListener("resize", scheduleRender, { passive: true });
-    reducedMotion.addEventListener("change", scheduleRender);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.16, rootMargin: "0px 0px -8%" },
+    );
 
-    return () => {
-      window.removeEventListener("scroll", scheduleRender);
-      window.removeEventListener("resize", scheduleRender);
-      reducedMotion.removeEventListener("change", scheduleRender);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, []);
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [prefersReducedMotion]);
 
   useEffect(() => {
     return () => {
@@ -190,29 +183,21 @@ export function HeroLabScreen() {
     };
   }, []);
 
-  const handleWaitlistOpen = () => {
-    setWaitlistStatus("idle");
-    setWaitlistError("");
-    setWaitlistOpen(true);
+  const handleRequestOpen = () => {
+    setRequestStatus("idle");
+    setRequestError("");
+    setRequestOpen(true);
   };
 
-  const handleAccessRequest = () => {
-    handleWaitlistOpen();
-    window.requestAnimationFrame(() => {
-      const journey = journeyRef.current;
-      if (!journey) return;
-      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      window.scrollTo({
-        top: journey.offsetHeight - window.innerHeight,
-        behavior: reducedMotion ? "auto" : "smooth",
-      });
-    });
-  };
-
-  const handleWaitlistClose = () => {
-    if (waitlistStatus === "loading") return;
-    setWaitlistOpen(false);
+  const handleRequestClose = () => {
+    if (requestStatus === "loading") return;
+    setRequestOpen(false);
     window.requestAnimationFrame(() => triggerRef.current?.focus());
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (requestStatus === "invalid" || requestStatus === "error") setRequestStatus("idle");
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -220,13 +205,13 @@ export function HeroLabScreen() {
     const form = event.currentTarget;
 
     if (!form.checkValidity()) {
-      setWaitlistStatus("invalid");
+      setRequestStatus("invalid");
       emailRef.current?.focus();
       return;
     }
 
-    setWaitlistStatus("loading");
-    setWaitlistError("");
+    setRequestStatus("loading");
+    setRequestError("");
 
     try {
       const endpoint = import.meta.env.VITE_WAITLIST_ENDPOINT?.trim();
@@ -243,177 +228,139 @@ export function HeroLabScreen() {
         });
       }
 
-      setWaitlistStatus("success");
-      setWaitlistOpen(false);
+      setRequestStatus("success");
     } catch {
-      setWaitlistStatus("error");
-      setWaitlistError("Couldn’t record the request. Try again.");
+      setRequestStatus("error");
+      setRequestError("The request could not be recorded. Try again.");
     }
   };
 
   return (
-    <main className="hero-lab" data-typeface={typeface} aria-labelledby="hero-lab-title">
-      <div className="hero-lab__journey" ref={journeyRef}>
-        <section className="hero-lab__stage" aria-label="Cortex introduction">
-          <div className="hero-lab__field" data-hero-layer="field" aria-hidden="true">
-            <Dither
-              waveColor={[0.31, 0.33, 0.37]}
-              baseColor={[0.04, 0.045, 0.06]}
-              highlightColor={[0.88, 0.86, 0.79]}
-              colorNum={16}
-              pixelSize={1.5}
-              ditherBias={0.035}
-              waveAmplitude={0.38}
-              waveFrequency={2.45}
-              waveSpeed={0.038}
-              disableAnimation={prefersReducedMotion}
-              enableMouseInteraction={!prefersReducedMotion}
-              mouseRadius={0.34}
-            />
-          </div>
+    <main className="landing" data-reduced-motion={prefersReducedMotion} aria-labelledby="landing-title">
+      <div className="landing__texture" aria-hidden="true" />
 
-          <div className="hero-lab__veil" />
-          <div className="hero-lab__glow" aria-hidden="true" />
-          <div className="hero-lab__mist" aria-hidden="true"><span /><span /><span /></div>
+      <section className="landing__hero">
+        <div className="landing__wash" aria-hidden="true" />
+        <header className="landing__nav">
+          <Link className="landing__brand" to="/hero-lab" aria-label="Cortex home">
+            <CortexMark aria-hidden="true" />
+            <span>CORTEX</span>
+          </Link>
+          <button className="landing__nav-action" type="button" onClick={handleRequestOpen}>
+            Request a private walkthrough <span aria-hidden="true">↗</span>
+          </button>
+        </header>
 
-          <div className="hero-lab__shared-mark" data-hero-layer="shared-mark" aria-hidden="true">
-            <span className="hero-lab__shared-architecture">
-              <span className="hero-lab__shared-architecture-fragment hero-lab__shared-architecture-fragment--outer" />
-              <span className="hero-lab__shared-architecture-fragment hero-lab__shared-architecture-fragment--middle" />
-              <span className="hero-lab__shared-architecture-fragment hero-lab__shared-architecture-fragment--inner" />
-            </span>
-            <span className="hero-lab__shared-mark-shell">
-              <img className="hero-lab__shared-logo" src={cortexHeroMark} alt="" draggable={false} />
-            </span>
-          </div>
-
-          <div className="hero-lab__shell">
-            <header className="hero-lab__nav">
-              <Link className="hero-lab__brand" to="/hero-lab" aria-label="Cortex home">
-                <span className="hero-lab__brand-mark"><img src={cortexHeroMark} alt="" draggable={false} /></span>
-                <span>CORTEX</span>
-              </Link>
-              <nav className="hero-lab__nav-links" aria-label="Primary navigation">
-                <a href="#system">How it works</a>
-                <button type="button" onClick={handleAccessRequest}>
-                  Early access <span aria-hidden="true">↗</span>
-                </button>
-              </nav>
-            </header>
-
-            <div className="hero-lab__content">
-              <section className="hero-lab__copy">
-                <div className="hero-lab__intro-lockup">
-                  <h1 id="hero-lab-title" className="hero-lab__headline">
-                    <span className="hero-lab__headline-line">Where scattered</span>
-                    <span className="hero-lab__headline-line">intelligence becomes</span>
-                    <span className="hero-lab__headline-line"><strong>coordinated action.</strong></span>
-                  </h1>
-                  <p className="hero-lab__description">Cortex coordinates models, tools and people around a shared operational context.</p>
-                  <div className="hero-lab__actions">
-                    <button className="hero-lab__primary-action" type="button" onClick={handleAccessRequest}>
-                      Join early access <span aria-hidden="true">↗</span>
-                    </button>
-                    <a className="hero-lab__secondary-action" href="#system">
-                      See how it works <span aria-hidden="true">↓</span>
-                    </a>
-                  </div>
-                </div>
-              </section>
-            </div>
-          </div>
-
-          <span className="hero-lab__scroll-cue" aria-hidden="true"><span /></span>
-
-          <section id="waitlist" className="hero-lab__access hero-lab__layer" aria-labelledby="hero-access-title">
-            <div className="hero-lab__access-inner">
-              <h2 id="hero-access-title">Be first inside Cortex.</h2>
-              <p className="hero-lab__access-copy">Private access opens in small waves.</p>
-
-              <div className="hero-lab__waitlist" data-waitlist-open={waitlistOpen} data-waitlist-status={waitlistStatus}>
-                {waitlistStatus === "success" ? (
-                  <div className="hero-lab__waitlist-success" role="status" aria-live="polite">
-                    <span className="hero-lab__success-mark" aria-hidden="true" />
-                    <strong>Access request received.</strong>
-                    <span>We’ll keep the next opening close.</span>
-                  </div>
-                ) : waitlistOpen ? (
-                  <form className="hero-lab__waitlist-form" noValidate onSubmit={handleSubmit} onKeyDown={(event) => event.key === "Escape" && handleWaitlistClose()}>
-                    <label className="sr-only" htmlFor="hero-waitlist-email">Email address</label>
-                    <input
-                      ref={emailRef}
-                      id="hero-waitlist-email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      placeholder="you@company.com"
-                      value={email}
-                      aria-invalid={waitlistStatus === "invalid"}
-                      aria-describedby={waitlistStatus === "invalid" || waitlistStatus === "error" ? "hero-waitlist-message" : undefined}
-                      required
-                      onInvalid={() => {
-                        setWaitlistStatus("invalid");
-                        setWaitlistError("Enter a valid email address.");
-                      }}
-                      onChange={(event) => {
-                        setEmail(event.target.value);
-                        if (waitlistStatus === "invalid" || waitlistStatus === "error") setWaitlistStatus("idle");
-                      }}
-                    />
-                    <button type="submit" disabled={waitlistStatus === "loading"}>
-                      {waitlistStatus === "loading" ? "Sending…" : "Join early access"}
-                    </button>
-                  </form>
-                ) : (
-                  <button ref={triggerRef} className="hero-lab__access-trigger" type="button" onClick={handleWaitlistOpen}>
-                    Join early access
-                  </button>
-                )}
-
-                {waitlistStatus === "invalid" && <p id="hero-waitlist-message" className="hero-lab__waitlist-message" role="alert">Enter a valid email address.</p>}
-                {waitlistStatus === "error" && <p id="hero-waitlist-message" className="hero-lab__waitlist-message" role="alert">{waitlistError}</p>}
-              </div>
-
-              <a className="hero-lab__learn-more" href="#system">
-                Understand the system <span aria-hidden="true">↓</span>
+        <div className="landing__hero-grid">
+          <div className="landing__copy" data-reveal>
+            <p className="landing__eyebrow">For companies putting AI to work</p>
+            <h1 id="landing-title">
+              <span>AI is easy</span>
+              <span>to buy.</span>
+              <em>Hard to run.</em>
+            </h1>
+            <p className="landing__lead">
+              Cortex turns a business objective into coordinated work. The brief stays visible, the right capabilities are called in, and every result comes back with a trail your team can review.
+            </p>
+            <div className="landing__actions">
+              <button ref={triggerRef} className="landing__primary-action" type="button" onClick={handleRequestOpen}>
+                See Cortex in context <span aria-hidden="true">↗</span>
+              </button>
+              <a className="landing__text-action" href="#why-cortex">
+                Why it matters <span aria-hidden="true">↓</span>
               </a>
             </div>
-          </section>
 
-        </section>
-      </div>
+            <div className="landing-request" data-open={requestOpen} data-status={requestStatus}>
+              {requestOpen && (
+                <RequestForm
+                  email={email}
+                  emailRef={emailRef}
+                  status={requestStatus}
+                  error={requestError}
+                  onEmailChange={handleEmailChange}
+                  onSubmit={handleSubmit}
+                  onClose={handleRequestClose}
+                  onReset={() => setRequestStatus("idle")}
+                />
+              )}
+            </div>
+          </div>
 
-      <section id="system" className="hero-lab__system" aria-labelledby="hero-system-title">
-        <div className="hero-lab__system-intro">
-          <h2 id="hero-system-title">The layer between intent and execution.</h2>
-          <p>Cortex gives intelligent work one place to keep its context, move through the right capabilities and stay visible from start to finish.</p>
+          <OperatingDiagram />
         </div>
 
-        <div className="hero-lab__principles">
-          <article className="hero-lab__principle">
-            <span className="hero-lab__principle-index">01</span>
-            <h3>Context</h3>
-            <p>Keep the goal, state and history together.</p>
-          </article>
-          <article className="hero-lab__principle">
-            <span className="hero-lab__principle-index">02</span>
-            <h3>Coordination</h3>
-            <p>Route each step to the capability that can carry it forward.</p>
-          </article>
-          <article className="hero-lab__principle">
-            <span className="hero-lab__principle-index">03</span>
-            <h3>Control</h3>
-            <p>See what happened, why it happened and where judgment belongs.</p>
-          </article>
+        <div className="landing__hero-footer" data-reveal>
+          <span>One brief</span>
+          <span>Many capabilities</span>
+          <span>Clear accountability</span>
         </div>
       </section>
 
-      <section className="hero-lab__closing" aria-labelledby="hero-closing-title">
-        <h2 id="hero-closing-title">Make intelligent work coherent.</h2>
-        <button className="hero-lab__primary-action" type="button" onClick={handleAccessRequest}>
-          Join early access <span aria-hidden="true">↗</span>
-        </button>
+      <section id="why-cortex" className="landing__section landing__section--paper" data-reveal>
+        <div className="landing__section-number">01</div>
+        <div className="landing__section-main">
+          <h2>The goal is yours.<br /><em>The coordination is ours.</em></h2>
+          <p className="landing__section-lead">
+            You should not have to learn the machinery behind AI to get useful work out of it. Cortex keeps that complexity underneath a simple operating question: what needs to happen next?
+          </p>
+
+          <div className="landing__logic" data-reveal>
+            <div className="landing__logic-item">
+              <span>The brief</span>
+              <strong>Start with the outcome, not a prompt.</strong>
+            </div>
+            <div className="landing__logic-item">
+              <span>The work</span>
+              <strong>Call in the right people, tools and models.</strong>
+            </div>
+            <div className="landing__logic-item">
+              <span>The proof</span>
+              <strong>Review what happened before you sign off.</strong>
+            </div>
+          </div>
+        </div>
       </section>
+
+      <section className="landing__section landing__section--ink" data-reveal>
+        <div className="landing__section-number">02</div>
+        <div className="landing__section-main landing__section-main--wide">
+          <h2>Less time managing the tools.<br /><em>More time deciding what matters.</em></h2>
+          <div className="landing__questions" data-reveal>
+            <div className="landing__question">
+              <span>What is it doing?</span>
+              <p>Every mission keeps its objective and current state in view.</p>
+            </div>
+            <div className="landing__question">
+              <span>Why did it choose that?</span>
+              <p>The path and the evidence stay attached to the result.</p>
+            </div>
+            <div className="landing__question">
+              <span>Where do I decide?</span>
+              <p>Human judgment remains a visible part of the work.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="landing__closing" data-reveal>
+        <CortexMark className="landing__closing-mark" aria-hidden="true" />
+        <div>
+          <p className="landing__eyebrow">Bring one real workflow</p>
+          <h2>We’ll show you<br /><em>the system behind it.</em></h2>
+          <button className="landing__primary-action landing__primary-action--light" type="button" onClick={handleRequestOpen}>
+            Request a private walkthrough <span aria-hidden="true">↗</span>
+          </button>
+        </div>
+      </section>
+
+      <footer className="landing__footer">
+        <Link className="landing__brand" to="/hero-lab" aria-label="Cortex home">
+          <CortexMark aria-hidden="true" />
+          <span>CORTEX</span>
+        </Link>
+        <span>Operational intelligence for companies.</span>
+      </footer>
     </main>
   );
 }
