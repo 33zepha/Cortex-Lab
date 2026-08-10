@@ -166,18 +166,28 @@ function ArchitectureScene({
       <svg className="inside-scene__svg" viewBox="0 0 1200 760" fill="none">
         <defs>
           <linearGradient id="inside-route-gradient" x1="120" y1="380" x2="1080" y2="380" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#9df0bd" stopOpacity="0" />
-            <stop offset="0.18" stopColor="#9df0bd" stopOpacity="0.46" />
-            <stop offset="0.5" stopColor="#e1f8e5" stopOpacity="0.9" />
-            <stop offset="0.82" stopColor="#9df0bd" stopOpacity="0.46" />
-            <stop offset="1" stopColor="#9df0bd" stopOpacity="0" />
+            <stop stopColor="#586AF2" stopOpacity="0" />
+            <stop offset="0.18" stopColor="#586AF2" stopOpacity="0.32" />
+            <stop offset="0.5" stopColor="#D9DEFF" stopOpacity="0.9" />
+            <stop offset="0.82" stopColor="#586AF2" stopOpacity="0.32" />
+            <stop offset="1" stopColor="#586AF2" stopOpacity="0" />
           </linearGradient>
           <radialGradient id="inside-core-wash">
-            <stop stopColor="#b8f3c9" stopOpacity="0.2" />
-            <stop offset="1" stopColor="#2ca36e" stopOpacity="0" />
+            <stop stopColor="#AAB4FF" stopOpacity="0.22" />
+            <stop offset="1" stopColor="#586AF2" stopOpacity="0" />
           </radialGradient>
+          <linearGradient id="inside-pixel-mask-gradient" x1="0" y1="0" x2="1" y2="0">
+            <stop stopColor="white" stopOpacity="0" />
+            <stop offset="0.24" stopColor="white" stopOpacity="0.08" />
+            <stop offset="0.52" stopColor="white" stopOpacity="0.92" />
+            <stop offset="0.76" stopColor="white" stopOpacity="0.22" />
+            <stop offset="1" stopColor="white" stopOpacity="0" />
+          </linearGradient>
+          <mask id="inside-pixel-mask">
+            <rect x="0" y="0" width="1200" height="760" fill="url(#inside-pixel-mask-gradient)" />
+          </mask>
           <pattern id="inside-dots" width="9" height="9" patternUnits="userSpaceOnUse">
-            <circle cx="1" cy="1" r="0.8" fill="#b9eac8" fillOpacity="0.2" />
+            <rect x="0.8" y="0.8" width="2" height="2" rx="0.5" fill="#586AF2" fillOpacity="0.66" />
           </pattern>
           <filter id="inside-soft">
             <feGaussianBlur stdDeviation="18" />
@@ -228,7 +238,7 @@ function ArchitectureScene({
           <path className="inside-scene__output-check" d="M714 452L733 471L768 430" />
         </g>
 
-        <rect className="inside-scene__halftone" x="0" y="0" width="1200" height="760" fill="url(#inside-dots)" />
+        <rect className="inside-scene__halftone" x="0" y="0" width="1200" height="760" fill="url(#inside-dots)" mask="url(#inside-pixel-mask)" />
       </svg>
 
       <div className="inside-scene__center">
