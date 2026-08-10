@@ -17,3 +17,4 @@ data/auth/*
 .DS_Store
 *.tsbuildinfo
 public/cortex-auth-hero-*.webp
+.codex/playwright-browsers/

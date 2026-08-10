@@ -1,6 +1,6 @@
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import cortexHeroMark from "@/assets/cortex-hero-mark.png";
+import cortexHeroMark from "@/assets/cortex-mark.svg";
 import "./ProjectScreen.css";
 
 const CHAPTERS = [

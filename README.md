@@ -12,3 +12,14 @@ Cortex-Lab is the product repository for Cortex: the operator-facing application
 - Existing `agent/*`, `feat/*`, `fix/*`, `ops/*`, `preview/*`, and `cortexlab/hero-lab` branches are legacy workspaces. Do not create new branches for routine work.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the exact daily workflow and deployment boundaries.
+
+## Codex environment
+
+The repository includes a local Codex environment at `.codex/environments/environment.toml`.
+Its setup script runs `npm ci` and makes sure Playwright Chromium can actually launch, so browser validation is ready in new worktrees without a manual reinstall.
+
+For a Codex Cloud environment, set its setup script to:
+
+```bash
+bash scripts/codex-setup.sh
+```

@@ -1,5 +1,5 @@
 import type { ImgHTMLAttributes } from "react";
-import cortexMark from "@/assets/cortex-hero-mark.png";
+import cortexMark from "@/assets/cortex-mark.svg";
 
 type CortexLogoProps = Omit<ImgHTMLAttributes<HTMLImageElement>, "src">;
 
