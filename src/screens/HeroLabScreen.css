@@ -774,6 +774,8 @@
 
 .system-map__core::before {
   position: absolute;
+  top: 50%;
+  left: 50%;
   width: 136px;
   height: 136px;
   border: 1px solid rgba(17, 109, 80, 0.4);
