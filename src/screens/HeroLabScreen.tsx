@@ -32,10 +32,10 @@ const journeyStages: JourneyStage[] = [
     key: "cortex",
     number: "01",
     navLabel: "Cortex",
-    eyebrow: "THE OPERATING LAYER",
-    title: "One objective. Every capability aligned.",
+    eyebrow: "DIRECTED WORK",
+    title: "Complex work, made visible.",
     description:
-      "Cortex turns complex work into one directed, inspectable system — from intention to verified result.",
+      "Cortex gives one objective a visible path — the right intelligence, the right roles and a result you can trust.",
   },
   {
     key: "hermes",
@@ -204,6 +204,13 @@ function ArchitectureScene({
         <g className="inside-scene__layer inside-scene__layer--cortex">
           <circle className="inside-scene__wash" cx="600" cy="380" r="188" fill="url(#inside-core-wash)" filter="url(#inside-soft)" />
           <path className="inside-scene__objective-line" d="M150 380H506" />
+          <path className="inside-scene__cortex-signal inside-scene__cortex-signal--top" d="M148 380C258 380 320 300 438 300c56 0 82 39 118 80" />
+          <path className="inside-scene__cortex-signal inside-scene__cortex-signal--bottom" d="M148 380C258 380 320 460 438 460c56 0 82-39 118-80" />
+          <circle className="inside-scene__cortex-signal-dot inside-scene__cortex-signal-dot--one" cx="148" cy="380" r="4" />
+          <circle className="inside-scene__cortex-signal-dot inside-scene__cortex-signal-dot--two" cx="326" cy="300" r="3" />
+          <circle className="inside-scene__cortex-signal-dot inside-scene__cortex-signal-dot--three" cx="326" cy="460" r="3" />
+          <circle className="inside-scene__cortex-pulse" cx="600" cy="380" r="94" />
+          <circle className="inside-scene__cortex-pulse inside-scene__cortex-pulse--outer" cx="600" cy="380" r="132" />
           <circle className="inside-scene__objective" cx="600" cy="380" r="16" />
           <circle className="inside-scene__objective-ring" cx="600" cy="380" r="58" />
         </g>
@@ -246,54 +253,77 @@ function ArchitectureScene({
         <span>{stage.key === "hermes" ? "HERMES" : "CORTEX"}</span>
       </div>
 
-      <div className="inside-scene__stage-overlay inside-scene__stage-overlay--hermes">
-        <span className="inside-provider-ring__eyebrow">RUNTIME ECOSYSTEM</span>
-        <div className="inside-provider-ring">
-          {providers.map(({ name, descriptor, Mark }) => (
-            <div className="inside-provider" key={name}>
-              <span className="inside-provider__mark"><Mark /></span>
-              <span className="inside-provider__copy">
-                <strong>{name}</strong>
-                <small>{descriptor}</small>
-              </span>
+      {stage.key === "cortex" && (
+        <div key="cortex" className="inside-scene__stage-overlay inside-scene__stage-overlay--cortex">
+          <div className="inside-cortex-signal">
+            <div className="inside-cortex-signal__route" aria-hidden="true">
+              <span>intent</span>
+              <i />
+              <span>context</span>
+              <i />
+              <span>outcome</span>
             </div>
-          ))}
-        </div>
-        <span className="inside-provider-ring__note">Connect the runtimes your mission needs.</span>
-      </div>
-
-      <div className="inside-scene__stage-overlay inside-scene__stage-overlay--teams">
-        <div className="inside-team-map__input">
-          <span>MISSION INPUT</span>
-          <strong>CLI&nbsp; / &nbsp;API&nbsp; / &nbsp;KEY</strong>
-        </div>
-        <div className="inside-team-map__node inside-team-map__node--planner"><strong>Planner</strong><small>route</small></div>
-        <div className="inside-team-map__node inside-team-map__node--researcher"><strong>Researcher</strong><small>context</small></div>
-        <div className="inside-team-map__node inside-team-map__node--builder"><strong>Builder</strong><small>produce</small></div>
-        <div className="inside-team-map__node inside-team-map__node--reviewer"><strong>Reviewer</strong><small>challenge</small></div>
-        <span className="inside-team-map__mission">one directed mission</span>
-      </div>
-
-      <div className="inside-scene__stage-overlay inside-scene__stage-overlay--review">
-        <div className="inside-review-loop__step inside-review-loop__step--produce"><strong>01</strong><span>produce</span></div>
-        <div className="inside-review-loop__step inside-review-loop__step--inspect"><strong>02</strong><span>inspect</span></div>
-        <div className="inside-review-loop__step inside-review-loop__step--test"><strong>03</strong><span>test</span></div>
-        <div className="inside-review-loop__step inside-review-loop__step--revise"><strong>04</strong><span>revise</span></div>
-        <span className="inside-review-loop__gate-label">quality gate</span>
-      </div>
-
-      <div className="inside-scene__stage-overlay inside-scene__stage-overlay--result">
-        <div className="inside-result-surface">
-          <div className="inside-result-surface__topline"><span>VERIFIED OUTPUT</span><span>READY</span></div>
-          <strong>Result returned</strong>
-          <p>Work · evidence · decisions</p>
-          <div className="inside-result-surface__signals">
-            <span>time recovered</span>
-            <span>coordination reduced</span>
-            <span>cost avoided</span>
+            <p><span>CORTEX</span><small>one directed system</small></p>
           </div>
         </div>
-      </div>
+      )}
+
+      {stage.key === "hermes" && (
+        <div key="hermes" className="inside-scene__stage-overlay inside-scene__stage-overlay--hermes">
+          <span className="inside-provider-ring__eyebrow">RUNTIME ECOSYSTEM</span>
+          <div className="inside-provider-ring">
+            {providers.map(({ name, descriptor, Mark }) => (
+              <div className="inside-provider" key={name}>
+                <span className="inside-provider__mark"><Mark /></span>
+                <span className="inside-provider__copy">
+                  <strong>{name}</strong>
+                  <small>{descriptor}</small>
+                </span>
+              </div>
+            ))}
+          </div>
+          <span className="inside-provider-ring__note">Connect the runtimes your mission needs.</span>
+        </div>
+      )}
+
+      {stage.key === "teams" && (
+        <div key="teams" className="inside-scene__stage-overlay inside-scene__stage-overlay--teams">
+          <div className="inside-team-map__input">
+            <span>MISSION INPUT</span>
+            <strong>CLI&nbsp; / &nbsp;API&nbsp; / &nbsp;KEY</strong>
+          </div>
+          <div className="inside-team-map__node inside-team-map__node--planner"><strong>Planner</strong><small>route</small></div>
+          <div className="inside-team-map__node inside-team-map__node--researcher"><strong>Researcher</strong><small>context</small></div>
+          <div className="inside-team-map__node inside-team-map__node--builder"><strong>Builder</strong><small>produce</small></div>
+          <div className="inside-team-map__node inside-team-map__node--reviewer"><strong>Reviewer</strong><small>challenge</small></div>
+          <span className="inside-team-map__mission">one directed mission</span>
+        </div>
+      )}
+
+      {stage.key === "review" && (
+        <div key="review" className="inside-scene__stage-overlay inside-scene__stage-overlay--review">
+          <div className="inside-review-loop__step inside-review-loop__step--produce"><strong>01</strong><span>produce</span></div>
+          <div className="inside-review-loop__step inside-review-loop__step--inspect"><strong>02</strong><span>inspect</span></div>
+          <div className="inside-review-loop__step inside-review-loop__step--test"><strong>03</strong><span>test</span></div>
+          <div className="inside-review-loop__step inside-review-loop__step--revise"><strong>04</strong><span>revise</span></div>
+          <span className="inside-review-loop__gate-label">quality gate</span>
+        </div>
+      )}
+
+      {stage.key === "result" && (
+        <div key="result" className="inside-scene__stage-overlay inside-scene__stage-overlay--result">
+          <div className="inside-result-surface">
+            <div className="inside-result-surface__topline"><span>VERIFIED OUTPUT</span><span>READY</span></div>
+            <strong>Result returned</strong>
+            <p>Work · evidence · decisions</p>
+            <div className="inside-result-surface__signals">
+              <span>time recovered</span>
+              <span>coordination reduced</span>
+              <span>cost avoided</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -438,6 +468,12 @@ export function HeroLabScreen() {
             <span />
           </div>
 
+          <div className="inside-entry__atmosphere" aria-hidden="true">
+            <span className="inside-entry__atmosphere-beam" />
+            <span className="inside-entry__atmosphere-grain" />
+            <span className="inside-entry__atmosphere-orbit" />
+          </div>
+
           <div className="inside-entry__content">
             <div className="inside-entry__mark">
               <CortexLogo />
@@ -458,13 +494,24 @@ export function HeroLabScreen() {
 
       <section id="journey" ref={journeyRef} className="inside-journey">
         <div className="inside-journey__sticky">
+          <div className="inside-journey__atmosphere" aria-hidden="true">
+            <span />
+            <span />
+          </div>
           <ArchitectureScene activeStage={activeStage} sceneRef={sceneRef} />
 
-          <div className="inside-checkpoint" key={stage.key} role="region" aria-live="polite" aria-label={`${stage.number} ${stage.navLabel}`}>
-            <div className="inside-checkpoint__meta">
-              <span>{stage.number}</span>
-              <span>{stage.eyebrow}</span>
-            </div>
+          <div className={`inside-checkpoint inside-checkpoint--${stage.key}`} key={stage.key} role="region" aria-live="polite" aria-label={`${stage.number} ${stage.navLabel}`}>
+            {stage.key === "cortex" ? (
+              <div className="inside-checkpoint__meta inside-checkpoint__meta--cortex">
+                <span className="inside-checkpoint__signal" aria-hidden="true"><i /><i /><i /></span>
+                <span>{stage.eyebrow}</span>
+              </div>
+            ) : (
+              <div className="inside-checkpoint__meta">
+                <span>{stage.number}</span>
+                <span>{stage.eyebrow}</span>
+              </div>
+            )}
             <h2>{stage.title}</h2>
             <p>{stage.description}</p>
           </div>

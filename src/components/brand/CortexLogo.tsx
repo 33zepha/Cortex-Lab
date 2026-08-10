@@ -1,28 +1,50 @@
-import type { CSSProperties, HTMLAttributes } from "react";
-import cortexMark from "@/assets/cortex-mark.svg";
+import { useId, type SVGProps } from "react";
 
-type CortexLogoProps = Omit<HTMLAttributes<HTMLSpanElement>, "color"> & {
+type CortexLogoProps = Omit<SVGProps<SVGSVGElement>, "children" | "color"> & {
   alt?: string;
 };
 
 /**
- * The approved Cortex symbol, kept as one vector source while allowing each
- * surface to use the same mark in a controlled color treatment.
+ * The approved Cortex symbol as inline SVG geometry.
+ *
+ * Keeping the paths inside the SVG avoids relying on CSS mask support. That
+ * matters on the landing page because the mark is used at several sizes and
+ * must never fall back to painting its rectangular box.
  */
 export function CortexLogo({ alt = "", className, style, ...props }: CortexLogoProps) {
-  const logoStyle = {
-    "--cortex-logo-image": `url(${cortexMark})`,
-    ...style,
-  } as CSSProperties;
+  const id = useId().replace(/:/g, "");
+  const gradientId = `cortex-mark-gradient-${id}`;
+  const titleId = `cortex-mark-title-${id}`;
 
   return (
-    <span
+    <svg
+      {...props}
       className={className ? `cortex-logo ${className}` : "cortex-logo"}
+      viewBox="0 0 512 570"
+      fill="none"
       role={alt ? "img" : undefined}
       aria-label={alt || undefined}
+      aria-labelledby={alt ? titleId : undefined}
       aria-hidden={alt ? undefined : true}
-      style={logoStyle}
-      {...props}
-    />
+      focusable="false"
+      style={style}
+    >
+      {alt ? <title id={titleId}>{alt}</title> : null}
+      <defs>
+        <linearGradient id={gradientId} x1="42" y1="70" x2="452" y2="516" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#4054E8" />
+          <stop offset="0.48" stopColor="#586AF2" />
+          <stop offset="1" stopColor="#AEB7FF" />
+        </linearGradient>
+      </defs>
+      <path
+        fill={`url(#${gradientId})`}
+        d="M242.48 1.59Q256 0 282.24 6.36T366.51 47.7t87.45 60.42q29.42 25.45 29.42 35.78t-22.26 33.39q-22.26 23.06-29.42 26.24t-18.28 3.18q-11.13 0-34.19-11.13t-38.16-14.31q-15.11-3.18-47.7 1.59t-49.3 15.1q-16.69 10.34-97.78 94.61T65.19 376.84q-9.54 4.78-22.26 3.19t-19.41-8q-7.16-7.14-10.34-19.86T13.52 376.05Q6.36 368.89 3.18 356.17T.8 267.13q.79-76.32 10.33-103.35t24.65-42.14q15.1-15.11 85.06-58.83t89.05-51.68q19.08-7.95 32.59-9.54Z"
+      />
+      <path
+        fill={`url(#${gradientId})`}
+        d="M438.86 232.94q11.13-5.56 23.05-4.77t20.67 5.57q8.75 4.77 18.29 19.87t9.54 62.81q0 47.7-5.57 74.74t-22.26 50.08q-16.69 23.06-85.06 64.4t-93.82 51.68q-25.44 10.33-51.68 9.54t-85.86-32.6q-59.63-31.8-93.02-56.45t-32.59-33.39q.79-8.74 19.08-27.82t29.41-24.65q11.13-5.56 22.26-3.97t24.65 9.54q13.52 7.95 31.8 12.72t39.75 3.97q21.47-.79 40.55-7.95t99.38-87.45q80.3-80.3 91.43-85.86Z"
+      />
+    </svg>
   );
 }

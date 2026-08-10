@@ -19,6 +19,7 @@
   --line: rgba(76, 91, 160, 0.16);
   --mint: #586af2;
   --emerald: #4054e8;
+  --accent-violet: #8b7cf6;
   --accent-wash: rgba(88, 106, 242, 0.1);
   position: relative;
   isolation: isolate;
@@ -55,9 +56,7 @@
   flex: 0 0 auto;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #4054e8 0%, #586af2 46%, #aeb7ff 100%);
-  -webkit-mask: var(--cortex-logo-image) center / contain no-repeat;
-  mask: var(--cortex-logo-image) center / contain no-repeat;
+  overflow: visible;
 }
 
 .inside h1,
@@ -143,8 +142,9 @@
   display: grid;
   place-items: center;
   background:
-    radial-gradient(circle at 50% 48%, rgba(88, 106, 242, 0.12), transparent 31%),
-    linear-gradient(180deg, #ffffff 0%, var(--paper-soft) 100%);
+    radial-gradient(ellipse 62% 55% at 50% 45%, rgba(116, 127, 246, 0.19), transparent 66%),
+    radial-gradient(ellipse 38% 28% at 18% 22%, rgba(189, 217, 255, 0.24), transparent 72%),
+    linear-gradient(128deg, #ffffff 0%, #f6f7ff 43%, #ffffff 100%);
 }
 
 .inside-entry__sticky::before,
@@ -161,6 +161,79 @@
 .inside-entry__sticky::before {
   mask-image: radial-gradient(ellipse 72% 68% at center, transparent 22%, black 70%, transparent 100%);
   opacity: 0.28;
+}
+
+.inside-entry__atmosphere {
+  position: absolute;
+  z-index: 0;
+  inset: -16%;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translate3d(calc(var(--entry-progress) * 1.8%), calc(var(--entry-progress) * -1.2%), 0);
+  transition: transform 120ms linear;
+}
+
+.inside-entry__atmosphere::before {
+  position: absolute;
+  inset: 18% 20%;
+  background:
+    conic-gradient(from 214deg at 50% 50%, transparent 0deg, rgba(88, 106, 242, 0.22) 46deg, transparent 104deg, rgba(139, 124, 246, 0.17) 174deg, transparent 236deg, rgba(88, 106, 242, 0.2) 304deg, transparent 360deg),
+    radial-gradient(ellipse at 50% 44%, rgba(88, 106, 242, 0.18), transparent 64%);
+  filter: blur(28px);
+  opacity: 0.72;
+  content: "";
+  animation: inside-atmosphere-drift 18s ease-in-out infinite alternate;
+}
+
+.inside-entry__atmosphere::after {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(88, 106, 242, 0.26) 0 0.75px, transparent 1px),
+    radial-gradient(circle, rgba(139, 124, 246, 0.14) 0 0.65px, transparent 0.95px);
+  background-position: 0 0, 7px 4px;
+  background-size: 11px 11px, 17px 17px;
+  mask-image: radial-gradient(ellipse 55% 58% at 50% 48%, black 0%, rgba(0, 0, 0, 0.76) 42%, transparent 78%);
+  mix-blend-mode: multiply;
+  opacity: 0.36;
+  content: "";
+  animation: inside-grain-drift 26s linear infinite;
+}
+
+.inside-entry__atmosphere-beam {
+  position: absolute;
+  top: 3%;
+  left: 50%;
+  width: 28%;
+  height: 94%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.78) 48%, transparent);
+  filter: blur(18px);
+  opacity: 0.72;
+  transform: translateX(-50%) rotate(18deg);
+  animation: inside-beam-drift 14s ease-in-out infinite alternate;
+}
+
+.inside-entry__atmosphere-orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(72vw, 920px);
+  aspect-ratio: 1.7;
+  border: 1px solid rgba(88, 106, 242, 0.12);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  animation: inside-orbit-drift 20s ease-in-out infinite alternate;
+}
+
+.inside-entry__atmosphere-grain {
+  position: absolute;
+  inset: 22% 28%;
+  border: 1px solid rgba(88, 106, 242, 0.1);
+  border-radius: 48% 52% 42% 58%;
+  filter: blur(0.2px);
+  opacity: 0.62;
+  transform: rotate(22deg);
+  animation: inside-grain-wander 16s ease-in-out infinite alternate-reverse;
 }
 
 .inside-frame {
@@ -310,8 +383,9 @@
 .inside-journey__sticky {
   isolation: isolate;
   background:
-    radial-gradient(ellipse 56% 62% at center, rgba(88, 106, 242, 0.09), transparent 74%),
-    linear-gradient(180deg, #ffffff 0%, #f7f8fc 100%);
+    radial-gradient(ellipse 58% 62% at 51% 42%, rgba(102, 115, 244, 0.14), transparent 72%),
+    radial-gradient(ellipse 32% 34% at 9% 86%, rgba(184, 217, 255, 0.16), transparent 76%),
+    conic-gradient(from 206deg at 50% 50%, #ffffff, #f5f6ff 22%, #ffffff 48%, #f7f9ff 74%, #ffffff);
 }
 
 .inside-journey__sticky::before {
@@ -327,6 +401,60 @@
   border: 1px solid rgba(76, 91, 160, 0.1);
   content: "";
   pointer-events: none;
+}
+
+.inside-journey__atmosphere {
+  position: absolute;
+  z-index: 0;
+  inset: -22%;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.inside-journey__atmosphere::before {
+  position: absolute;
+  inset: 20% 25%;
+  background:
+    conic-gradient(from 24deg at 50% 50%, transparent 0deg, rgba(88, 106, 242, 0.2) 55deg, transparent 115deg, rgba(139, 124, 246, 0.16) 184deg, transparent 244deg, rgba(88, 106, 242, 0.16) 318deg, transparent 360deg),
+    radial-gradient(ellipse at center, rgba(88, 106, 242, 0.14), transparent 68%);
+  filter: blur(34px);
+  content: "";
+  animation: inside-atmosphere-drift 22s ease-in-out infinite alternate-reverse;
+}
+
+.inside-journey__atmosphere::after {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(116deg, transparent 20%, rgba(88, 106, 242, 0.05) 39%, transparent 57%),
+    radial-gradient(circle, rgba(88, 106, 242, 0.18) 0 0.7px, transparent 0.95px);
+  background-size: 100% 100%, 13px 13px;
+  mask-image: radial-gradient(ellipse 58% 64% at center, black 0%, rgba(0, 0, 0, 0.72) 47%, transparent 82%);
+  mix-blend-mode: multiply;
+  opacity: 0.48;
+  content: "";
+  animation: inside-grain-drift 32s linear infinite reverse;
+}
+
+.inside-journey__atmosphere span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(74vw, 1100px);
+  aspect-ratio: 1.7;
+  border: 1px solid rgba(88, 106, 242, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-14deg);
+  animation: inside-orbit-drift 24s ease-in-out infinite alternate;
+}
+
+.inside-journey__atmosphere span + span {
+  width: min(52vw, 760px);
+  border-color: rgba(139, 124, 246, 0.1);
+  transform: translate(-50%, -50%) rotate(24deg) scaleY(0.7);
+  animation: inside-orbit-secondary 24s ease-in-out infinite alternate;
+  animation-delay: -5s;
 }
 
 /* The SVG and every HTML overlay share this exact 1200:760 canvas. */
@@ -358,6 +486,8 @@
 .inside-scene__floor,
 .inside-scene__path,
 .inside-scene__objective-line,
+.inside-scene__cortex-signal,
+.inside-scene__cortex-pulse,
 .inside-scene__team-link,
 .inside-scene__review-loop,
 .inside-scene__review-gate {
@@ -431,6 +561,51 @@
   stroke-width: 1.5;
   stroke-dasharray: 3 10;
   stroke-dashoffset: calc(var(--journey-progress) * -260px);
+}
+
+.inside-scene__cortex-signal {
+  stroke: url(#inside-route-gradient);
+  stroke-width: 1.25;
+  stroke-dasharray: 1 16;
+  stroke-dashoffset: calc(var(--journey-progress) * -340px);
+  opacity: 0.9;
+  animation: inside-signal-flow 8s linear infinite;
+}
+
+.inside-scene__cortex-signal--bottom {
+  animation-direction: reverse;
+  opacity: 0.54;
+}
+
+.inside-scene__cortex-signal-dot {
+  fill: var(--mint);
+  filter: drop-shadow(0 5px 9px rgba(88, 106, 242, 0.24));
+  animation: inside-signal-breathe 3.4s ease-in-out infinite;
+}
+
+.inside-scene__cortex-signal-dot--two {
+  animation-delay: -1.1s;
+}
+
+.inside-scene__cortex-signal-dot--three {
+  animation-delay: -2.1s;
+}
+
+.inside-scene__cortex-pulse {
+  fill: none;
+  stroke: rgba(88, 106, 242, 0.23);
+  stroke-width: 1;
+  stroke-dasharray: 1 11;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: inside-cortex-pulse 4.8s ease-out infinite;
+}
+
+.inside-scene__cortex-pulse--outer {
+  stroke: rgba(139, 124, 246, 0.14);
+  stroke-dasharray: 1 17;
+  animation-delay: -2.4s;
+  animation-duration: 6.6s;
 }
 
 .inside-scene__objective {
@@ -561,21 +736,80 @@
   position: absolute;
   z-index: 4;
   inset: 0;
-  visibility: hidden;
   pointer-events: none;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 720ms ease, transform 900ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 720ms;
-}
-
-.inside-scene--hermes .inside-scene__stage-overlay--hermes,
-.inside-scene--teams .inside-scene__stage-overlay--teams,
-.inside-scene--review .inside-scene__stage-overlay--review,
-.inside-scene--result .inside-scene__stage-overlay--result {
-  visibility: visible;
   opacity: 1;
   transform: translateY(0);
-  transition-delay: 0s;
+  animation: inside-stage-in 820ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Cortex starts as a signal field, not a title card. The path carries the
+   idea; the small route labels only clarify what the movement represents. */
+.inside-cortex-signal {
+  position: absolute;
+  inset: 0;
+}
+
+.inside-cortex-signal__route {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(21, 26, 43, 0.46);
+  font-size: 8px;
+  font-weight: 760;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.inside-cortex-signal__route i {
+  position: relative;
+  display: block;
+  width: clamp(28px, 4vw, 54px);
+  height: 1px;
+  overflow: hidden;
+  background: rgba(88, 106, 242, 0.16);
+}
+
+.inside-cortex-signal__route i::after {
+  position: absolute;
+  inset: 0;
+  width: 36%;
+  background: linear-gradient(90deg, transparent, var(--mint), transparent);
+  content: "";
+  animation: inside-route-sweep 2.4s ease-in-out infinite;
+}
+
+.inside-cortex-signal__route i:nth-of-type(2)::after {
+  animation-delay: -1.2s;
+}
+
+.inside-cortex-signal > p {
+  position: absolute;
+  bottom: 7%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  margin: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.inside-cortex-signal > p span {
+  color: rgba(21, 26, 43, 0.54);
+  font-size: 8px;
+  font-weight: 760;
+  letter-spacing: 0.2em;
+}
+
+.inside-cortex-signal > p small {
+  color: rgba(21, 26, 43, 0.34);
+  font-size: 9px;
+  letter-spacing: 0.02em;
 }
 
 /* Hermes: a quiet provider rail below the central operating mark. */
@@ -870,6 +1104,34 @@
 .inside-checkpoint__meta span:last-child {
   color: var(--mint);
 }
+
+.inside-checkpoint__meta--cortex {
+  gap: 10px;
+  color: rgba(21, 26, 43, 0.42);
+}
+
+.inside-checkpoint__meta--cortex > span:last-child {
+  color: rgba(21, 26, 43, 0.46);
+}
+
+.inside-checkpoint__signal {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 12px;
+}
+
+.inside-checkpoint__signal i {
+  display: block;
+  width: 2px;
+  background: var(--mint);
+  transform-origin: bottom;
+  animation: inside-signal-breathe 1.7s ease-in-out infinite;
+}
+
+.inside-checkpoint__signal i:nth-child(1) { height: 5px; animation-delay: -0.2s; }
+.inside-checkpoint__signal i:nth-child(2) { height: 9px; animation-delay: -0.5s; }
+.inside-checkpoint__signal i:nth-child(3) { height: 12px; animation-delay: -0.8s; }
 
 .inside-checkpoint h2 {
   max-width: 720px;
@@ -1185,6 +1447,61 @@ html:has(.inside) {
   to { transform: rotate(360deg); }
 }
 
+@keyframes inside-stage-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes inside-atmosphere-drift {
+  0% { transform: translate3d(-2%, 1%, 0) scale(0.96) rotate(-2deg); }
+  100% { transform: translate3d(3%, -2%, 0) scale(1.05) rotate(3deg); }
+}
+
+@keyframes inside-beam-drift {
+  0% { opacity: 0.35; transform: translateX(-62%) rotate(14deg); }
+  100% { opacity: 0.82; transform: translateX(-38%) rotate(22deg); }
+}
+
+@keyframes inside-grain-drift {
+  from { background-position: 0 0, 7px 4px; transform: translate3d(-1%, -1%, 0); }
+  to { background-position: 42px 30px, -22px 24px; transform: translate3d(1%, 1%, 0); }
+}
+
+@keyframes inside-orbit-drift {
+  0% { transform: translate(-50%, -50%) rotate(-16deg) scale(0.98); }
+  100% { transform: translate(-50%, -50%) rotate(-7deg) scale(1.03); }
+}
+
+@keyframes inside-orbit-secondary {
+  0% { transform: translate(-50%, -50%) rotate(19deg) scaleY(0.66) scale(0.98); }
+  100% { transform: translate(-50%, -50%) rotate(29deg) scaleY(0.74) scale(1.04); }
+}
+
+@keyframes inside-grain-wander {
+  0% { transform: translate3d(-3%, -2%, 0) rotate(18deg) scale(0.96); }
+  100% { transform: translate3d(3%, 2%, 0) rotate(28deg) scale(1.04); }
+}
+
+@keyframes inside-signal-flow {
+  to { stroke-dashoffset: -160px; }
+}
+
+@keyframes inside-signal-breathe {
+  0%, 100% { opacity: 0.42; transform: scaleY(0.68); }
+  50% { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes inside-cortex-pulse {
+  0% { opacity: 0; transform: scale(0.72); }
+  24% { opacity: 0.82; }
+  100% { opacity: 0; transform: scale(1.18); }
+}
+
+@keyframes inside-route-sweep {
+  0% { transform: translateX(-150%); }
+  55%, 100% { transform: translateX(420%); }
+}
+
 @media (max-width: 900px) {
   .inside-scene {
     width: min(900px, calc(100% - 96px));
@@ -1253,6 +1570,20 @@ html:has(.inside) {
     max-width: 340px;
     margin-top: 22px;
     font-size: 14px;
+  }
+
+  .inside-cortex-signal__route {
+    top: 6%;
+    gap: 6px;
+    font-size: 7px;
+  }
+
+  .inside-cortex-signal__route i {
+    width: 22px;
+  }
+
+  .inside-cortex-signal > p {
+    bottom: 5%;
   }
 
   .inside-journey {
@@ -1453,7 +1784,9 @@ html:has(.inside) {
   .inside-entry__content > p,
   .inside-entry__cue,
   .inside-entry__contour,
-  .inside-frame {
+  .inside-frame,
+  .inside-entry__atmosphere,
+  .inside-journey__atmosphere {
     opacity: 1;
     transform: none;
   }
@@ -1462,7 +1795,20 @@ html:has(.inside) {
   .inside-entry__cue i::after,
   .inside-scene__objective-ring,
   .inside-scene__provider-orbit,
-  .inside-checkpoint {
+  .inside-checkpoint,
+  .inside-entry__atmosphere::before,
+  .inside-entry__atmosphere::after,
+  .inside-entry__atmosphere-beam,
+  .inside-entry__atmosphere-orbit,
+  .inside-entry__atmosphere-grain,
+  .inside-journey__atmosphere::before,
+  .inside-journey__atmosphere::after,
+  .inside-journey__atmosphere span,
+  .inside-scene__cortex-signal,
+  .inside-scene__cortex-signal-dot,
+  .inside-scene__cortex-pulse,
+  .inside-cortex-signal__route i::after,
+  .inside-checkpoint__signal i {
     animation: none;
   }
 
@@ -1470,5 +1816,6 @@ html:has(.inside) {
   .inside-scene__stage-overlay,
   .inside-scene__center {
     transition: none;
+    animation: none;
   }
 }
