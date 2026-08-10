@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { CortexMark } from "@/components/brand/CortexMark";
+import cortexLogoSource from "@/assets/cortex-hero-mark.png";
+import { CortexLogo } from "@/components/brand/CortexLogo";
 import "./HeroLabScreen.css";
 
 type WaitlistStatus = "idle" | "invalid" | "loading" | "success" | "error";
@@ -90,9 +91,15 @@ function SignalField() {
         <g className="signal-field__core" transform="translate(443 356)">
           <circle r="62" />
           <circle r="44" />
-          <path d="M-22 -3V-20C-22-25-17-29-12-26L10-13" />
-          <path d="M-17 22L1 33C4 35 8 35 11 33L28 23V7" />
-          <path d="M3-12C-5-12-10-3-10 7C-10 16-5 21 3 21C11 21 16 16 16 7C16-3 11-12 3-12Z" />
+          <image
+            className="signal-field__core-logo"
+            href={cortexLogoSource}
+            x="-58"
+            y="-58"
+            width="116"
+            height="116"
+            preserveAspectRatio="xMidYMid meet"
+          />
         </g>
 
         <rect className="signal-field__noise" x="0" y="0" width="820" height="720" filter="url(#field-grain)" />
@@ -107,7 +114,7 @@ function SignalField() {
         <strong>Nothing disappears</strong>
       </div>
       <div className="signal-field__mark" aria-hidden="true">
-        <CortexMark />
+        <CortexLogo />
         <span>CORTEX</span>
       </div>
     </div>
@@ -134,7 +141,7 @@ function AccessForm({
   if (status === "success") {
     return (
       <div className="access-form access-form--success" role="status" aria-live="polite">
-        <CortexMark aria-hidden="true" />
+        <CortexLogo aria-hidden="true" />
         <div>
           <strong>Access request received.</strong>
           <span>We will be in touch when the next wave opens.</span>
@@ -201,7 +208,7 @@ function SystemMap() {
         <circle className="system-map__node system-map__node--core" cx="420" cy="215" r="9" filter="url(#map-glow)" />
       </svg>
       <div className="system-map__core">
-        <CortexMark aria-hidden="true" />
+        <CortexLogo aria-hidden="true" />
         <span>Coordination</span>
       </div>
       <div className="system-map__stage system-map__stage--input">
@@ -318,7 +325,7 @@ export function HeroLabScreen() {
         <div className="landing__horizon" aria-hidden="true" />
         <header className="landing__nav">
           <Link className="landing__brand" to="/hero-lab" aria-label="Cortex home">
-            <CortexMark aria-hidden="true" />
+            <CortexLogo aria-hidden="true" />
             <span>CORTEX</span>
           </Link>
           <div className="landing__nav-meta">
@@ -404,7 +411,7 @@ export function HeroLabScreen() {
       </section>
 
       <section className="landing__closing" data-reveal>
-        <CortexMark className="landing__closing-mark" aria-hidden="true" />
+        <CortexLogo className="landing__closing-mark" aria-hidden="true" />
         <div>
           <p className="landing__kicker">PRIVATE ACCESS / CORTEX</p>
           <h2>Bring one difficult<br /><span>workflow.</span></h2>
@@ -415,7 +422,7 @@ export function HeroLabScreen() {
 
       <footer className="landing__footer">
         <Link className="landing__brand" to="/hero-lab" aria-label="Cortex home">
-          <CortexMark aria-hidden="true" />
+          <CortexLogo aria-hidden="true" />
           <span>CORTEX</span>
         </Link>
         <span>Operational intelligence for the work that matters.</span>

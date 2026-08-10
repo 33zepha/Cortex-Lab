@@ -166,9 +166,10 @@
   line-height: 1;
 }
 
-.landing__brand svg {
-  width: 18px;
-  height: 24px;
+.landing__brand img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
   flex: 0 0 auto;
 }
 
@@ -385,10 +386,10 @@
   padding: 0.65rem 0.8rem;
 }
 
-.access-form--success > svg {
-  width: 19px;
-  height: 25px;
-  color: var(--landing-mint);
+.access-form--success > img {
+  width: 21px;
+  height: 21px;
+  object-fit: contain;
 }
 
 .access-form--success strong,
@@ -551,12 +552,9 @@
   transform-origin: center;
 }
 
-.signal-field__core path {
-  fill: none;
-  stroke: var(--landing-mint-bright);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 6;
+.signal-field__core-logo {
+  opacity: 0.96;
+  filter: drop-shadow(0 0 8px rgba(169, 246, 200, 0.34));
 }
 
 .signal-field__noise {
@@ -611,9 +609,10 @@
   transform: translate(-50%, -50%);
 }
 
-.signal-field__mark svg {
-  width: 28px;
-  height: 36px;
+.signal-field__mark img {
+  width: 35px;
+  height: 35px;
+  object-fit: contain;
 }
 
 .signal-field__mark span {
@@ -784,10 +783,13 @@
   animation: map-ring 8s ease-in-out infinite;
 }
 
-.system-map__core svg {
+.system-map__core img {
   position: relative;
-  width: 30px;
-  height: 39px;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  filter: brightness(0) saturate(100%);
+  opacity: 0.72;
 }
 
 .system-map__core span {
@@ -948,9 +950,10 @@
   position: relative;
   z-index: 1;
   width: min(22vw, 250px);
-  height: auto;
-  color: rgba(9, 34, 27, 0.32);
-  transform: rotate(-12deg);
+  height: min(22vw, 250px);
+  object-fit: contain;
+  opacity: 0.32;
+  filter: brightness(0) saturate(100%);
 }
 
 .landing__closing > div {
@@ -1003,9 +1006,9 @@
   font-size: 0.56rem;
 }
 
-.landing__footer .landing__brand svg {
-  width: 15px;
-  height: 20px;
+.landing__footer .landing__brand img {
+  width: 16px;
+  height: 16px;
 }
 
 [data-reveal] {
@@ -1181,6 +1184,7 @@
 
   .landing__closing-mark {
     width: 110px;
+    height: 110px;
   }
 }
 
@@ -1367,6 +1371,7 @@
 
   .landing__closing-mark {
     width: 80px;
+    height: 80px;
     margin-bottom: 4.2rem;
   }
 
