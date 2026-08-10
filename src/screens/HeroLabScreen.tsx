@@ -4,7 +4,7 @@ import Dither from "@/components/hero/Dither";
 import cortexHeroMark from "@/assets/cortex-hero-mark.png";
 import "./HeroLabScreen.css";
 
-const TYPEFACES = new Set(["syne", "unbounded", "newsreader"]);
+const TYPEFACES = new Set(["jakarta", "syne", "unbounded", "newsreader"]);
 
 type WaitlistStatus = "idle" | "invalid" | "loading" | "success" | "error";
 
@@ -105,8 +105,8 @@ export function HeroLabScreen() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
     typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
-  const requestedTypeface = new URLSearchParams(window.location.search).get("type") ?? "unbounded";
-  const typeface = TYPEFACES.has(requestedTypeface) ? requestedTypeface : "unbounded";
+  const requestedTypeface = new URLSearchParams(window.location.search).get("type") ?? "jakarta";
+  const typeface = TYPEFACES.has(requestedTypeface) ? requestedTypeface : "jakarta";
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -196,6 +196,19 @@ export function HeroLabScreen() {
     setWaitlistOpen(true);
   };
 
+  const handleAccessRequest = () => {
+    handleWaitlistOpen();
+    window.requestAnimationFrame(() => {
+      const journey = journeyRef.current;
+      if (!journey) return;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({
+        top: journey.offsetHeight - window.innerHeight,
+        behavior: reducedMotion ? "auto" : "smooth",
+      });
+    });
+  };
+
   const handleWaitlistClose = () => {
     if (waitlistStatus === "loading") return;
     setWaitlistOpen(false);
@@ -239,14 +252,14 @@ export function HeroLabScreen() {
   };
 
   return (
-    <main className="hero-lab relative min-h-[100dvh] bg-[#293a40] text-white" data-typeface={typeface} aria-labelledby="hero-lab-title">
+    <main className="hero-lab" data-typeface={typeface} aria-labelledby="hero-lab-title">
       <div className="hero-lab__journey" ref={journeyRef}>
         <section className="hero-lab__stage" aria-label="Cortex introduction">
-          <div className="hero-lab__field pointer-events-auto absolute inset-0" data-hero-layer="field" aria-hidden="true">
+          <div className="hero-lab__field" data-hero-layer="field" aria-hidden="true">
             <Dither
-              waveColor={[0.36, 0.47, 0.50]}
-              baseColor={[0.09, 0.14, 0.16]}
-              highlightColor={[0.77, 0.82, 0.76]}
+              waveColor={[0.31, 0.33, 0.37]}
+              baseColor={[0.04, 0.045, 0.06]}
+              highlightColor={[0.88, 0.86, 0.79]}
               colorNum={16}
               pixelSize={1.5}
               ditherBias={0.035}
@@ -259,9 +272,9 @@ export function HeroLabScreen() {
             />
           </div>
 
-          <div className="hero-lab__veil pointer-events-none absolute inset-0" />
-          <div className="hero-lab__glow pointer-events-none absolute inset-0" aria-hidden="true" />
-          <div className="hero-lab__mist pointer-events-none absolute inset-0" aria-hidden="true"><span /><span /><span /></div>
+          <div className="hero-lab__veil" />
+          <div className="hero-lab__glow" aria-hidden="true" />
+          <div className="hero-lab__mist" aria-hidden="true"><span /><span /><span /></div>
 
           <div className="hero-lab__shared-mark" data-hero-layer="shared-mark" aria-hidden="true">
             <span className="hero-lab__shared-architecture">
@@ -274,15 +287,37 @@ export function HeroLabScreen() {
             </span>
           </div>
 
-          <div className="hero-lab__shell relative mx-auto flex min-h-[100dvh] max-w-[1680px] flex-col">
-            <div className="hero-lab__content flex flex-1 items-center">
+          <div className="hero-lab__shell">
+            <header className="hero-lab__nav">
+              <Link className="hero-lab__brand" to="/hero-lab" aria-label="Cortex home">
+                <span className="hero-lab__brand-mark"><img src={cortexHeroMark} alt="" draggable={false} /></span>
+                <span>CORTEX</span>
+              </Link>
+              <nav className="hero-lab__nav-links" aria-label="Primary navigation">
+                <a href="#system">How it works</a>
+                <button type="button" onClick={handleAccessRequest}>
+                  Early access <span aria-hidden="true">↗</span>
+                </button>
+              </nav>
+            </header>
+
+            <div className="hero-lab__content">
               <section className="hero-lab__copy">
                 <div className="hero-lab__intro-lockup">
-                  <span className="hero-lab__wordmark">CORTEX</span>
-                  <h1 id="hero-lab-title" className="hero-lab__headline text-[#f2f4f1]">
-                    <span className="hero-lab__headline-line" data-transient="Where scat·ered intelligence">Where scattered intelligence</span>
-                    <span className="hero-lab__headline-line" data-transient="becomes coor·dinated action.">becomes <strong>coordinated action.</strong></span>
+                  <h1 id="hero-lab-title" className="hero-lab__headline">
+                    <span className="hero-lab__headline-line">Where scattered</span>
+                    <span className="hero-lab__headline-line">intelligence becomes</span>
+                    <span className="hero-lab__headline-line"><strong>coordinated action.</strong></span>
                   </h1>
+                  <p className="hero-lab__description">Cortex coordinates models, tools and people around a shared operational context.</p>
+                  <div className="hero-lab__actions">
+                    <button className="hero-lab__primary-action" type="button" onClick={handleAccessRequest}>
+                      Join early access <span aria-hidden="true">↗</span>
+                    </button>
+                    <a className="hero-lab__secondary-action" href="#system">
+                      See how it works <span aria-hidden="true">↓</span>
+                    </a>
+                  </div>
                 </div>
               </section>
             </div>
@@ -339,14 +374,46 @@ export function HeroLabScreen() {
                 {waitlistStatus === "error" && <p id="hero-waitlist-message" className="hero-lab__waitlist-message" role="alert">{waitlistError}</p>}
               </div>
 
-              <Link className="hero-lab__learn-more" to="/project">
-                Discover the project <span aria-hidden="true">↗</span>
-              </Link>
+              <a className="hero-lab__learn-more" href="#system">
+                Understand the system <span aria-hidden="true">↓</span>
+              </a>
             </div>
           </section>
 
         </section>
       </div>
+
+      <section id="system" className="hero-lab__system" aria-labelledby="hero-system-title">
+        <div className="hero-lab__system-intro">
+          <h2 id="hero-system-title">The layer between intent and execution.</h2>
+          <p>Cortex gives intelligent work one place to keep its context, move through the right capabilities and stay visible from start to finish.</p>
+        </div>
+
+        <div className="hero-lab__principles">
+          <article className="hero-lab__principle">
+            <span className="hero-lab__principle-index">01</span>
+            <h3>Context</h3>
+            <p>Keep the goal, state and history together.</p>
+          </article>
+          <article className="hero-lab__principle">
+            <span className="hero-lab__principle-index">02</span>
+            <h3>Coordination</h3>
+            <p>Route each step to the capability that can carry it forward.</p>
+          </article>
+          <article className="hero-lab__principle">
+            <span className="hero-lab__principle-index">03</span>
+            <h3>Control</h3>
+            <p>See what happened, why it happened and where judgment belongs.</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="hero-lab__closing" aria-labelledby="hero-closing-title">
+        <h2 id="hero-closing-title">Make intelligent work coherent.</h2>
+        <button className="hero-lab__primary-action" type="button" onClick={handleAccessRequest}>
+          Join early access <span aria-hidden="true">↗</span>
+        </button>
+      </section>
     </main>
   );
 }
