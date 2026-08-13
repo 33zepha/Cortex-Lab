@@ -7,7 +7,6 @@ import {
 import { Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CortexLogo } from "@/components/brand/CortexLogo";
-import { CortexThread } from "@/components/brand/CortexThread";
 import { Journey } from "@/journey/Journey";
 import "./HeroLabScreen.css";
 
@@ -136,11 +135,6 @@ export function HeroLabScreen() {
             <h1 id="inside-title"><span>One objective.</span><span>Every action aligned.</span></h1>
             <p>Cortex turns one objective into coordinated, reviewed work.</p>
             <a className="inside-entry__cta" href="#access">Request access</a>
-          </div>
-
-          <div className="inside-entry__thread">
-            <span className="inside-entry__thread-label">Cortex Thread</span>
-            <CortexThread state="result" />
           </div>
         </div>
       </section>
