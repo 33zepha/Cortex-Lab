@@ -490,9 +490,15 @@
 
 .inside-entry__art {
   z-index: 0;
+  user-select: none;
+}
+
+.inside-entry__art img {
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   object-position: center center;
-  user-select: none;
 }
 
 .inside-entry__wash {
@@ -2098,8 +2104,8 @@ html:has(.inside) {
     padding: 0 18px;
   }
 
-  .inside-entry__art {
-    object-position: 52% center;
+  .inside-entry__art img {
+    object-position: 78% center;
   }
 
   .inside-entry__wash {
