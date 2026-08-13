@@ -498,8 +498,8 @@
 .inside-entry__wash {
   z-index: 1;
   background:
-    radial-gradient(ellipse 47% 37% at 50% 37%, rgba(250, 251, 255, 0.78), rgba(250, 251, 255, 0.25) 57%, transparent 84%),
-    linear-gradient(180deg, rgba(245, 248, 255, 0.08) 0%, rgba(245, 246, 255, 0.02) 38%, rgba(20, 27, 61, 0.06) 100%);
+    radial-gradient(ellipse 48% 38% at 50% 39%, rgba(252, 252, 255, 0.72), rgba(252, 252, 255, 0.2) 58%, transparent 84%),
+    linear-gradient(180deg, rgba(244, 247, 255, 0.06) 0%, rgba(244, 247, 255, 0.01) 42%, rgba(20, 27, 61, 0.1) 100%);
 }
 
 .inside-entry__content {
@@ -509,30 +509,14 @@
   width: min(900px, 100%);
   align-items: center;
   flex-direction: column;
-  margin-top: clamp(174px, 22svh, 238px);
+  margin-top: clamp(238px, 26.4svh, 266px);
   padding-bottom: 80px;
   text-align: center;
   transform: none;
 }
 
-.inside-entry__content > .inside-entry__eyebrow {
-  max-width: none;
-  margin: 0;
-  padding: 8px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.68);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.38);
-  color: rgba(24, 30, 50, 0.7);
-  font-size: 9px;
-  font-weight: 680;
-  letter-spacing: 0.12em;
-  line-height: 1;
-  text-transform: uppercase;
-  animation: inside-entry-fade 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
 .inside-entry h1 {
-  margin-top: clamp(22px, 3.5vh, 34px);
+  margin-top: 0;
   color: #171c2c;
   font-family: "Cortex Inter", Inter, system-ui, sans-serif;
   font-size: clamp(52px, 5.8vw, 88px);
@@ -555,11 +539,11 @@
   animation-delay: 145ms;
 }
 
-.inside-entry__content > p:not(.inside-entry__eyebrow) {
-  max-width: 484px;
+.inside-entry__content > p {
+  max-width: 466px;
   margin-top: clamp(20px, 2.5vh, 26px);
-  color: rgba(25, 31, 51, 0.7);
-  font-size: clamp(14px, 1.05vw, 16px);
+  color: rgba(25, 31, 51, 0.74);
+  font-size: clamp(15px, 1.05vw, 16px);
   font-weight: 470;
   letter-spacing: -0.022em;
   line-height: 1.55;
@@ -599,37 +583,36 @@
   z-index: 2;
   bottom: max(24px, calc(3.2vh + env(safe-area-inset-bottom)));
   left: 50%;
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  color: rgba(23, 29, 48, 0.62);
-  font-size: 9px;
-  font-weight: 660;
-  letter-spacing: 0.13em;
-  line-height: 1;
-  text-transform: uppercase;
+  display: block;
+  width: 21px;
+  height: 32px;
+  border: 1px solid rgba(23, 29, 48, 0.5);
+  border-radius: 999px;
+  color: rgba(23, 29, 48, 0.76);
+  opacity: 0.78;
   transform: translateX(-50%);
-  transition: color 180ms ease;
-  animation: inside-entry-fade 720ms cubic-bezier(0.22, 1, 0.36, 1) 430ms both;
+  transition: border-color 180ms ease, color 180ms ease, opacity 180ms ease;
+  animation: inside-scroll-in 720ms cubic-bezier(0.22, 1, 0.36, 1) 430ms both;
 }
 
-.inside-entry__scroll::after {
-  width: 24px;
-  height: 1px;
+.inside-entry__scroll::before {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 2px;
+  height: 6px;
+  border-radius: 999px;
   background: currentColor;
   content: "";
-  opacity: 0.58;
-  transition: width 180ms cubic-bezier(0.22, 1, 0.36, 1), opacity 180ms ease;
+  opacity: 0.72;
+  transform: translateX(-50%);
+  animation: inside-scroll-cue 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
 
 .inside-entry__scroll:hover,
 .inside-entry__scroll:focus-visible {
+  border-color: #171c2c;
   color: #171c2c;
-}
-
-.inside-entry__scroll:hover::after,
-.inside-entry__scroll:focus-visible::after {
-  width: 32px;
   opacity: 1;
 }
 
@@ -1699,6 +1682,18 @@ html:has(.inside) {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes inside-scroll-cue {
+  0%, 18% { opacity: 0; transform: translate(-50%, -2px); }
+  38% { opacity: 0.82; }
+  72% { opacity: 0.82; transform: translate(-50%, 8px); }
+  100% { opacity: 0; transform: translate(-50%, 10px); }
+}
+
+@keyframes inside-scroll-in {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to { opacity: 0.78; transform: translate(-50%, 0); }
+}
+
 @keyframes inside-cue {
   0% { transform: translateY(-110%); }
   60%, 100% { transform: translateY(210%); }
@@ -1849,7 +1844,7 @@ html:has(.inside) {
     font-size: clamp(46px, 13.1vw, 68px);
   }
 
-  .inside-entry__content > p:not(.inside-entry__eyebrow) {
+  .inside-entry__content > p {
     max-width: 340px;
     margin-top: 20px;
     font-size: 14px;
@@ -2109,30 +2104,24 @@ html:has(.inside) {
 
   .inside-entry__wash {
     background:
-      radial-gradient(ellipse 88% 34% at 50% 32%, rgba(250, 251, 255, 0.76), rgba(250, 251, 255, 0.22) 62%, transparent 100%),
+      radial-gradient(ellipse 88% 34% at 50% 32%, rgba(252, 252, 255, 0.7), rgba(252, 252, 255, 0.18) 62%, transparent 100%),
       linear-gradient(180deg, rgba(245, 248, 255, 0.04) 0%, rgba(20, 27, 61, 0.1) 100%);
   }
 
   .inside-entry__content {
     width: 100%;
-    margin-top: clamp(140px, 19svh, 166px);
+    margin-top: clamp(186px, 22.5svh, 210px);
     padding-bottom: 40px;
   }
 
-  .inside-entry__content > .inside-entry__eyebrow {
-    padding: 7px 10px;
-    font-size: 8px;
-    letter-spacing: 0.105em;
-  }
-
   .inside-entry h1 {
-    margin-top: 20px;
+    margin-top: 0;
     font-size: clamp(43px, 12vw, 60px);
     letter-spacing: -0.072em;
     line-height: 0.95;
   }
 
-  .inside-entry__content > p:not(.inside-entry__eyebrow) {
+  .inside-entry__content > p {
     max-width: 332px;
     margin-top: 18px;
     font-size: 14px;
@@ -2147,12 +2136,12 @@ html:has(.inside) {
 
   .inside-entry__scroll {
     bottom: max(20px, calc(2.8vh + env(safe-area-inset-bottom)));
-    gap: 8px;
-    font-size: 8px;
+    width: 20px;
+    height: 30px;
   }
 
-  .inside-entry__scroll::after {
-    width: 21px;
+  .inside-entry__scroll::before {
+    top: 6px;
   }
 }
 
@@ -2174,6 +2163,7 @@ html:has(.inside) {
   }
 
   .inside-entry h1 span,
+  .inside-entry__scroll::before,
   .inside-entry__cue i::after,
   .inside-scene__objective-ring,
   .inside-scene__provider-orbit,
@@ -2201,13 +2191,17 @@ html:has(.inside) {
     animation: none;
   }
 
-  .inside-entry__eyebrow,
   .inside-entry__mark,
-  .inside-entry__content > p:not(.inside-entry__eyebrow),
+  .inside-entry__content > p,
   .inside-entry__cta,
   .inside-entry__scroll {
     animation: none;
     opacity: 1;
     transform: none;
+  }
+
+  .inside-entry__scroll {
+    opacity: 0.78;
+    transform: translateX(-50%);
   }
 }

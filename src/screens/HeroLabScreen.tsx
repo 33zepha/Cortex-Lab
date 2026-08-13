@@ -146,14 +146,11 @@ export function HeroLabScreen() {
           />
           <div className="inside-entry__wash" aria-hidden="true" />
           <div className="inside-entry__content">
-            <p className="inside-entry__eyebrow">A system for consequential work</p>
             <h1 id="inside-title"><span>One objective.</span><span>Every action aligned.</span></h1>
             <p>Cortex turns one objective into coordinated work—with the evidence to stand behind it.</p>
             <a className="inside-entry__cta" href="#access">Request access</a>
           </div>
-          <a className="inside-entry__scroll" href="#journey">
-            Explore the system
-          </a>
+          <a className="inside-entry__scroll" href="#journey" aria-label="Scroll to explore Cortex" />
         </div>
       </section>
 
