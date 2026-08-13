@@ -1,50 +1,53 @@
-import { motion } from "framer-motion";
+import "./CortexThread.css";
+import type { CSSProperties } from "react";
 
-export type CortexThreadState =
-  | "intent"
-  | "structure"
-  | "execution"
-  | "verification"
-  | "result";
+const THREAD_STAGES = [
+  { key: "intent", label: "Intent" },
+  { key: "structure", label: "Structure" },
+  { key: "execution", label: "Execution" },
+  { key: "verification", label: "Verification" },
+  { key: "result", label: "Result" },
+] as const;
+
+export type CortexThreadState = (typeof THREAD_STAGES)[number]["key"];
 
 export function CortexThread({
-  state = "intent",
+  state = "result",
+  className,
 }: {
   state?: CortexThreadState;
+  className?: string;
 }) {
-  const activeIndex = [
-    "intent",
-    "structure",
-    "execution",
-    "verification",
-    "result",
-  ].indexOf(state);
+  const activeIndex = THREAD_STAGES.findIndex((stage) => stage.key === state);
+  const threadStyle = {
+    "--thread-progress": activeIndex / (THREAD_STAGES.length - 1),
+    "--thread-position": `${activeIndex * 25}%`,
+  } as CSSProperties;
 
   return (
     <div
-      className="cortex-thread"
-      aria-hidden="true"
+      className={className ? `cortex-thread-primitive ${className}` : "cortex-thread-primitive"}
+      role="img"
+      aria-label="Cortex Thread: intent, structure, execution, verification, result"
       data-state={state}
+      style={threadStyle}
     >
-      <span className="cortex-thread__line" />
-      <motion.span
-        className="cortex-thread__signal"
-        animate={{ left: `${activeIndex * 25}%` }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-      />
-      <div className="cortex-thread__nodes">
-        {[
-          "intent",
-          "structure",
-          "execution",
-          "verification",
-          "result",
-        ].map((item, index) => (
-          <span
-            key={item}
-            className={index <= activeIndex ? "is-active" : ""}
-          />
-        ))}
+      <div className="cortex-thread-primitive__rail" aria-hidden="true">
+        <span className="cortex-thread-primitive__track" />
+        <span className="cortex-thread-primitive__trace" />
+        <span className="cortex-thread-primitive__signal" />
+        <div className="cortex-thread-primitive__stages">
+          {THREAD_STAGES.map((stage, index) => (
+            <span
+              className={index <= activeIndex ? "cortex-thread-primitive__stage is-active" : "cortex-thread-primitive__stage"}
+              data-stage={stage.key}
+              key={stage.key}
+            >
+              <span className="cortex-thread-primitive__node" />
+              <span className="cortex-thread-primitive__label">{stage.label}</span>
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );

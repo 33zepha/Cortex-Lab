@@ -1,0 +1,186 @@
+.cortex-thread-primitive {
+  --thread-ink: #1b1e29;
+  --thread-accent: #5266f2;
+  --thread-line: rgba(27, 30, 41, 0.16);
+  --thread-progress: 1;
+  --thread-position: 100%;
+  display: block;
+  width: 100%;
+  color: rgba(27, 30, 41, 0.55);
+}
+
+.cortex-thread-primitive__rail {
+  position: relative;
+  padding-top: 2px;
+}
+
+.cortex-thread-primitive__track,
+.cortex-thread-primitive__trace {
+  position: absolute;
+  top: 7px;
+  right: 0;
+  left: 0;
+  height: 1px;
+}
+
+.cortex-thread-primitive__track {
+  background: var(--thread-line);
+}
+
+.cortex-thread-primitive__trace {
+  background: var(--thread-ink);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: cortex-thread-trace 1100ms cubic-bezier(0.22, 1, 0.36, 1) 180ms both;
+}
+
+.cortex-thread-primitive__signal {
+  position: absolute;
+  z-index: 2;
+  top: 4px;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  background: var(--thread-accent);
+  opacity: 0;
+  transform: translateX(-50%) scale(0.65);
+  animation: cortex-thread-signal 1000ms cubic-bezier(0.22, 1, 0.36, 1) 300ms both;
+}
+
+.cortex-thread-primitive__stages {
+  position: relative;
+  height: 39px;
+}
+
+.cortex-thread-primitive__stage {
+  position: absolute;
+  top: 0;
+  min-width: 1px;
+  color: rgba(27, 30, 41, 0.42);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  transform: translateX(-50%);
+}
+
+.cortex-thread-primitive__stage:nth-child(1) {
+  left: 0;
+  text-align: left;
+  transform: none;
+}
+
+.cortex-thread-primitive__stage:nth-child(2) { left: 25%; }
+.cortex-thread-primitive__stage:nth-child(3) { left: 50%; }
+.cortex-thread-primitive__stage:nth-child(4) { left: 75%; }
+
+.cortex-thread-primitive__stage:nth-child(5) {
+  right: 0;
+  text-align: right;
+  transform: none;
+}
+
+.cortex-thread-primitive__node {
+  position: absolute;
+  top: 1px;
+  left: 50%;
+  width: 13px;
+  height: 13px;
+  border: 1px solid rgba(27, 30, 41, 0.25);
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  animation: cortex-thread-node 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.cortex-thread-primitive__stage:nth-child(1) .cortex-thread-primitive__node {
+  left: 0;
+  transform: translate(0, -50%);
+  animation-delay: 160ms;
+}
+
+.cortex-thread-primitive__stage:nth-child(2) .cortex-thread-primitive__node { animation-delay: 360ms; }
+.cortex-thread-primitive__stage:nth-child(3) .cortex-thread-primitive__node { animation-delay: 560ms; }
+.cortex-thread-primitive__stage:nth-child(4) .cortex-thread-primitive__node { animation-delay: 760ms; }
+
+.cortex-thread-primitive__stage:nth-child(5) .cortex-thread-primitive__node {
+  right: 0;
+  left: auto;
+  transform: translate(0, -50%);
+  animation-delay: 960ms;
+}
+
+.cortex-thread-primitive__stage.is-active {
+  color: rgba(27, 30, 41, 0.68);
+}
+
+.cortex-thread-primitive__stage.is-active .cortex-thread-primitive__node {
+  border-color: var(--thread-ink);
+}
+
+.cortex-thread-primitive__stage.is-active[data-stage="result"] .cortex-thread-primitive__node {
+  border-color: var(--thread-accent);
+  background: var(--thread-accent);
+}
+
+.cortex-thread-primitive__label {
+  display: block;
+  padding-top: 19px;
+  white-space: nowrap;
+}
+
+@keyframes cortex-thread-trace {
+  to { transform: scaleX(var(--thread-progress)); }
+}
+
+@keyframes cortex-thread-signal {
+  0% { left: 0; opacity: 0; transform: translateX(-50%) scale(0.65); }
+  8% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { left: var(--thread-position); opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+@keyframes cortex-thread-node {
+  to { opacity: 1; }
+}
+
+@media (max-width: 720px) {
+  .cortex-thread-primitive__stage {
+    font-size: 7px;
+    letter-spacing: 0.055em;
+  }
+
+  .cortex-thread-primitive__node {
+    width: 11px;
+    height: 11px;
+  }
+
+  .cortex-thread-primitive__signal {
+    top: 5px;
+    width: 5px;
+    height: 5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cortex-thread-primitive__trace {
+    animation: none;
+    transform: scaleX(var(--thread-progress));
+  }
+
+  .cortex-thread-primitive__signal {
+    display: none;
+  }
+
+  .cortex-thread-primitive__node,
+  .cortex-thread-primitive__stage:nth-child(1) .cortex-thread-primitive__node,
+  .cortex-thread-primitive__stage:nth-child(5) .cortex-thread-primitive__node {
+    animation: none;
+    opacity: 1;
+  }
+}

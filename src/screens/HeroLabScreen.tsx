@@ -1,22 +1,17 @@
 import {
-  useEffect,
   useRef,
   useState,
-  type CSSProperties,
   type FormEvent,
   type RefObject,
 } from "react";
 import { Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CortexLogo } from "@/components/brand/CortexLogo";
+import { CortexThread } from "@/components/brand/CortexThread";
 import { Journey } from "@/journey/Journey";
 import "./HeroLabScreen.css";
 
 type WaitlistStatus = "idle" | "invalid" | "loading" | "success" | "error";
-
-function clamp(value: number, min = 0, max = 1) {
-  return Math.min(max, Math.max(min, value));
-}
 
 function AccessForm({
   email,
@@ -76,37 +71,10 @@ function AccessForm({
 }
 
 export function HeroLabScreen() {
-  const entryRef = useRef<HTMLElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
-  const [entryProgress, setEntryProgress] = useState(0);
   const [requestStatus, setRequestStatus] = useState<WaitlistStatus>("idle");
   const [requestError, setRequestError] = useState("");
   const [email, setEmail] = useState("");
-
-  useEffect(() => {
-    let frame = 0;
-
-    const update = () => {
-      frame = 0;
-      const entry = entryRef.current?.getBoundingClientRect();
-      if (!entry) return;
-      const distance = Math.max(entry.height - window.innerHeight, 1);
-      setEntryProgress(clamp(-entry.top / distance));
-    };
-
-    const requestUpdate = () => {
-      if (!frame) frame = window.requestAnimationFrame(update);
-    };
-
-    update();
-    window.addEventListener("scroll", requestUpdate, { passive: true });
-    window.addEventListener("resize", requestUpdate);
-    return () => {
-      window.removeEventListener("scroll", requestUpdate);
-      window.removeEventListener("resize", requestUpdate);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, []);
 
   const handleEmailChange = (value: string) => {
     setEmail(value);
@@ -150,8 +118,6 @@ export function HeroLabScreen() {
     }
   };
 
-  const entryStyle = { "--entry-progress": entryProgress } as CSSProperties;
-
   return (
     <main className="inside" aria-labelledby="inside-title">
       <header className="inside-nav">
@@ -162,30 +128,20 @@ export function HeroLabScreen() {
         <Link className="inside-nav__signin" to="/login">Sign in</Link>
       </header>
 
-      <section ref={entryRef} className="inside-entry" style={entryStyle}>
+      <section className="inside-entry">
         <div className="inside-entry__sticky">
-          <div className="inside-frame" aria-hidden="true">
-            <span className="inside-frame__corner inside-frame__corner--tl" />
-            <span className="inside-frame__corner inside-frame__corner--tr" />
-            <span className="inside-frame__corner inside-frame__corner--bl" />
-            <span className="inside-frame__corner inside-frame__corner--br" />
-          </div>
-
-          <div className="inside-entry__contour" aria-hidden="true"><span /><span /></div>
-
-          <div className="inside-entry__atmosphere" aria-hidden="true">
-            <span className="inside-entry__atmosphere-beam" />
-            <span className="inside-entry__atmosphere-grain" />
-            <span className="inside-entry__atmosphere-orbit" />
-          </div>
-
           <div className="inside-entry__content">
+            <p className="inside-entry__eyebrow">Operational intelligence</p>
             <div className="inside-entry__mark"><CortexLogo /></div>
-            <h1 id="inside-title"><span>One objective.</span><span>Every capability aligned.</span></h1>
-            <p>Cortex turns complex work into one directed, inspectable system.</p>
+            <h1 id="inside-title"><span>One objective.</span><span>Every action aligned.</span></h1>
+            <p>Cortex turns one objective into coordinated, reviewed work.</p>
+            <a className="inside-entry__cta" href="#access">Request access</a>
           </div>
 
-          <a className="inside-entry__cue" href="#journey"><span>Enter Cortex</span><i aria-hidden="true" /></a>
+          <div className="inside-entry__thread">
+            <span className="inside-entry__thread-label">Cortex Thread</span>
+            <CortexThread state="result" />
+          </div>
         </div>
       </section>
 
