@@ -6,6 +6,7 @@ import {
 } from "react";
 import { Check } from "lucide-react";
 import { Link } from "react-router-dom";
+import heroTerrain from "@/assets/cortex-hero-terrain.webp";
 import { CortexLogo } from "@/components/brand/CortexLogo";
 import { Journey } from "@/journey/Journey";
 import "./HeroLabScreen.css";
@@ -120,20 +121,34 @@ export function HeroLabScreen() {
   return (
     <main className="inside" aria-labelledby="inside-title">
       <header className="inside-nav">
-        <Link className="inside-nav__brand" to="/" aria-label="Cortex home">
-          <CortexLogo aria-hidden="true" />
-          <span>CORTEX</span>
-        </Link>
-        <Link className="inside-nav__signin" to="/login">Sign in</Link>
+        <nav className="inside-nav__shell" aria-label="Primary navigation">
+          <Link className="inside-nav__brand" to="/" aria-label="Cortex home">
+            <CortexLogo aria-hidden="true" />
+            <span>CORTEX</span>
+          </Link>
+          <div className="inside-nav__links">
+            <Link to="/project">The system</Link>
+            <a href="#access">Access</a>
+          </div>
+          <Link className="inside-nav__signin" to="/login">Sign in</Link>
+        </nav>
       </header>
 
       <section className="inside-entry">
         <div className="inside-entry__sticky">
+          <img
+            className="inside-entry__art"
+            src={heroTerrain}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+            fetchPriority="high"
+          />
+          <div className="inside-entry__wash" aria-hidden="true" />
           <div className="inside-entry__content">
-            <p className="inside-entry__eyebrow">Operational intelligence</p>
-            <div className="inside-entry__mark"><CortexLogo /></div>
+            <p className="inside-entry__eyebrow">Cortex / operational intelligence</p>
             <h1 id="inside-title"><span>One objective.</span><span>Every action aligned.</span></h1>
-            <p>Cortex turns one objective into coordinated, reviewed work.</p>
+            <p>Cortex turns a business objective into work that stays coordinated, reviewed and ready to deliver.</p>
             <a className="inside-entry__cta" href="#access">Request access</a>
           </div>
         </div>
