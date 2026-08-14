@@ -135,15 +135,17 @@ export function LandingAtmosphere() {
 
   return (
     <div className="landing-atmosphere" aria-hidden="true">
-      <Canvas
-        orthographic
-        dpr={[1, 1.5]}
-        camera={{ position: [0, 0, 10], zoom: 92 }}
-        gl={{ alpha: true, antialias: false, powerPreference: "high-performance" }}
-        frameloop={reducedMotion ? "demand" : "always"}
-      >
-        <PixelField />
-      </Canvas>
+      <div className="landing-atmosphere__sticky">
+        <Canvas
+          orthographic
+          dpr={[1, 1.5]}
+          camera={{ position: [0, 0, 10], zoom: 92 }}
+          gl={{ alpha: true, antialias: false, powerPreference: "high-performance" }}
+          frameloop={reducedMotion ? "demand" : "always"}
+        >
+          <PixelField />
+        </Canvas>
+      </div>
     </div>
   );
 }
