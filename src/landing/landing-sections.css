@@ -331,7 +331,7 @@
   will-change: transform;
 }
 
-.cortex-mission__objectiveive-label {
+.cortex-mission__objective-label {
   display: block;
   color: rgba(70, 85, 176, 0.58);
   font-size: 10px;
@@ -411,6 +411,102 @@
   white-space: nowrap;
 }
 
+
+.cortex-capabilities {
+  position: relative;
+  min-height: 150svh;
+  overflow: clip;
+  padding: clamp(148px, 18vh, 220px) clamp(24px, 6.4vw, 104px) clamp(160px, 20vh, 240px);
+  color: #151a2b;
+}
+
+.cortex-capabilities__intro {
+  position: relative;
+  z-index: 2;
+  width: min(820px, 100%);
+  margin-bottom: clamp(96px, 13vh, 170px);
+}
+
+.cortex-capabilities__intro h2 {
+  max-width: 860px;
+  margin-top: 18px;
+  font-size: clamp(50px, 6vw, 94px);
+  line-height: 0.92;
+}
+
+.cortex-capabilities__moments {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: min(900px, 100%);
+  flex-direction: column;
+  gap: clamp(74px, 10vh, 128px);
+  margin-left: clamp(0px, 7vw, 118px);
+}
+
+.cortex-capability {
+  position: relative;
+  display: flex;
+  min-height: 166px;
+  flex-direction: column;
+  justify-content: center;
+  will-change: transform, opacity;
+}
+
+.cortex-capability:nth-child(even) {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.cortex-capability h3 {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  font-size: clamp(52px, 7vw, 108px);
+  line-height: 0.86;
+}
+
+.cortex-capability p {
+  position: relative;
+  z-index: 2;
+  max-width: 540px;
+  margin: 22px 0 0;
+  color: rgba(21, 26, 43, 0.5);
+  font-size: clamp(14px, 1.05vw, 16px);
+  line-height: 1.6;
+}
+
+.cortex-capability__matter {
+  position: absolute;
+  top: -28%;
+  left: 42%;
+  width: min(64vw, 760px);
+  height: 156%;
+  pointer-events: none;
+  opacity: 0.68;
+  transform: translateX(-50%);
+}
+
+.cortex-capability__matter::before {
+  background-image: radial-gradient(circle, rgba(88, 106, 242, 0.24) 0 1px, transparent 1.25px);
+  background-size: 12px 12px;
+  mask-image: radial-gradient(ellipse 64% 52% at 50% 50%, black 6%, transparent 80%);
+  transform: rotate(-8deg);
+}
+
+.cortex-capability__matter::after {
+  inset: 20% 18%;
+  background: radial-gradient(ellipse at center, rgba(88, 106, 242, 0.11), transparent 72%);
+  filter: blur(18px);
+}
+
+.cortex-capability.is-delegate .cortex-capability__matter,
+.cortex-capability.is-control .cortex-capability__matter {
+  right: 42%;
+  left: auto;
+  transform: translateX(50%) rotate(7deg);
+}
+
 @media (max-width: 900px) {
   .cortex-moment {
     padding-inline: 30px;
@@ -426,15 +522,6 @@
     height: 620px;
   }
 
-  .cortex-mission__phase {
-    width: 220px;
-  }
-
-  .phase-objective { top: 31%; left: 5%; }
-  .phase-structure { top: 28%; right: 5%; }
-  .phase-execution { right: 5%; bottom: 20%; }
-  .phase-verification { bottom: 16%; left: 5%; }
-  .phase-handoff { right: 8%; bottom: 9%; }
 }
 
 @media (max-width: 640px) {
@@ -514,16 +601,6 @@
     height: 58px;
   }
 
-  .cortex-provider {
-    gap: 8px;
-    font-size: 12px;
-  }
-
-  .cortex-provider svg {
-    width: 19px;
-    height: 19px;
-  }
-
   .cortex-mission {
     height: 300svh;
   }
@@ -586,16 +663,25 @@
   }
 
   .cortex-capabilities {
-    padding: 118px 24px 70px;
+    min-height: auto;
+    padding: 128px 24px 110px;
   }
 
   .cortex-capabilities__intro {
-    margin-bottom: 20px;
+    margin-bottom: 76px;
+  }
+
+  .cortex-capabilities__moments {
+    width: 100%;
+    gap: 48px;
+    margin-left: 0;
   }
 
   .cortex-capability {
-    min-height: 78svh;
-    padding-block: 11svh;
+    min-height: 58svh;
+    align-items: flex-start !important;
+    padding-block: 8svh;
+    text-align: left !important;
   }
 
   .cortex-capability h3 {
@@ -634,7 +720,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cortex-provider {
-    animation: none;
+  .cortex-capability__matter {
+    transform: none;
   }
 }
