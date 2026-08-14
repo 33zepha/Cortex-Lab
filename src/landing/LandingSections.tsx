@@ -53,7 +53,7 @@ function ProblemSection() {
   const ref = useRef<HTMLElement>(null);
   const progress = useSoftProgress(ref, ["start end", "end start"]);
   const y = useTransform(progress, [0.08, 0.46, 0.9], [56, 0, -30]);
-  const opacity = useTransform(progress, [0.05, 0.2, 0.86, 0.96], [0.35, 1, 1, 0.72]);
+  const opacity = useTransform(progress, [0.05, 0.2, 0.86, 0.96], [1, 1, 1, 0.82]);
   const imageX = useTransform(progress, [0.06, 0.82], ["10vw", "-6vw"]);
   const imageScale = useTransform(progress, [0.08, 0.52, 0.9], [1.1, 0.98, 0.9]);
 
