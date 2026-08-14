@@ -268,12 +268,6 @@
   transition: color 220ms ease, opacity 220ms ease;
 }
 
-.cortex-architecture__providers span:not(:last-child)::after {
-  margin-left: 22px;
-  color: rgba(88, 106, 242, 0.34);
-  content: "/";
-}
-
 .cortex-mission {
   position: relative;
   height: 280svh;
