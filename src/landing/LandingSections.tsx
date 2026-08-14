@@ -4,7 +4,6 @@ import { ClaudeMark } from "@/components/brand/ClaudeMark";
 import { CortexLogo } from "@/components/brand/CortexLogo";
 import { DeepSeekMark, GeminiMark, MistralMark } from "@/components/brand/ProviderMarks";
 import { OpenAiMark } from "@/components/brand/OpenAiMark";
-import { LandingAtmosphere } from "./LandingAtmosphere";
 import "./landing-sections.css";
 
 type ProviderMark = ComponentType<SVGProps<SVGSVGElement> & { title?: string }>;
@@ -103,6 +102,54 @@ function CapabilitiesSection() {
   );
 }
 
+function MissionSection() {
+  const ref = useRef<HTMLElement>(null);
+  const progress = useSoftProgress(ref, ["start end", "end start"]);
+  const surfaceY = useTransform(progress, [0.08, 0.38], [34, 0]);
+  const surfaceOpacity = useTransform(progress, [0.08, 0.3, 0.82, 0.96], [0, 1, 1, 0.72]);
+
+  return (
+    <section ref={ref} className="landing-mission" id="proof" aria-labelledby="mission-title">
+      <div className="landing-mission__intro">
+        <span>A mission in motion</span>
+        <h2 id="mission-title">See the system<br /><em>at work.</em></h2>
+        <p>Not a concept screen. A single objective moving through planning, action, evidence and handoff.</p>
+      </div>
+
+      <motion.div className="landing-mission__surface" style={{ y: surfaceY, opacity: surfaceOpacity }}>
+        <div className="landing-mission__sidebar">
+          <div className="landing-mission__bar"><span>Mission</span><b><i /> Running</b></div>
+          <h3>Launch Cortex publicly</h3>
+          <p className="landing-mission__scope">One objective · fixed scope</p>
+          <ol className="landing-mission__steps">
+            <li className="is-done"><span>01</span><strong>Objective</strong><em>Done</em></li>
+            <li className="is-done"><span>02</span><strong>Structure</strong><em>Done</em></li>
+            <li className="is-live"><span>03</span><strong>Execution</strong><em>Live</em></li>
+            <li><span>04</span><strong>Verification</strong><em>Next</em></li>
+          </ol>
+          <div className="landing-mission__pixel" aria-hidden="true" />
+        </div>
+
+        <div className="landing-mission__main">
+          <div className="landing-mission__bar landing-mission__bar--main"><span>Current activity</span><b>3 agents · 12 sources</b></div>
+          <div className="landing-mission__activity">
+            <div><i className="is-live" /><span><small>Research</small><strong>Competitive landscape</strong></span><b>12 sources</b></div>
+            <div><i className="is-live" /><span><small>Build</small><strong>Landing implementation</strong></span><b>3 files</b></div>
+            <div><i /><span><small>Planning</small><strong>Launch sequence</strong></span><b>Queued</b></div>
+          </div>
+          <div className="landing-mission__evidence">
+            <div className="landing-mission__evidence-head"><span>Evidence trail</span><b>Updated just now</b></div>
+            <div><span>Decision</span><strong>Position Cortex as an operational system</strong><em>01</em></div>
+            <div><span>Source</span><strong>Market and product signals attached</strong><em>02</em></div>
+            <div><span>Check</span><strong>Scope and constraints respected</strong><em>03</em></div>
+          </div>
+          <div className="landing-mission__result"><i /> Result ready for review <span>View handoff ↗</span></div>
+        </div>
+      </motion.div>
+    </section>
+  );
+}
+
 function ArchitectureSection() {
   const ref = useRef<HTMLElement>(null);
   const progress = useSoftProgress(ref, ["start end", "end start"]);
@@ -145,26 +192,13 @@ function StatementSection() {
 }
 
 export function LandingSections() {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const reducedMotion = useReducedMotion();
-  const { scrollYProgress } = useScroll({
-    target: rootRef,
-    offset: ["start start", "end end"],
-  });
-  const atmosphereProgress = useSpring(scrollYProgress, {
-    stiffness: reducedMotion ? 1000 : 82,
-    damping: reducedMotion ? 1000 : 28,
-    mass: reducedMotion ? 0.01 : 0.32,
-    restDelta: 0.0005,
-  });
-
   return (
-    <div ref={rootRef} className="landing-sections">
-      <LandingAtmosphere progress={atmosphereProgress} />
+    <div className="landing-sections">
       <div className="landing-sections__content">
         <ProblemSection />
         <ControlSection />
         <CapabilitiesSection />
+        <MissionSection />
         <ArchitectureSection />
         <StatementSection />
       </div>
