@@ -4,6 +4,7 @@ import {
   type FormEvent,
   type RefObject,
 } from "react";
+import { ReactLenis } from "lenis/react";
 import { Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroPixelCloud1920 from "@/assets/cortex-hero-pixel-cloud-1920.webp";
@@ -11,9 +12,8 @@ import heroPixelCloud2560 from "@/assets/cortex-hero-pixel-cloud-2560.webp";
 import heroPixelCloud3840 from "@/assets/cortex-hero-pixel-cloud-3840.webp";
 import { CortexLogo } from "@/components/brand/CortexLogo";
 import { LandingSections } from "@/landing/LandingSections";
+import "lenis/dist/lenis.css";
 import "./HeroLabScreen.css";
-import "@/landing/landing-mobile.css";
-import "@/landing/landing-art-direction.css";
 
 type WaitlistStatus = "idle" | "invalid" | "loading" | "success" | "error";
 
@@ -124,6 +124,8 @@ export function HeroLabScreen() {
 
   return (
     <main className="inside" aria-labelledby="inside-title">
+      <ReactLenis root options={{ lerp: 0.08, smoothWheel: true, syncTouch: false }} />
+
       <header className="inside-nav">
         <nav className="inside-nav__shell" aria-label="Primary navigation">
           <Link className="inside-nav__brand" to="/" aria-label="Cortex home">
