@@ -1,0 +1,434 @@
+.cortex-journey {
+  background:
+    radial-gradient(62% 34% at 52% 7%, rgba(118, 106, 246, .055), transparent 76%),
+    radial-gradient(36% 30% at 11% 46%, rgba(83, 105, 242, .035), transparent 78%),
+    radial-gradient(38% 30% at 91% 74%, rgba(150, 137, 248, .032), transparent 76%),
+    linear-gradient(180deg, #fff 0%, #fcfcff 48%, #fff 100%);
+}
+
+.cortex-journey::before {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255,255,255,.9), transparent 34%),
+    linear-gradient(180deg, rgba(255,255,255,.24), rgba(255,255,255,0));
+}
+
+.cortex-thread--ghost {
+  stroke: rgba(68, 80, 144, .055);
+  stroke-width: .9;
+}
+
+.cortex-thread--active {
+  stroke-width: 1.35;
+  opacity: .82;
+}
+
+.cortex-flow path {
+  stroke: rgba(75, 88, 160, .16);
+  stroke-width: .95;
+}
+
+.cortex-flow--verify path {
+  stroke: rgba(103, 92, 197, .16);
+}
+
+.cortex-flow--return path {
+  stroke: rgba(84, 100, 214, .13);
+}
+
+.cortex-mission {
+  width: 44px;
+  height: 44px;
+}
+
+.cortex-mission__surface {
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(70, 84, 156, .09);
+  border-radius: 14px;
+  background: rgba(255,255,255,.9);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.98) inset,
+    0 10px 26px rgba(47, 58, 116, .07),
+    0 2px 6px rgba(47, 58, 116, .035);
+  backdrop-filter: blur(16px) saturate(120%);
+}
+
+.cortex-mission .cortex-logo {
+  width: 25px;
+  height: 25px;
+}
+
+.cortex-scene__caption {
+  margin-bottom: 13px;
+  color: rgba(21,26,43,.24);
+  font-size: 6.5px;
+  font-weight: 730;
+  letter-spacing: .16em;
+}
+
+.cortex-scene--objective {
+  top: 248px;
+  left: 392px;
+  width: 650px;
+}
+
+.cortex-objective {
+  width: 610px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.cortex-objective__prompt {
+  font-size: 38px;
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -.052em;
+}
+
+.cortex-objective__context {
+  gap: 24px;
+  margin-top: 26px;
+  padding-top: 13px;
+  border-top-color: rgba(71, 85, 150, .065);
+  color: rgba(21,26,43,.34);
+  font-size: 7.5px;
+}
+
+.cortex-objective__locked {
+  margin-top: 15px;
+  color: rgba(68, 84, 214, .56);
+  font-size: 6.5px;
+}
+
+.cortex-scene--routing {
+  top: 220px;
+  left: 1555px;
+  width: 690px;
+}
+
+.cortex-routing {
+  width: 520px;
+}
+
+.cortex-routing__signals {
+  gap: 4px;
+  border-top: 0;
+}
+
+.cortex-routing__signal {
+  grid-template-columns: 96px 1fr 32px;
+  min-height: 42px;
+  border-bottom: 0;
+  opacity: calc(.78 + var(--row, 0) * .08);
+}
+
+.cortex-routing__signal > span {
+  color: rgba(21,26,43,.46);
+  font-size: 8.5px;
+}
+
+.cortex-routing__signal > i {
+  background: rgba(70,84,150,.07);
+}
+
+.cortex-routing__signal > i b {
+  background: linear-gradient(90deg, rgba(82,101,236,.46), rgba(119,109,244,.68));
+}
+
+.cortex-routing__signal em {
+  color: rgba(21,26,43,.24);
+  font-size: 7.5px;
+}
+
+.cortex-routing__selected {
+  justify-content: flex-start;
+  gap: 16px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(68, 82, 150, .06);
+}
+
+.cortex-routing__selected strong {
+  font-size: 9.5px;
+  font-weight: 590;
+}
+
+.cortex-routing__providers {
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.cortex-routing__providers span {
+  width: 21px;
+  height: 21px;
+  color: rgba(65,78,146,.42);
+}
+
+.cortex-routing__providers svg {
+  width: 15px;
+  height: 15px;
+}
+
+.cortex-scene--execution {
+  top: 156px;
+  left: 2815px;
+  width: 810px;
+}
+
+.cortex-execution {
+  width: 700px;
+}
+
+.cortex-workstream {
+  grid-template-columns: 8px 1fr auto;
+  min-height: 58px;
+  padding: 0 8px 0 0;
+  border: 0;
+  border-bottom: 1px solid rgba(66, 80, 146, .07);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.cortex-workstream:nth-child(2) {
+  margin-left: 58px;
+  margin-right: 18px;
+}
+
+.cortex-workstream:nth-child(3) {
+  margin-left: 22px;
+  margin-right: 104px;
+}
+
+.cortex-workstream > i {
+  width: 5px;
+  height: 5px;
+}
+
+.cortex-workstream > i.is-live {
+  box-shadow: 0 0 0 4px rgba(99,116,239,.05);
+}
+
+.cortex-workstream small {
+  font-size: 6.5px;
+  letter-spacing: .095em;
+}
+
+.cortex-workstream strong {
+  font-size: 10.5px;
+  font-weight: 580;
+}
+
+.cortex-workstream em {
+  font-size: 7.5px;
+}
+
+.cortex-scene--verify {
+  top: 184px;
+  left: 4095px;
+  width: 620px;
+}
+
+.cortex-review {
+  width: 500px;
+  padding: 4px 18px 17px;
+  border-color: rgba(65,78,144,.065);
+  border-radius: 24px;
+  background: rgba(255,255,255,.58);
+  box-shadow: 0 28px 72px rgba(58,67,122,.038);
+  backdrop-filter: blur(22px) saturate(118%);
+}
+
+.cortex-review__head {
+  min-height: 54px;
+  border-bottom-color: rgba(70,84,150,.065);
+}
+
+.cortex-review__head span {
+  font-size: 10.5px;
+  font-weight: 590;
+}
+
+.cortex-review__row {
+  min-height: 43px;
+  border-bottom-color: rgba(70,84,150,.055);
+  font-size: 8.5px;
+}
+
+.cortex-review__verified {
+  padding-top: 14px;
+  font-size: 7.5px;
+}
+
+.cortex-scene--return {
+  top: 235px;
+  left: 5400px;
+  width: 560px;
+}
+
+.cortex-result {
+  width: 470px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.cortex-result__status {
+  font-size: 6.5px;
+  letter-spacing: .13em;
+}
+
+.cortex-result > strong {
+  margin-top: 18px;
+  font-size: 43px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -.052em;
+}
+
+.cortex-result__meta {
+  gap: 22px;
+  margin-top: 22px;
+  padding-top: 13px;
+  border-top-color: rgba(68,82,150,.065);
+  font-size: 7.5px;
+}
+
+.cortex-packet {
+  width: 6px;
+  height: 6px;
+  border-color: rgba(82,101,236,.24);
+  box-shadow: 0 4px 13px rgba(65,79,169,.07);
+}
+
+.cortex-journey__atmosphere i {
+  filter: blur(110px);
+  opacity: .44;
+}
+
+.cortex-chapter {
+  height: 126svh;
+}
+
+.cortex-chapter__copy {
+  width: min(390px, 32vw);
+}
+
+.cortex-chapter--objective .cortex-chapter__copy {
+  top: 14vh;
+  left: clamp(1.5rem, 6vw, 6.5rem);
+}
+
+.cortex-chapter--routing .cortex-chapter__copy {
+  top: 19vh;
+  right: clamp(1.5rem, 7vw, 7.5rem);
+  bottom: auto;
+}
+
+.cortex-chapter--execution .cortex-chapter__copy {
+  left: clamp(1.5rem, 5.7vw, 6.8rem);
+  bottom: 12vh;
+}
+
+.cortex-chapter--verify .cortex-chapter__copy {
+  top: 15vh;
+  right: clamp(1.5rem, 5.8vw, 6.6rem);
+}
+
+.cortex-chapter--return .cortex-chapter__copy {
+  top: auto;
+  bottom: 16vh;
+  left: clamp(1.5rem, 8.5vw, 9.5rem);
+}
+
+.cortex-chapter__eyebrow {
+  gap: 10px;
+  margin-bottom: 14px;
+  color: rgba(21,26,43,.29);
+  font-size: 7px;
+  font-weight: 680;
+  letter-spacing: .105em;
+}
+
+.cortex-chapter__eyebrow i {
+  width: 26px;
+  background: rgba(82,101,236,.24);
+}
+
+.cortex-chapter h2 {
+  font-size: clamp(2rem, 3.15vw, 3.95rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -.05em;
+}
+
+.cortex-chapter p {
+  margin-top: 15px;
+  color: rgba(21,26,43,.43);
+  font-size: clamp(.88rem, .92vw, .97rem);
+  line-height: 1.54;
+}
+
+@media (max-width: 1000px) {
+  .cortex-chapter__copy {
+    width: min(370px, 40vw);
+  }
+}
+
+@media (max-width: 720px) {
+  .cortex-chapter {
+    height: 122svh;
+  }
+
+  .cortex-chapter__sticky::after {
+    height: 45%;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,.72) 32%, rgba(255,255,255,.99) 80%);
+  }
+
+  .cortex-chapter__copy,
+  .cortex-chapter--objective .cortex-chapter__copy,
+  .cortex-chapter--routing .cortex-chapter__copy,
+  .cortex-chapter--execution .cortex-chapter__copy,
+  .cortex-chapter--verify .cortex-chapter__copy,
+  .cortex-chapter--return .cortex-chapter__copy {
+    right: 1.15rem;
+    bottom: 5.25rem;
+    left: 1.15rem;
+  }
+
+  .cortex-chapter h2 {
+    max-width: 11ch;
+    font-size: clamp(2.05rem, 9.4vw, 3.1rem);
+  }
+
+  .cortex-chapter p,
+  .cortex-chapter--routing p,
+  .cortex-chapter--verify p {
+    margin-top: 12px;
+    font-size: .84rem;
+  }
+
+  .cortex-mission {
+    width: 40px;
+    height: 40px;
+  }
+
+  .cortex-mission__surface {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+  }
+
+  .cortex-mission .cortex-logo {
+    width: 22px;
+    height: 22px;
+  }
+}
