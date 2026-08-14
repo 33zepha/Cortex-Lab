@@ -1,43 +1,25 @@
 import { useRef, type ComponentType, type RefObject, type SVGProps } from "react";
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
-import { ClaudeMark } from "@/components/brand/ClaudeMark";
 import { CortexLogo } from "@/components/brand/CortexLogo";
-import { DeepSeekMark, GeminiMark, MistralMark } from "@/components/brand/ProviderMarks";
-import { OpenAiMark } from "@/components/brand/OpenAiMark";
 import "./landing-sections.css";
-
-type ProviderMark = ComponentType<SVGProps<SVGSVGElement> & { title?: string }>;
-type ScrollOffset = NonNullable<NonNullable<Parameters<typeof useScroll>[0]>["offset"]>;
-
-const providers: Array<{ name: string; Mark: ProviderMark }> = [
-  { name: "Claude", Mark: ClaudeMark },
-  { name: "Codex", Mark: OpenAiMark },
-  { name: "DeepSeek", Mark: DeepSeekMark },
-  { name: "Gemini", Mark: GeminiMark },
-  { name: "Mistral", Mark: MistralMark },
-];
 
 const capabilityMoments = [
   {
-    index: "01",
     verb: "Orchestrate",
     statement: "One objective becomes coordinated intelligence.",
     className: "is-orchestrate",
   },
   {
-    index: "02",
     verb: "Delegate",
     statement: "The right capability moves to the right problem.",
     className: "is-delegate",
   },
   {
-    index: "03",
     verb: "Verify",
     statement: "Weak work is sent back before it becomes finished work.",
     className: "is-verify",
   },
   {
-    index: "04",
     verb: "Control",
     statement: "The human stays in command.",
     className: "is-control",
@@ -128,14 +110,14 @@ function ArchitectureSection() {
       >
         <div className="cortex-architecture__halo" aria-hidden="true" />
         <div className="cortex-architecture__core" aria-hidden="true"><CortexLogo /></div>
-        {providers.map(({ name, Mark }) => (
-          <div className="cortex-provider" key={name}>
-            <Mark aria-hidden="true" />
-            <span>{name}</span>
-          </div>
-        ))}
+        <div className="cortex-architecture__providers" aria-label="Model providers">
+          <span>Claude</span>
+          <span>Codex</span>
+          <span>DeepSeek</span>
+          <span>Gemini</span>
+          <span>Mistral</span>
+        </div>
       </motion.div>
-    </section>
   );
 }
 
@@ -162,36 +144,23 @@ function MissionSection() {
           <p>One objective moving through planning, action, evidence and handoff.</p>
         </motion.div>
 
-        <motion.div className="cortex-mission__object" style={{ scale: missionScale, y: missionY }}>
-          <span className="cortex-mission__status">Running</span>
+        <motion.div className="cortex-mission__objective" style={{ scale: missionScale, y: missionY, opacity: objectiveOpacity }}>
+          <span className="cortex-mission__objective-label">Current objective</span>
           <h3>Launch Cortex publicly</h3>
           <p>One objective · fixed scope</p>
           <div className="cortex-mission__matter" aria-hidden="true" />
         </motion.div>
 
-        <motion.div className="cortex-mission__phase phase-objective" style={{ opacity: objectiveOpacity }}>
-          <span>Objective</span>
-          <strong>Position Cortex as an operating system</strong>
-        </motion.div>
-        <motion.div className="cortex-mission__phase phase-structure" style={{ opacity: structureOpacity }}>
-          <span>Structure</span>
-          <strong>Research · Product · Build</strong>
-        </motion.div>
-        <motion.div className="cortex-mission__phase phase-execution" style={{ opacity: executionOpacity }}>
-          <span>Execution</span>
-          <strong>12 sources · 3 files · active</strong>
-        </motion.div>
-        <motion.div className="cortex-mission__phase phase-verification" style={{ opacity: verificationOpacity }}>
-          <span>Verification</span>
-          <strong>Evidence attached · constraints respected</strong>
-        </motion.div>
-        <motion.div className="cortex-mission__phase phase-handoff" style={{ opacity: handoffOpacity }}>
-          <span>Handoff</span>
-          <strong>Result ready for review</strong>
-        </motion.div>
+        <div className="cortex-mission__sequence" aria-label="Mission sequence">
+          <motion.span style={{ opacity: objectiveOpacity }}>Objective</motion.span>
+          <motion.span style={{ opacity: structureOpacity }}>Structure</motion.span>
+          <motion.span style={{ opacity: executionOpacity }}>Execution</motion.span>
+          <motion.span style={{ opacity: verificationOpacity }}>Verification</motion.span>
+          <motion.span style={{ opacity: handoffOpacity }}>Handoff</motion.span>
+        </div>
 
         <motion.div className="cortex-mission__result" style={{ opacity: resultOpacity }}>
-          <i aria-hidden="true" /> Proof attached. Human review ready.
+          Proof attached. Human review ready.
         </motion.div>
       </div>
     </section>
@@ -217,7 +186,6 @@ function CapabilitiesSection() {
             transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="cortex-capability__matter" aria-hidden="true" />
-            <span className="cortex-capability__index">{moment.index}</span>
             <h3>{moment.verb}</h3>
             <p>{moment.statement}</p>
           </motion.article>
