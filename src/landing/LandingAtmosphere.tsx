@@ -117,17 +117,17 @@ function PixelLayer({
       const i3 = index * 3;
       const seed = index * 0.117 + phase;
 
-      const coordinatedX = mix(states.chaos[i3], states.coordination[i3], coordinationMix);
-      const coordinatedY = mix(states.chaos[i3 + 1], states.coordination[i3 + 1], coordinationMix);
-      const coordinatedZ = mix(states.chaos[i3 + 2], states.coordination[i3 + 2], coordinationMix);
+      const coordinatedX = mix(states.chaos[i3]!, states.coordination[i3]!, coordinationMix);
+      const coordinatedY = mix(states.chaos[i3 + 1]!, states.coordination[i3 + 1]!, coordinationMix);
+      const coordinatedZ = mix(states.chaos[i3 + 2]!, states.coordination[i3 + 2]!, coordinationMix);
 
       states.working[i3] =
-        mix(coordinatedX, states.resolution[i3], resolutionMix) +
+        mix(coordinatedX, states.resolution[i3]!, resolutionMix) +
         Math.sin(time * speed + seed) * drift;
       states.working[i3 + 1] =
-        mix(coordinatedY, states.resolution[i3 + 1], resolutionMix) +
+        mix(coordinatedY, states.resolution[i3 + 1]!, resolutionMix) +
         Math.cos(time * speed * 0.82 + seed * 1.31) * drift * 0.72;
-      states.working[i3 + 2] = mix(coordinatedZ, states.resolution[i3 + 2], resolutionMix);
+      states.working[i3 + 2] = mix(coordinatedZ, states.resolution[i3 + 2]!, resolutionMix);
     }
 
     const positionAttribute = geometry.getAttribute("position") as THREE.BufferAttribute;
