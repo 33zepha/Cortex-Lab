@@ -3,9 +3,7 @@
   isolation: isolate;
   overflow: clip;
   color: #151a2b;
-  background:
-    radial-gradient(ellipse 82% 10% at 51% 16%, rgba(96, 115, 244, 0.055), transparent 74%),
-    linear-gradient(180deg, #ffffff 0%, #fbfcff 38%, #f8f9ff 67%, #ffffff 100%);
+  background-color: #f7fbff;
 }
 
 .cortex-moment {
@@ -123,10 +121,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background:
-    radial-gradient(ellipse 48% 36% at 20% 46%, rgba(94, 113, 245, 0.09), transparent 76%),
-    radial-gradient(ellipse 40% 32% at 80% 62%, rgba(139, 124, 246, 0.07), transparent 78%),
-    linear-gradient(145deg, #fbfcff, #f6f7ff 52%, #fbfbff);
+  background-color: transparent;
 }
 
 .cortex-control__atmosphere {
@@ -284,9 +279,7 @@
 .cortex-mission {
   position: relative;
   height: 280svh;
-  background:
-    radial-gradient(ellipse 50% 34% at 50% 50%, rgba(88, 106, 242, 0.07), transparent 76%),
-    linear-gradient(180deg, #ffffff, #f9faff 46%, #ffffff 100%);
+  background-color: transparent;
 }
 
 .cortex-mission__sticky {
