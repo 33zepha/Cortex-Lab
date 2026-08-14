@@ -1,0 +1,730 @@
+{
+  "schemaVersion": "1.0",
+  "project": "Cortex",
+  "collectedAt": "2026-08-15",
+  "purpose": "Analyse des projets contenus dans les galeries de référence, et non des interfaces des galeries elles-mêmes. Cette base sert à choisir des motifs concrets pour la refonte des sections sous le hero.",
+  "interpretation": {
+    "correction": "Les URL fournies sont des archives/showcases. Leur chrome, leurs filtres et leurs grilles ne sont pas les références graphiques à copier. La référence utile est le projet sélectionné à l'intérieur.",
+    "sourceOfTruth": "Le hero pixel-art bleu existant reste l'autorité visuelle absolue de Cortex.",
+    "rule": "On extrait une relation de composition, de matière, de rythme ou d'interaction. On ne copie ni screenshot, ni asset, ni composant propriétaire."
+  },
+  "rights": {
+    "screenshots": "Les images des galeries et des projets sont traitées comme protégées par le droit d'auteur.",
+    "usage": "Liens et observations uniquement. Aucun asset distant ne doit être téléchargé ou intégré comme contenu de production.",
+    "designSystems": "Les fiches DESIGN.md de Refero servent de documentation de référence; elles ne remplacent pas la direction originale dérivée du hero."
+  },
+  "entries": [
+    {
+      "id": "loadmore-sabrina-zeltner",
+      "gallery": "loadmo.re",
+      "galleryUrl": "https://loadmo.re/",
+      "example": "Sabrina Zeltner aka Subrihanna",
+      "exampleUrl": "https://sabrinazeltner.com/",
+      "evidenceUrl": "https://loadmo.re/posts/sabrina-zeltner",
+      "observed": [
+        "La page se présente comme un poster vivant: projets, typographie, images et mouvements coexistent dans une composition stratifiée.",
+        "Le contenu est organisé comme un flux de pratique artistique, pas comme une suite de modules marketing.",
+        "Les images et formes se superposent; le texte sert d'orientation plutôt que de cadre.",
+        "La pratique revendique le mouvement, le rythme, la forme et des images organiques ou photographiques."
+      ],
+      "extractablePattern": [
+        "Une scène éditoriale continue peut remplacer une succession de sections autonomes.",
+        "La texture et l'image sont une matière de récit, pas une illustration posée dans une carte.",
+        "Le mouvement doit donner un tempo à la lecture."
+      ],
+      "cortexTranslation": [
+        "Utiliser le pixel-cloud du hero comme une matière qui traverse une scène, avec des zones calmes et des zones de densité.",
+        "Faire entrer les preuves et les phrases dans le même plan visuel, sans boîte autour de chaque message.",
+        "Réserver les superpositions à un objet fort ou à un moment de transition."
+      ],
+      "reject": [
+        "glitch permanent",
+        "effets de club/cyberpunk",
+        "empilement décoratif sans hiérarchie"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "loadmore-colour-mapper",
+      "gallery": "loadmo.re",
+      "galleryUrl": "https://loadmo.re/",
+      "example": "Colour Mapper",
+      "exampleUrl": "https://colour-mapper.michaelnorman.au/",
+      "evidenceUrl": "https://loadmo.re/posts/colour-mapper",
+      "observed": [
+        "L'expérience commence par un geste simple: cliquer pour lancer une cartographie couleur en temps réel.",
+        "La matière visuelle vient d'une transformation du monde capté, pas d'un décor arbitraire.",
+        "Le projet est décrit comme une cartographie polaire HSL à partir d'une caméra."
+      ],
+      "extractablePattern": [
+        "Un geste unique peut révéler la structure cachée d'un visuel.",
+        "La transformation est intéressante quand elle est liée à la matière de départ."
+      ],
+      "cortexTranslation": [
+        "Faire varier le rendu pixel d'une même image selon un geste de scroll ou de survol.",
+        "Utiliser la densité, la luminosité et le contraste du hero comme données de composition."
+      ],
+      "reject": [
+        "demander l'accès caméra pour une landing page",
+        "transformer Cortex en démo technique",
+        "couleurs nombreuses sans rôle"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "loadmore-a-black-sun",
+      "gallery": "loadmo.re",
+      "galleryUrl": "https://loadmo.re/",
+      "example": "A Black Sun",
+      "exampleUrl": "https://nicolastilly.fr/a-black-sun/",
+      "evidenceUrl": "https://loadmo.re/posts/a-black-sun",
+      "observed": [
+        "L'archive décrit une expérience minimaliste et immersive, pensée comme un poème ambiant.",
+        "Le projet s'appuie sur une atmosphère continue plutôt que sur des composants."
+      ],
+      "extractablePattern": [
+        "Une page peut tenir sur une seule présence visuelle et un texte rare.",
+        "Le silence et la durée font partie du design."
+      ],
+      "cortexTranslation": [
+        "Donner aux passages de Cortex de vrais temps de respiration.",
+        "Laisser une image ou un signe occuper une scène sans lui ajouter un panneau explicatif."
+      ],
+      "reject": [
+        "atmosphère sombre générique",
+        "musique ou effet sans fonction",
+        "cinématique qui ralentit la compréhension"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "loadmore-narrow-design",
+      "gallery": "loadmo.re",
+      "galleryUrl": "https://loadmo.re/",
+      "example": "Narrow Design",
+      "exampleUrl": "https://www.narrowdesign.com/",
+      "evidenceUrl": "https://loadmo.re/posts/narrow-design",
+      "observed": [
+        "Le portfolio se parcourt en scroll et annonce une orientation autour du nombre d'or.",
+        "Le site met le prototype et le code au centre de l'expérience; l'interface peut faire quelque chose d'inattendu.",
+        "La progression est séquentielle, numérotée et éditoriale."
+      ],
+      "extractablePattern": [
+        "Le scroll peut devenir une unité de récit, pas seulement une descente de sections.",
+        "Un objet visuel peut être la navigation elle-même."
+      ],
+      "cortexTranslation": [
+        "Structurer les sections comme des chapitres de la même opération: objectif, structure, exécution, preuve.",
+        "Utiliser un repère de chapitre discret plutôt qu'une barre ou une grille visible."
+      ],
+      "reject": [
+        "avertissement spectaculaire",
+        "vertige visuel",
+        "interaction gadget"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "loadmore-glossary-of-time",
+      "gallery": "loadmo.re",
+      "galleryUrl": "https://loadmo.re/",
+      "example": "Incomplete Glossary of Time",
+      "exampleUrl": "https://glossaryoftime.com/",
+      "evidenceUrl": "https://loadmo.re/posts/glossary-of-time",
+      "observed": [
+        "Le concept est réduit à une idée éditoriale très nette: un glossaire incomplet du temps.",
+        "L'interface expose peu de navigation: About et Suggest a Word.",
+        "La force vient du principe et de la retenue."
+      ],
+      "extractablePattern": [
+        "Une landing peut fonctionner comme un artefact éditorial avec une seule idée structurante.",
+        "Le manque volontaire peut être plus distinctif qu'une liste exhaustive de fonctionnalités."
+      ],
+      "cortexTranslation": [
+        "Présenter Cortex comme un système avec quelques verbes d'action précis, pas comme un catalogue de capacités.",
+        "Faire du vocabulaire de Cortex un élément de rythme visuel."
+      ],
+      "reject": [
+        "liste de features encyclopédique",
+        "badge par capacité",
+        "navigation multipliée"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "60fps-recollect",
+      "gallery": "60fps.design",
+      "galleryUrl": "https://60fps.design/",
+      "example": "Recollect Logo Morph to Features Animation",
+      "exampleUrl": "https://60fps.design/shots/recollect-logo-morph-to-features-animation",
+      "evidenceUrl": "https://60fps.design/shots/recollect-logo-morph-to-features-animation",
+      "observed": [
+        "Le logo centré s'élargit et devient une recherche; le mot central évolue de Search anything à Search design, illustration ou typography.",
+        "Des images entrent par les bords pendant que le geste central reste lisible.",
+        "La séquence revient ensuite vers une marque minimale."
+      ],
+      "extractablePattern": [
+        "Morphing de marque vers fonction.",
+        "Un point focal stable au milieu d'une matière en mouvement.",
+        "Une boucle qui revient à l'état initial."
+      ],
+      "cortexTranslation": [
+        "Faire évoluer le signe Cortex ou un mot pivot vers les quatre verbes du système.",
+        "Garder le texte lisible au centre et faire bouger la matière pixel autour.",
+        "Revenir régulièrement au signe nu pour éviter la surcharge."
+      ],
+      "reject": [
+        "cartes d'images visibles comme galerie",
+        "glow néon",
+        "animation permanente au-dessus du contenu"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "60fps-run-receipt",
+      "gallery": "60fps.design",
+      "galleryUrl": "https://60fps.design/",
+      "example": "Run Receipt Image Pixel Effect Interaction",
+      "exampleUrl": "https://60fps.design/shots/run-receipt-image-pixel-effect-interaction",
+      "evidenceUrl": "https://60fps.design/shots/run-receipt-image-pixel-effect-interaction",
+      "observed": [
+        "La structure du reçu reste fixe et lisible pendant que l'image change de rendu.",
+        "Les modes passent par du dither INT16, des contours, une matrice ASCII et une grille LCD multicolore.",
+        "Le pixel est un traitement de l'image et non une décoration déposée à côté."
+      ],
+      "extractablePattern": [
+        "Conserver une géométrie stable et changer seulement la matière.",
+        "Utiliser plusieurs niveaux de résolution pour donner du rythme.",
+        "Faire du pixel une règle de rendu cohérente."
+      ],
+      "cortexTranslation": [
+        "Créer un même plan Cortex qui passe du pixel doux au pixel dense selon le scroll.",
+        "Révéler une preuve ou un fragment d'interface par dither/contours, sans créer une fausse dashboard.",
+        "Conserver une hiérarchie textuelle stable pendant la mutation visuelle."
+      ],
+      "reject": [
+        "ASCII comme gimmick partout",
+        "effet rétro sans rapport avec le hero",
+        "fausse interface de reçu"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "60fps-pool",
+      "gallery": "60fps.design",
+      "galleryUrl": "https://60fps.design/",
+      "example": "Pool Importing Screenshots Animation",
+      "exampleUrl": "https://60fps.design/shots/pool-importing-screenshots-animation",
+      "evidenceUrl": "https://60fps.design/shots/pool-importing-screenshots-animation",
+      "observed": [
+        "Après une action, des fragments d'écran montent depuis le bord inférieur.",
+        "Les fragments sont décalés, légèrement inclinés et déformés comme une surface liquide.",
+        "La séquence a un début, un état de chargement et une fin lisible."
+      ],
+      "extractablePattern": [
+        "Révélation par fragments plutôt que grille de captures.",
+        "Le mouvement peut donner une sensation de matière sans ajouter une nouvelle UI."
+      ],
+      "cortexTranslation": [
+        "Faire remonter des fragments de preuve ou de contexte depuis le champ pixel.",
+        "Limiter le nombre de fragments et les faire converger vers un seul résultat."
+      ],
+      "reject": [
+        "pile de cartes",
+        "déformation liquide décorative",
+        "loading infini"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "60fps-district",
+      "gallery": "60fps.design",
+      "galleryUrl": "https://60fps.design/",
+      "example": "District Best Seats Feature Intro Animation",
+      "exampleUrl": "https://60fps.design/shots/district-best-seats-feature-intro-animation",
+      "evidenceUrl": "https://60fps.design/shots/district-best-seats-feature-intro-animation",
+      "observed": [
+        "Une action ouvre une séquence d'états: Best Seats, Best Sound, Best Visuals, puis une synthèse.",
+        "L'illustration se transforme en synchronisation avec le texte.",
+        "La séquence utilise un modal/bottom sheet et une fermeture pour revenir au contexte."
+      ],
+      "extractablePattern": [
+        "Un système peut se comprendre par étapes qui changent de forme.",
+        "Le texte et le visuel doivent évoluer ensemble."
+      ],
+      "cortexTranslation": [
+        "Raconter Cortex en quatre états cohérents, avec une seule phrase active à la fois.",
+        "Faire correspondre la mutation du pixel au changement de verbe."
+      ],
+      "reject": [
+        "néon bleu",
+        "wireframe générique",
+        "modal produit plaqué sur la landing"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "recent-meeting-modal",
+      "gallery": "recent.design",
+      "galleryUrl": "https://recent.design/",
+      "example": "Meeting Notification Modal",
+      "evidenceUrl": "https://recent.design/",
+      "observed": [
+        "Un avis de réunion sombre flotte au-dessus d'un tableau très pâle et délavé.",
+        "La scène garde un seul point de décision: Join call ou Snooze 5m.",
+        "Le contexte reste visible mais passe en arrière-plan."
+      ],
+      "extractablePattern": [
+        "Le contexte peut être présent comme une texture secondaire.",
+        "La hiérarchie vient de l'opacité et de la focalisation, pas d'une grille de composants."
+      ],
+      "cortexTranslation": [
+        "Quand une preuve est montrée, la garder comme arrière-plan délavé et faire ressortir un seul résultat.",
+        "Utiliser une mise au point forte, sans reproduire une carte de notification."
+      ],
+      "reject": [
+        "modal SaaS",
+        "dashboard visible",
+        "deux boutons concurrents dans le CTA principal"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "recent-fluffy-icons",
+      "gallery": "recent.design",
+      "galleryUrl": "https://recent.design/",
+      "example": "Fluffy 3D Icons",
+      "evidenceUrl": "https://recent.design/",
+      "observed": [
+        "Un seul objet tactile monochrome occupe presque toute la composition.",
+        "Le fond noir est ponctué d'une trame très fine; la marque et le titre restent discrets.",
+        "Le matériau de l'objet fait tout le travail émotionnel."
+      ],
+      "extractablePattern": [
+        "Un objet isolé peut être plus puissant qu'un ensemble de petits visuels.",
+        "Une trame peut rester très faible et servir de profondeur."
+      ],
+      "cortexTranslation": [
+        "Isoler le marqueur ou le pixel-cloud comme une présence unique dans certaines scènes.",
+        "Utiliser la trame native du hero, jamais une grille de points ajoutée."
+      ],
+      "reject": [
+        "objets 3D moelleux",
+        "esthétique générative générique",
+        "fond noir de laboratoire"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "recent-tone-in-tongue",
+      "gallery": "recent.design",
+      "galleryUrl": "https://recent.design/",
+      "example": "Tone in Tongue Poster",
+      "evidenceUrl": "https://recent.design/",
+      "observed": [
+        "La typographie est déformée, agrandie et traitée comme une forme d'image.",
+        "Le message est moins lu linéairement que regardé comme une masse graphique."
+      ],
+      "extractablePattern": [
+        "Le display type peut devenir matière sans changer de famille.",
+        "La distorsion doit rester concentrée sur un moment."
+      ],
+      "cortexTranslation": [
+        "Créer une seule transition où un mot Cortex se densifie dans le pixel field.",
+        "Garder Cortex Inter comme dessin, en jouant sur la taille, l'espacement et le masque."
+      ],
+      "reject": [
+        "rose acide hors palette",
+        "texte illisible",
+        "effet poster répété"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "navbar-orchid",
+      "gallery": "navbar.gallery",
+      "galleryUrl": "https://www.navbar.gallery/",
+      "example": "Orchid",
+      "exampleUrl": "https://orchid.ai/",
+      "evidenceUrl": "https://www.navbar.gallery/navbar/orchid",
+      "observed": [
+        "Le menu Use Cases ouvre un panneau unique avec une hiérarchie simple et des groupes lisibles.",
+        "Le desktop garde le logo à gauche et deux actions à droite; le mobile supprime le menu et conserve l'essentiel.",
+        "La référence montre aussi un large visuel flou et des cartes: ces éléments ne sont pas compatibles avec Cortex."
+      ],
+      "extractablePattern": [
+        "Le menu doit être une extension temporaire de la navigation, pas une section du site.",
+        "Le mobile réduit la décision à la marque et à l'action principale."
+      ],
+      "cortexTranslation": [
+        "Conserver la capsule nav Cortex existante.",
+        "Sur mobile, réduire à logo, accès et un seul geste; ne pas fabriquer de méga-menu.",
+        "Si un menu est ajouté, le traiter comme une scène pleine largeur momentanée."
+      ],
+      "reject": [
+        "grille de use cases",
+        "gradient flou",
+        "panneau de cartes",
+        "navigation de type SaaS"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "cta-orchestra",
+      "gallery": "cta.gallery",
+      "galleryUrl": "https://www.cta.gallery/",
+      "example": "Orchestra",
+      "exampleUrl": "https://orchestra.bio/",
+      "evidenceUrl": "https://www.cta.gallery/cta/orchestra",
+      "observed": [
+        "Le CTA est une grande scène sombre, très peu décorée.",
+        "Un petit label précède un headline centré, une phrase, puis un seul bouton doux.",
+        "Les traces circulaires dans le fond évoquent un système sans devenir une grille."
+      ],
+      "extractablePattern": [
+        "Un closing peut être une scène, pas un formulaire dans une carte.",
+        "Le micro-label et le headline suffisent à installer une intention."
+      ],
+      "cortexTranslation": [
+        "Garder le closing Cortex comme une scène pleine largeur avec le pixel-cloud en fond.",
+        "Conserver une seule demande: Request access.",
+        "Utiliser les formes déjà présentes dans le hero au lieu de dessiner des lignes système."
+      ],
+      "reject": [
+        "traces techniques ajoutées",
+        "dégradé arbitraire",
+        "boutons multiples"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "landing-figma",
+      "gallery": "landing.gallery",
+      "galleryUrl": "https://www.landing.gallery/",
+      "example": "Figma: The collaborative canvas for design, code, and AI",
+      "exampleUrl": "https://www.figma.com/",
+      "evidenceUrl": "https://www.landing.gallery/websites/figma-the-collaborative-canvas-for-design-code-and-ai",
+      "observed": [
+        "Le message d'entrée est une phrase unique: the intelligent canvas for infinite creativity.",
+        "La page alterne promesse, preuve visuelle et explication de l'espace de travail.",
+        "Les visuels de produits et de gestes portent la couleur et la démonstration."
+      ],
+      "extractablePattern": [
+        "Promesse forte puis preuve, sans devoir transformer chaque preuve en carte.",
+        "Le produit est montré par des gestes et des surfaces, pas par un tableau de fonctionnalités."
+      ],
+      "cortexTranslation": [
+        "Remplacer les sections génériques par trois ou quatre scènes de preuve: objectif, passage, preuve.",
+        "Montrer des fragments de travail stylisés par le traitement pixel, pas un dashboard complet."
+      ],
+      "reject": [
+        "feature grid",
+        "logos de clients comme remplissage",
+        "carousel de produits"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "landing-laravel",
+      "gallery": "landing.gallery",
+      "galleryUrl": "https://www.landing.gallery/",
+      "example": "Laravel: The clean stack for Artisans and agents",
+      "exampleUrl": "https://laravel.com/",
+      "evidenceUrl": "https://www.landing.gallery/websites/laravel-the-clean-stack-for-artisans-and-agents",
+      "observed": [
+        "Le hero tient sur une phrase, une explication courte et deux actions.",
+        "La suite expose des concepts à travers du code, des états et des chapitres nommés.",
+        "Les labels de capacités sont utiles comme vocabulaire, mais la page comporte aussi beaucoup de patterns SaaS que Cortex doit éviter."
+      ],
+      "extractablePattern": [
+        "Un vocabulaire court peut structurer un long scroll.",
+        "Le code ou la preuve peut apparaître comme un fragment, pas comme un dashboard complet."
+      ],
+      "cortexTranslation": [
+        "Garder quelques verbes Cortex récurrents et une seule phrase active à chaque moment.",
+        "Faire apparaître la logique sous forme de fragments lisibles, pas de grille de services."
+      ],
+      "reject": [
+        "badges de capacités",
+        "tuiles de produits",
+        "dashboard de monitoring"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "landing-posthog",
+      "gallery": "landing.gallery",
+      "galleryUrl": "https://www.landing.gallery/",
+      "example": "PostHog: We make your product self-driving",
+      "exampleUrl": "https://posthog.com/",
+      "evidenceUrl": "https://www.landing.gallery/websites/posthog-we-make-your-product-self-driving",
+      "observed": [
+        "La promesse est formulée comme un changement d'état: shift your product into self-driving mode.",
+        "Le site relie plusieurs outils sous une phrase de transformation.",
+        "La liste de capacités est un exemple de ce qui peut vite devenir un catalogue SaaS."
+      ],
+      "extractablePattern": [
+        "Parler de l'état avant/après plutôt que de lister des fonctions.",
+        "Relier les éléments sous une seule logique narrative."
+      ],
+      "cortexTranslation": [
+        "Raconter le passage du chaos à l'action coordonnée.",
+        "Utiliser une séquence de verbe + conséquence au lieu de vingt fonctionnalités."
+      ],
+      "reject": [
+        "liste d'outils",
+        "ruban de logos",
+        "vocabulaire self-driving repris tel quel"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "footer-flexion",
+      "gallery": "footer.design",
+      "galleryUrl": "https://www.footer.design/",
+      "example": "Flexion Robotics",
+      "exampleUrl": "https://flexion.ai/",
+      "evidenceUrl": "https://www.footer.design/",
+      "observed": [
+        "Le site ouvre sur une phrase très nette: Complex intelligence for simple human tasks.",
+        "Le contenu est découpé en chapitres numérotés comme Product Development, News et Open Roles.",
+        "La fin revient à une invitation unique: Shape the Future / Get in Touch.",
+        "Le footer est plus proche d'une conclusion éditoriale que d'un sitemap dominant."
+      ],
+      "extractablePattern": [
+        "Les numéros de chapitre peuvent ordonner un long récit sans créer de colonnes.",
+        "La dernière scène peut transformer la navigation en invitation."
+      ],
+      "cortexTranslation": [
+        "Utiliser des marqueurs de chapitre très discrets si nécessaires: 01 Objective, 02 Route, 03 Proof.",
+        "Terminer sur une phrase d'action, puis le formulaire, puis seulement les mentions."
+      ],
+      "reject": [
+        "section jobs/news copiée",
+        "footer multi-colonnes",
+        "ton robotique"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "footer-glossar",
+      "gallery": "footer.design",
+      "galleryUrl": "https://www.footer.design/",
+      "example": "Glossar",
+      "exampleUrl": "https://glossar.app/",
+      "evidenceUrl": "https://www.footer.design/",
+      "observed": [
+        "Le site garde un header flottant centré, une barre d'achat immédiatement lisible, puis beaucoup d'espace.",
+        "Les scènes produit sont larges et contextualisées; les petits textes restent secondaires.",
+        "La fin tient sur un bloc de métadonnées calme, sans sitemap lourd."
+      ],
+      "extractablePattern": [
+        "Le vide peut relier deux scènes et donner de la valeur à un seul objet.",
+        "Les métadonnées peuvent rester discrètes et linéaires."
+      ],
+      "cortexTranslation": [
+        "Conserver de grandes respirations entre les scènes Cortex.",
+        "Terminer avec des mentions compactes, pas avec une matrice de liens.",
+        "Sur mobile, garder logo et action dans une barre simple."
+      ],
+      "reject": [
+        "pills partout",
+        "mockup produit comme preuve principale",
+        "gros rayon de bord sur chaque élément"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "posts-dither-ascii",
+      "gallery": "posts.design",
+      "galleryUrl": "https://posts.design/",
+      "example": "Oriku — Dither Motion / Edoardo Lunardi — ASCII page transition",
+      "evidenceUrl": "https://posts.design/",
+      "observed": [
+        "Les entrées sont de courtes propositions visuelles, souvent un geste ou une transition unique.",
+        "Dither Motion et ASCII page transition sont des références directement alignées avec la matière pixel du hero.",
+        "La valeur vient de la conversion du visuel, pas de l'ajout de chrome."
+      ],
+      "extractablePattern": [
+        "Un traitement de transition peut devenir une signature de marque.",
+        "La ditherisation peut relier mouvement et texture."
+      ],
+      "cortexTranslation": [
+        "Employer le dither uniquement pour révéler, charger ou faire muter une preuve.",
+        "Construire une famille de traitements pixel limités et reconnaissables."
+      ],
+      "reject": [
+        "copier un post social",
+        "dither décoratif en arrière-plan partout",
+        "effet glitch sans événement"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "posts-depth-scroll",
+      "gallery": "posts.design",
+      "galleryUrl": "https://posts.design/",
+      "example": "Aurelien — obsessed with this scroll",
+      "evidenceUrl": "https://www.posts.design/aurelien-obsessed-with-this-scroll",
+      "observed": [
+        "La référence défend une lecture en profondeur plutôt qu'une page plate organisée seulement par hauteur.",
+        "Le scroll devient une relation entre couches et perception."
+      ],
+      "extractablePattern": [
+        "Le scroll peut déplacer le point de vue sur une même matière.",
+        "La profondeur doit être perceptuelle, pas un empilement de composants."
+      ],
+      "cortexTranslation": [
+        "Faire varier crop, échelle et densité du pixel-cloud tout en gardant le texte ancré.",
+        "Construire des transitions où l'on comprend qu'on traverse le même système."
+      ],
+      "reject": [
+        "parallax automatique sur tous les éléments",
+        "profondeur 3D gratuite",
+        "scroll hijacking"
+      ],
+      "confidence": "medium"
+    }
+  ],
+  "patterns": [
+    {
+      "id": "one-scene-one-idea",
+      "name": "Une scène forte par idée",
+      "sources": [
+        "loadmore-sabrina-zeltner",
+        "loadmore-a-black-sun",
+        "cta-orchestra",
+        "footer-glossar"
+      ],
+      "decision": "Chaque section sous le hero doit avoir une idée, un objet visuel dominant et une phrase active. Si elle nécessite trois cartes pour être comprise, elle n'est pas encore assez rédigée.",
+      "remove": [
+        "cartes génériques",
+        "feature grids",
+        "colonnes visibles",
+        "séparateurs"
+      ]
+    },
+    {
+      "id": "material-transformation",
+      "name": "La matière change, la structure reste",
+      "sources": [
+        "60fps-recollect",
+        "60fps-run-receipt",
+        "posts-dither-ascii",
+        "loadmore-colour-mapper"
+      ],
+      "decision": "Le pixel-art peut muter en densité, contraste et position pour révéler une preuve. La composition et le message restent stables.",
+      "remove": [
+        "gradient arbitraire",
+        "glow néon",
+        "scanlines",
+        "glitch permanent"
+      ]
+    },
+    {
+      "id": "chapter-scroll",
+      "name": "Le scroll comme chapitrage",
+      "sources": [
+        "loadmore-narrow-design",
+        "60fps-district",
+        "footer-flexion",
+        "posts-depth-scroll"
+      ],
+      "decision": "Le long scroll est une séquence éditoriale continue: Objective → Route → Execute → Proof. Les repères sont des mots courts et discrets.",
+      "remove": [
+        "timeline avec ligne",
+        "barre de progression",
+        "navigation rail",
+        "chapitres sous forme de tuiles"
+      ]
+    },
+    {
+      "id": "focal-evidence",
+      "name": "Une preuve focalisée",
+      "sources": [
+        "recent-meeting-modal",
+        "landing-figma",
+        "landing-laravel",
+        "landing-posthog"
+      ],
+      "decision": "Montrer un fragment crédible du travail sous forme d'image, de texte ou de transition, jamais un dashboard complet ou un catalogue d'intégrations.",
+      "remove": [
+        "dashboard-like UI",
+        "logo/provider wall",
+        "list of tools",
+        "badges"
+      ]
+    },
+    {
+      "id": "quiet-closing",
+      "name": "Closing calme et dirigé",
+      "sources": [
+        "cta-orchestra",
+        "footer-flexion",
+        "footer-glossar",
+        "navbar-orchid"
+      ],
+      "decision": "La fin est une scène claire avec un seul CTA, beaucoup d'air, puis des mentions compactes.",
+      "remove": [
+        "CTA cluster",
+        "footer multi-colonnes",
+        "form dans une carte",
+        "deuxième système de boutons"
+      ]
+    },
+    {
+      "id": "mobile-is-authored",
+      "name": "Mobile composé, non compressé",
+      "sources": [
+        "loadmore-sabrina-zeltner",
+        "navbar-orchid",
+        "footer-glossar",
+        "60fps-recollect"
+      ],
+      "decision": "Sur mobile, conserver le sujet principal, la lisibilité et le geste. Réduire le menu et le nombre d'objets; recadrer le pixel-cloud volontairement.",
+      "remove": [
+        "desktop grid collapsed",
+        "tiny captions",
+        "horizontal overflow",
+        "animations qui masquent le texte"
+      ]
+    }
+  ],
+  "refonteBrief": {
+    "preserve": [
+      "Le hero existant pixel-art bleu, à l'identique.",
+      "Cortex Inter et sa hiérarchie déjà dérivée du hero.",
+      "Le canvas clair, l'encre sombre et l'accent bleu existants.",
+      "La capsule de navigation et le CTA du hero.",
+      "La respiration et les larges masses pixel natives."
+    ],
+    "newSectionDirection": [
+      "Remplacer les sections textuelles répétitives par des scènes continues avec un objet focal.",
+      "Utiliser une même matière pixel transformée progressivement, pas la même image simplement recolorée.",
+      "Introduire des fragments de preuve traités comme des événements de la scène, pas comme des cartes.",
+      "Faire du scroll une progression de chapitre sans lignes, colonnes ou rail visible.",
+      "Conserver une seule action active par scène."
+    ],
+    "prohibited": [
+      "generic SaaS cards",
+      "feature grids",
+      "visible columns",
+      "separators",
+      "decorative lines",
+      "dashboard-like UI",
+      "provider/logo rails",
+      "generic badges",
+      "arbitrary gradients",
+      "excessive rounded rectangles",
+      "AI/cyberpunk clichés"
+    ]
+  },
+  "implementationGuards": [
+    "Ne pas modifier HeroLabScreen.tsx dans une passe dédiée aux sections sous le hero, sauf pour une intégration strictement nécessaire.",
+    "Ne pas réutiliser le pixel-cloud comme simple background à opacité différente dans toutes les sections.",
+    "Avant toute nouvelle section, écrire son idée, son objet focal, sa transformation de matière et son geste unique.",
+    "Si un élément ressemble à un composant de dashboard, le supprimer et revenir à une preuve éditoriale.",
+    "Tester la lecture sur mobile avant d'ajouter un mouvement.",
+    "Vérifier l'absence de lignes, colonnes, séparateurs et débordement horizontal."
+  ]
+}
