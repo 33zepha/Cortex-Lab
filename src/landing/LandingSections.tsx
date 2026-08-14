@@ -110,7 +110,7 @@ function ArchitectureSection() {
   const copyY = useTransform(progress, [0.08, 0.44, 0.9], [46, 0, -28]);
   const systemScale = useTransform(progress, [0.08, 0.5, 0.9], [1.08, 1, 0.92]);
   const systemRotate = useTransform(progress, [0.08, 0.9], [-1.4, 1]);
-  const opacity = useTransform(progress, [0.05, 0.2, 0.84, 0.96], [0.45, 1, 1, 0.72]);
+  const opacity = useTransform(progress, [0.05, 0.2, 0.84, 0.96], [1, 1, 1, 0.82]);
   const imageOpacity = useTransform(progress, [0.05, 0.24, 0.82, 0.96], [0, 0.62, 0.42, 0]);
 
   return (
@@ -235,7 +235,7 @@ function StatementSection() {
   const ref = useRef<HTMLElement>(null);
   const progress = useSoftProgress(ref, ["start end", "end start"]);
   const scale = useTransform(progress, [0.08, 0.5, 0.9], [0.96, 1, 1.025]);
-  const opacity = useTransform(progress, [0.08, 0.28, 0.82, 0.95], [0.42, 1, 1, 0.72]);
+  const opacity = useTransform(progress, [0.08, 0.28, 0.82, 0.95], [1, 1, 1, 0.82]);
   const imageOpacity = useTransform(progress, [0.08, 0.28, 0.82, 0.95], [0, 0.42, 0.3, 0]);
 
   return (
