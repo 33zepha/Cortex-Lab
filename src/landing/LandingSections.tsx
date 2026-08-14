@@ -1,4 +1,4 @@
-import { useRef, type ComponentType, type SVGProps } from "react";
+import { useRef, type ComponentType, type RefObject, type SVGProps } from "react";
 import {
   motion,
   useReducedMotion,
@@ -57,7 +57,7 @@ const providers: Array<{ name: string; Mark: ProviderMark }> = [
   { name: "Mistral", Mark: MistralMark },
 ];
 
-function useSoftProgress(target: React.RefObject<HTMLElement | null>, offset: [string, string]) {
+function useSoftProgress(target: RefObject<HTMLElement | null>, offset: [string, string]) {
   const reducedMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({ target, offset });
   return useSpring(scrollYProgress, {
