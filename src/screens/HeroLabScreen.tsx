@@ -6,9 +6,9 @@ import {
 } from "react";
 import { Check } from "lucide-react";
 import { Link } from "react-router-dom";
-import heroSculpture1920 from "@/assets/cortex-hero-sculpture-1920.webp";
-import heroSculpture2560 from "@/assets/cortex-hero-sculpture-2560.webp";
-import heroSculpture3840 from "@/assets/cortex-hero-sculpture-3840.webp";
+import heroPixelCloud1920 from "@/assets/cortex-hero-pixel-cloud-1920.webp";
+import heroPixelCloud2560 from "@/assets/cortex-hero-pixel-cloud-2560.webp";
+import heroPixelCloud3840 from "@/assets/cortex-hero-pixel-cloud-3840.webp";
 import { CortexLogo } from "@/components/brand/CortexLogo";
 import { Journey } from "@/journey/Journey";
 import "./HeroLabScreen.css";
@@ -141,11 +141,11 @@ export function HeroLabScreen() {
           <picture className="inside-entry__art" aria-hidden="true">
             <source
               type="image/webp"
-              srcSet={`${heroSculpture1920} 1920w, ${heroSculpture2560} 2560w, ${heroSculpture3840} 3840w`}
+              srcSet={`${heroPixelCloud1920} 1920w, ${heroPixelCloud2560} 2560w, ${heroPixelCloud3840} 3840w`}
               sizes="100vw"
             />
             <img
-              src={heroSculpture1920}
+              src={heroPixelCloud1920}
               alt=""
               draggable={false}
               fetchPriority="high"

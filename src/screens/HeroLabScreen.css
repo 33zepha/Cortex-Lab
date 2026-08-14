@@ -504,8 +504,7 @@
 .inside-entry__wash {
   z-index: 1;
   background:
-    radial-gradient(ellipse 48% 38% at 50% 39%, rgba(252, 252, 255, 0.72), rgba(252, 252, 255, 0.2) 58%, transparent 84%),
-    linear-gradient(180deg, rgba(244, 247, 255, 0.06) 0%, rgba(244, 247, 255, 0.01) 42%, rgba(20, 27, 61, 0.1) 100%);
+    linear-gradient(180deg, rgba(2, 21, 58, 0.02) 0%, rgba(2, 21, 58, 0.14) 100%);
 }
 
 .inside-entry__content {
@@ -2105,13 +2104,12 @@ html:has(.inside) {
   }
 
   .inside-entry__art img {
-    object-position: 78% center;
+    object-position: center center;
   }
 
   .inside-entry__wash {
     background:
-      radial-gradient(ellipse 88% 34% at 50% 32%, rgba(252, 252, 255, 0.7), rgba(252, 252, 255, 0.18) 62%, transparent 100%),
-      linear-gradient(180deg, rgba(245, 248, 255, 0.04) 0%, rgba(20, 27, 61, 0.1) 100%);
+      linear-gradient(180deg, rgba(2, 21, 58, 0.02) 0%, rgba(2, 21, 58, 0.15) 100%);
   }
 
   .inside-entry__content {
