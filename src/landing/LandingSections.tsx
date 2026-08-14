@@ -118,6 +118,7 @@ function ArchitectureSection() {
           <span>Mistral</span>
         </div>
       </motion.div>
+    </section>
   );
 }
 
