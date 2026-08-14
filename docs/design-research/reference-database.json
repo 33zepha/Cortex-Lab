@@ -1,0 +1,553 @@
+{
+  "schemaVersion": "0.1",
+  "project": "Cortex",
+  "collectedAt": "2026-08-15",
+  "purpose": "A traceable design-research corpus for improving the Cortex landing page without copying external interfaces or assets.",
+  "sourceOfTruth": {
+    "primary": "The existing pixel-art blue hero in src/screens/HeroLabScreen.tsx",
+    "companionSpec": "docs/cortex-visual-language.md",
+    "rule": "References inform decisions; the hero remains the visual authority."
+  },
+  "usagePolicy": {
+    "preserveLinks": true,
+    "copyExternalScreenshots": false,
+    "copyExternalAssets": false,
+    "extract": "Patterns, hierarchy, motion principles, composition, typography behavior, responsive intent and interaction logic.",
+    "adapt": "Translate findings into Cortex primitives rather than reproducing a source website.",
+    "licensing": "Treat gallery screenshots and linked work as copyrighted unless an explicit license says otherwise. DESIGN.md examples from designmd.app are reported as CC BY 4.0 by its terms; attribution is required if a file is copied."
+  },
+  "sources": [
+    {
+      "id": "inspora",
+      "name": "Inspora",
+      "url": "https://inspora.design/",
+      "category": [
+        "visual archive",
+        "recent design"
+      ],
+      "priority": "secondary",
+      "status": "not-verified",
+      "observed": "The URL was provided in the reference list, but the current automated crawl returned an internal error.",
+      "useFor": [
+        "future visual discovery",
+        "editorial taste"
+      ],
+      "doNotUseFor": [
+        "unverified factual conclusions"
+      ]
+    },
+    {
+      "id": "posts-design",
+      "name": "posts.design",
+      "url": "https://posts.design/",
+      "category": [
+        "social design",
+        "brand communication",
+        "announcement cards"
+      ],
+      "priority": "secondary",
+      "status": "verified",
+      "observed": "A curated wall of recent social posts with author, source, post type and capture date.",
+      "useFor": [
+        "short-form visual hierarchy",
+        "announcement composition",
+        "high-signal typographic cards"
+      ],
+      "cortexTranslation": "Study how one message is framed and paced; do not import social-card geometry into the landing page."
+    },
+    {
+      "id": "loadmore",
+      "name": "loadmo.re",
+      "url": "https://loadmo.re/",
+      "category": [
+        "mobile web",
+        "alternative interfaces",
+        "experimental web"
+      ],
+      "priority": "high",
+      "status": "verified",
+      "observed": "An archive dedicated to alternative mobile websites, tagged across animation, AI and generative, editorial, minimal, tactile, typography, glitches and video.",
+      "useFor": [
+        "mobile composition",
+        "non-standard responsive behavior",
+        "tactile pixel/material references"
+      ],
+      "cortexTranslation": "Use mobile as a deliberate composition, not a desktop card grid collapsed to one column."
+    },
+    {
+      "id": "refero-styles",
+      "name": "Refero Styles",
+      "url": "https://styles.refero.design/",
+      "category": [
+        "AI-readable design systems",
+        "visual references",
+        "design context"
+      ],
+      "priority": "high",
+      "status": "verified",
+      "observed": "A library of real website styles packaged as agent-readable design systems with colors, typography, spacing, components and rationale.",
+      "useFor": [
+        "reference indexing",
+        "design vocabulary",
+        "agent-readable constraints"
+      ],
+      "cortexTranslation": "Use the format and discipline, not another brand's visual tokens."
+    },
+    {
+      "id": "recent",
+      "name": "Recent",
+      "url": "https://recent.design/",
+      "category": [
+        "design archive",
+        "web",
+        "branding",
+        "product",
+        "typography",
+        "motion",
+        "illustration",
+        "3D",
+        "editorial"
+      ],
+      "priority": "high",
+      "status": "verified",
+      "observed": "A daily curation with separate browsing surfaces for design, websites, OG images, app screenshots and app icons, plus resource categories.",
+      "useFor": [
+        "taste calibration",
+        "cross-medium references",
+        "recent interaction and typography signals"
+      ],
+      "cortexTranslation": "Use the archive to detect quality and pacing, not to chase current trends."
+    },
+    {
+      "id": "60fps",
+      "name": "60fps",
+      "url": "https://60fps.design/",
+      "category": [
+        "motion",
+        "micro-interactions",
+        "app flows",
+        "storyboards"
+      ],
+      "priority": "high",
+      "status": "verified",
+      "observed": "A library of delightful interface details organized into shots, apps, app sites, motion, snippets and storyboards, with tags such as reveal, morph, parallax, particles, pulse, drag and onboarding.",
+      "useFor": [
+        "motion grammar",
+        "transition sequencing",
+        "interaction restraint"
+      ],
+      "cortexTranslation": "Borrow the idea of purposeful reveal and physical response; reject motion that exists only to demonstrate technology."
+    },
+    {
+      "id": "supahero",
+      "name": "Supahero",
+      "url": "https://supahero.io/",
+      "category": [
+        "hero sections",
+        "landing pages"
+      ],
+      "priority": "high",
+      "status": "verified",
+      "observed": "A curated hero-section library now presented as part of ScreensDesign, with a broad catalog of named hero references.",
+      "useFor": [
+        "hero composition",
+        "message-to-image relationships",
+        "first-viewport hierarchy"
+      ],
+      "cortexTranslation": "The Cortex hero is already stronger than a generic gallery sample; use Supahero only to audit composition mechanics."
+    },
+    {
+      "id": "navbar-gallery",
+      "name": "Navbar Gallery",
+      "url": "https://www.navbar.gallery/",
+      "category": [
+        "navigation",
+        "information architecture",
+        "menus"
+      ],
+      "priority": "high",
+      "status": "verified",
+      "observed": "A navigation-focused gallery organized around static navbars, dropdowns, mega menus, progress bars, sidebars, search bars, announcements, full-screen navigation and tabs.",
+      "useFor": [
+        "navigation intent",
+        "menu density",
+        "responsive navigation states"
+      ],
+      "cortexTranslation": "Keep the existing capsule shell and simplify decisions; do not turn the landing into a navigation showcase."
+    },
+    {
+      "id": "cta-gallery",
+      "name": "CTA.gallery",
+      "url": "https://www.cta.gallery/",
+      "category": [
+        "CTA",
+        "conversion",
+        "forms",
+        "pricing",
+        "navigation"
+      ],
+      "priority": "high",
+      "status": "verified",
+      "observed": "A CTA gallery with filters for button, call-to-buy, download, form, modal, navigation, newsletter, pricing or subscription and templates, plus industry and mode filters.",
+      "useFor": [
+        "single-action clarity",
+        "CTA copy",
+        "form hierarchy",
+        "conversion placement"
+      ],
+      "cortexTranslation": "Cortex uses one primary action per moment; avoid button clusters and generic conversion panels."
+    },
+    {
+      "id": "refero",
+      "name": "Refero",
+      "url": "https://refero.design/",
+      "category": [
+        "product UI",
+        "user flows",
+        "UX patterns",
+        "AI design research"
+      ],
+      "priority": "high",
+      "status": "verified",
+      "observed": "A searchable research library spanning product screens, flows, UX patterns and UI elements such as navigation, footer, animation, cards, tables and command palettes.",
+      "useFor": [
+        "future authenticated product UI",
+        "flow and state research",
+        "pattern validation"
+      ],
+      "cortexTranslation": "Use for the product later; do not let dashboard patterns leak into the public landing."
+    },
+    {
+      "id": "mobbin",
+      "name": "Mobbin",
+      "url": "https://mobbin.com/",
+      "mcpUrl": "https://mobbin.com/mcp",
+      "category": [
+        "mobile UI",
+        "web UI",
+        "screens",
+        "flows",
+        "MCP research"
+      ],
+      "priority": "high",
+      "status": "verified",
+      "observed": "A large library of real app screens and flows, with an official MCP entry point for AI tools on eligible plans.",
+      "useFor": [
+        "mobile patterns",
+        "real shipped-product benchmarking",
+        "flow evidence"
+      ],
+      "cortexTranslation": "Use evidence from shipped products for UX decisions; never use the library as a license to reproduce screens."
+    },
+    {
+      "id": "designmd-app",
+      "name": "designmd.app",
+      "url": "https://designmd.app/",
+      "category": [
+        "DESIGN.md",
+        "agent context",
+        "design tokens"
+      ],
+      "priority": "high",
+      "status": "verified",
+      "observed": "An open library of 461 DESIGN.md files with YAML tokens and Markdown rationale, organized around overview, colors, typography, layout, elevation, shapes, components and do/don't rules.",
+      "useFor": [
+        "repo-native design memory",
+        "token semantics",
+        "agent review loops"
+      ],
+      "cortexTranslation": "Adopt the structure for Cortex while writing original rules from the hero."
+    },
+    {
+      "id": "landing-gallery",
+      "name": "Landing.Gallery",
+      "url": "https://www.landing.gallery/about",
+      "category": [
+        "landing pages",
+        "full-page references",
+        "page types"
+      ],
+      "priority": "high",
+      "status": "verified",
+      "observed": "A manually reviewed landing-page library with full-page screenshots, page-type tags and detected tools or technologies.",
+      "useFor": [
+        "long-page rhythm",
+        "section sequencing",
+        "quality filtering"
+      ],
+      "cortexTranslation": "Study complete journeys, not isolated component crops."
+    },
+    {
+      "id": "land-book",
+      "name": "Land-book",
+      "url": "https://land-book.com/",
+      "category": [
+        "landing pages",
+        "web design",
+        "typography",
+        "layout"
+      ],
+      "priority": "high",
+      "status": "verified",
+      "observed": "A curated landing-page gallery with filters for industry, style, type, typography, color and platform.",
+      "useFor": [
+        "composition comparison",
+        "editorial layouts",
+        "type and whitespace studies"
+      ],
+      "cortexTranslation": "Use filters to reject generic SaaS patterns and find light, image-led, spacious work."
+    },
+    {
+      "id": "footer-design",
+      "name": "Footer Design",
+      "url": "https://www.footer.design/",
+      "category": [
+        "footers",
+        "closing moments",
+        "information architecture"
+      ],
+      "priority": "medium",
+      "status": "verified",
+      "observed": "A footer-specific gallery organized by type and style, including typographic, small type, illustrative, grid, flat, animated, cards, bright, dark, large type and bold.",
+      "useFor": [
+        "closing composition",
+        "final CTA and footer hierarchy"
+      ],
+      "cortexTranslation": "Use the closing as a final authored scene, never as a generic sitemap block."
+    },
+    {
+      "id": "siteinspire",
+      "name": "SiteInspire",
+      "url": "https://www.siteinspire.com/",
+      "category": [
+        "web design",
+        "curated sites",
+        "layout"
+      ],
+      "priority": "medium",
+      "status": "candidate",
+      "observed": "Keep as a secondary web-design archive to verify manually before relying on it as a research source.",
+      "useFor": [
+        "layout discovery",
+        "editorial web references"
+      ]
+    },
+    {
+      "id": "typewolf",
+      "name": "Typewolf",
+      "url": "https://www.typewolf.com/",
+      "category": [
+        "typography",
+        "font pairing",
+        "type culture"
+      ],
+      "priority": "medium",
+      "status": "candidate",
+      "observed": "A typography-focused source to add to the corpus when type research begins.",
+      "useFor": [
+        "font selection",
+        "display/body pairing",
+        "typographic references"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "id": "hero-as-thesis",
+      "label": "The hero is the thesis, not a component",
+      "sourceIds": [
+        "supahero",
+        "land-book",
+        "landing-gallery",
+        "recent"
+      ],
+      "cortexDecision": "Every public section must support the hero's authored world, scale and calm; none may introduce a competing visual system.",
+      "reject": [
+        "generic section headers",
+        "hero redesigns to accommodate weak lower sections"
+      ]
+    },
+    {
+      "id": "continuous-canvas",
+      "label": "One continuous surface",
+      "sourceIds": [
+        "land-book",
+        "landing-gallery",
+        "recent",
+        "cortex-hero"
+      ],
+      "cortexDecision": "Use a continuous light canvas with local changes in composition, not boxed sections, visible separators or panelized backgrounds.",
+      "reject": [
+        "section-by-section gradients",
+        "horizontal rules",
+        "visible column grids"
+      ]
+    },
+    {
+      "id": "type-as-structure",
+      "label": "Typography carries the hierarchy",
+      "sourceIds": [
+        "recent",
+        "supahero",
+        "land-book",
+        "typewolf"
+      ],
+      "cortexDecision": "Use Cortex Inter, scale, line breaks, weight and whitespace to create hierarchy. Accent color is secondary.",
+      "reject": [
+        "mixing Syne or decorative display families into the public landing",
+        "small uppercase labels as the main structure"
+      ]
+    },
+    {
+      "id": "pixel-as-material",
+      "label": "Pixel texture is material, not decoration",
+      "sourceIds": [
+        "cortex-hero",
+        "loadmore",
+        "recent"
+      ],
+      "cortexDecision": "Keep irregular, atmospheric, spatial pixel treatment with broad quiet areas.",
+      "reject": [
+        "uniform dot grids",
+        "repeated tiled patterns",
+        "glitch, scanline and cyberpunk effects"
+      ]
+    },
+    {
+      "id": "single-intent-action",
+      "label": "One action per moment",
+      "sourceIds": [
+        "cta-gallery",
+        "supahero"
+      ],
+      "cortexDecision": "Each moment should have one understandable next action or none. Preserve the hero's dark capsule CTA language.",
+      "reject": [
+        "CTA clusters",
+        "badges",
+        "conversion widgets",
+        "button walls"
+      ]
+    },
+    {
+      "id": "navigation-as-orientation",
+      "label": "Navigation should orient, not perform",
+      "sourceIds": [
+        "navbar-gallery",
+        "refero",
+        "cortex-hero"
+      ],
+      "cortexDecision": "Keep the compact capsule nav as a quiet anchor. Responsive behavior should reduce choices without introducing a second system.",
+      "reject": [
+        "mega menus on the landing",
+        "visible utility rails",
+        "dashboard navigation metaphors"
+      ]
+    },
+    {
+      "id": "motion-as-reveal",
+      "label": "Motion reveals relationships",
+      "sourceIds": [
+        "60fps",
+        "recent",
+        "loadmore"
+      ],
+      "cortexDecision": "Use calm entrance, breathing drift, reveal, morph and guided scroll when they clarify the system.",
+      "reject": [
+        "glitch for novelty",
+        "permanent parallax noise",
+        "aggressive rotations and springy gimmicks"
+      ]
+    },
+    {
+      "id": "mobile-as-composition",
+      "label": "Mobile is a designed composition",
+      "sourceIds": [
+        "loadmore",
+        "mobbin",
+        "refero"
+      ],
+      "cortexDecision": "Compose mobile deliberately around the hero crop, reading sequence and touch target hierarchy.",
+      "reject": [
+        "desktop grid compressed into cards",
+        "tiny controls",
+        "desktop-only whitespace assumptions"
+      ]
+    },
+    {
+      "id": "research-by-function",
+      "label": "Organize research by design job",
+      "sourceIds": [
+        "recent",
+        "60fps",
+        "navbar-gallery",
+        "cta-gallery",
+        "footer-design",
+        "refero"
+      ],
+      "cortexDecision": "Search the corpus by hero, nav, CTA, motion, mobile, typography, section rhythm and closing instead of collecting random inspiration.",
+      "reject": [
+        "moodboard without decisions",
+        "trend accumulation",
+        "references with no use case"
+      ]
+    },
+    {
+      "id": "agent-readable-context",
+      "label": "Design decisions live beside code",
+      "sourceIds": [
+        "refero-styles",
+        "designmd-app",
+        "mobbin"
+      ],
+      "cortexDecision": "DESIGN.md and the JSON corpus are part of the implementation context and must be read before future public UI changes.",
+      "reject": [
+        "one-off prompts",
+        "unrecorded visual improvisation",
+        "copying a reference without rationale"
+      ]
+    },
+    {
+      "id": "evidence-over-trend",
+      "label": "Quality beats novelty",
+      "sourceIds": [
+        "recent",
+        "landing-gallery",
+        "land-book",
+        "mobbin"
+      ],
+      "cortexDecision": "Select references because they solve hierarchy, clarity or interaction well, not because they are fashionable.",
+      "reject": [
+        "AI/cyberpunk clichés",
+        "liquid glass by default",
+        "random gradients",
+        "template aesthetics"
+      ]
+    }
+  ],
+  "cortexFilters": {
+    "keep": [
+      "image-led composition",
+      "light editorial canvas",
+      "Cortex Inter hierarchy",
+      "precise capsule nav and CTA",
+      "irregular pixel material",
+      "calm reveal motion",
+      "large quiet fields",
+      "single focal point"
+    ],
+    "reject": [
+      "generic SaaS cards",
+      "feature grids",
+      "visible columns",
+      "separators",
+      "decorative lines",
+      "dashboard mockups",
+      "provider/logo rails as UI",
+      "badges",
+      "arbitrary gradients",
+      "excessive rounded rectangles",
+      "AI/cyberpunk clichés"
+    ],
+    "reviewQuestion": "Could this element be dropped into a generic AI SaaS template without changing its meaning? If yes, reject or re-author it."
+  }
+}
