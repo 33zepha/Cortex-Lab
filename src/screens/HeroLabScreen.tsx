@@ -10,7 +10,7 @@ import heroPixelCloud1920 from "@/assets/cortex-hero-pixel-cloud-1920.webp";
 import heroPixelCloud2560 from "@/assets/cortex-hero-pixel-cloud-2560.webp";
 import heroPixelCloud3840 from "@/assets/cortex-hero-pixel-cloud-3840.webp";
 import { CortexLogo } from "@/components/brand/CortexLogo";
-import { Journey } from "@/journey/Journey";
+import { LandingSections } from "@/landing/LandingSections";
 import "./HeroLabScreen.css";
 
 type WaitlistStatus = "idle" | "invalid" | "loading" | "success" | "error";
@@ -157,11 +157,11 @@ export function HeroLabScreen() {
             <p>Cortex turns one objective into coordinated work—with the evidence to stand behind it.</p>
             <a className="inside-entry__cta" href="#access">Request access</a>
           </div>
-          <a className="inside-entry__scroll" href="#journey" aria-label="Scroll to explore Cortex" />
+          <a className="inside-entry__scroll" href="#manifesto" aria-label="Scroll to discover Cortex" />
         </div>
       </section>
 
-      <Journey />
+      <LandingSections />
 
       <section className="inside-closing" id="access">
         <div className="inside-closing__architecture" aria-hidden="true"><span /><span /><span /></div>
