@@ -13,6 +13,7 @@ import { CortexLogo } from "@/components/brand/CortexLogo";
 import { LandingSections } from "@/landing/LandingSections";
 import "./HeroLabScreen.css";
 import "@/landing/landing-mobile.css";
+import "@/landing/landing-art-direction.css";
 
 type WaitlistStatus = "idle" | "invalid" | "loading" | "success" | "error";
 
