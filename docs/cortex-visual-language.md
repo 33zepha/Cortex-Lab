@@ -9,11 +9,11 @@ The existing pixel-art hero is the visual authority for the public landing page.
 
 Reference implementation:
 
-- Route: \`/\` and \`/hero-lab\`
-- Component: \`src/screens/HeroLabScreen.tsx\`
-- Hero styles: \`src/screens/HeroLabScreen.css\`
-- Approved mark: \`src/components/brand/CortexLogo.tsx\`
-- Production reference commit: \`092d041664b8edbafb437b5027f7744f99bccffd\`
+- Route: `/` and `/hero-lab`
+- Component: `src/screens/HeroLabScreen.tsx`
+- Hero styles: `src/screens/HeroLabScreen.css`
+- Approved mark: `src/components/brand/CortexLogo.tsx`
+- Production reference commit: `092d041664b8edbafb437b5027f7744f99bccffd`
 
 The hero must remain visually unchanged while the rest of the landing page is brought into alignment.
 
