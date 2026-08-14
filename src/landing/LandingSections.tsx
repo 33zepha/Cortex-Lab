@@ -1,7 +1,9 @@
-import { useRef, type ComponentType, type RefObject, type SVGProps } from "react";
+import { useRef, type RefObject } from "react";
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import { CortexLogo } from "@/components/brand/CortexLogo";
 import "./landing-sections.css";
+
+type ScrollOffset = NonNullable<NonNullable<Parameters<typeof useScroll>[0]>["offset"]>;
 
 const capabilityMoments = [
   {
