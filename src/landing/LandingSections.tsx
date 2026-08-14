@@ -147,14 +147,14 @@ function MissionSection() {
   const progress = useSoftProgress(ref, ["start start", "end end"]);
   const introOpacity = useTransform(progress, [0, 0.12, 0.34, 0.88], [1, 1, 0.62, 0.78]);
   const imageOpacity = useTransform(progress, [0, 0.18, 0.66, 1], [0.08, 0.26, 0.18, 0.04]);
-  const objectiveOpacity = useTransform(progress, [0.05, 0.16, 0.32], [0.1, 1, 0.22]);
-  const objectiveY = useTransform(progress, [0.05, 0.2, 0.34], [34, 0, -18]);
-  const structureOpacity = useTransform(progress, [0.22, 0.34, 0.5], [0.18, 1, 0.22]);
-  const structureY = useTransform(progress, [0.22, 0.37, 0.52], [28, 0, -18]);
-  const executionOpacity = useTransform(progress, [0.4, 0.52, 0.68], [0.18, 1, 0.22]);
-  const executionY = useTransform(progress, [0.4, 0.55, 0.7], [28, 0, -18]);
-  const proofOpacity = useTransform(progress, [0.58, 0.72, 0.92], [0.18, 1, 1]);
-  const proofY = useTransform(progress, [0.58, 0.76, 0.94], [28, 0, -8]);
+  const objectiveOpacity = useTransform(progress, [0, 0.08, 0.16, 0.22], [0, 1, 1, 0]);
+  const objectiveY = useTransform(progress, [0, 0.08, 0.18, 0.24], [28, 0, -12, -24]);
+  const structureOpacity = useTransform(progress, [0.2, 0.28, 0.36, 0.42], [0, 1, 1, 0]);
+  const structureY = useTransform(progress, [0.2, 0.28, 0.38, 0.44], [28, 0, -12, -24]);
+  const executionOpacity = useTransform(progress, [0.4, 0.48, 0.56, 0.62], [0, 1, 1, 0]);
+  const executionY = useTransform(progress, [0.4, 0.48, 0.58, 0.64], [28, 0, -12, -24]);
+  const proofOpacity = useTransform(progress, [0.6, 0.68, 0.86, 1], [0, 1, 1, 1]);
+  const proofY = useTransform(progress, [0.6, 0.68, 0.88, 1], [28, 0, -8, -8]);
   const stageOpacity = useTransform(progress, [0.1, 0.28, 0.52, 0.76, 0.94], [0.5, 1, 1, 1, 1]);
 
   return (
