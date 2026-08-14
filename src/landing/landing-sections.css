@@ -31,9 +31,9 @@
 .cortex-capability h3,
 .cortex-statement__copy h2 {
   margin: 0;
-  font-family: "Syne Variable", "Cortex Inter", sans-serif;
-  font-weight: 590;
-  letter-spacing: -0.061em;
+  font-family: "Cortex Inter", Inter, system-ui, sans-serif;
+  font-weight: 630;
+  letter-spacing: -0.068em;
 }
 
 .cortex-problem__copy em,
