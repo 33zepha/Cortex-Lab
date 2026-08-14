@@ -14,6 +14,7 @@ import { OpenAiMark } from "@/components/brand/OpenAiMark";
 import "./landing-sections.css";
 
 type ProviderMark = ComponentType<SVGProps<SVGSVGElement> & { title?: string }>;
+type ScrollOffset = NonNullable<NonNullable<Parameters<typeof useScroll>[0]>["offset"]>;
 
 type Capability = {
   index: string;
@@ -57,7 +58,7 @@ const providers: Array<{ name: string; Mark: ProviderMark }> = [
   { name: "Mistral", Mark: MistralMark },
 ];
 
-function useSoftProgress(target: RefObject<HTMLElement | null>, offset: [string, string]) {
+function useSoftProgress(target: RefObject<HTMLElement | null>, offset: ScrollOffset) {
   const reducedMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({ target, offset });
   return useSpring(scrollYProgress, {
