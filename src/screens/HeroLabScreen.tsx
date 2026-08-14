@@ -12,6 +12,7 @@ import heroPixelCloud3840 from "@/assets/cortex-hero-pixel-cloud-3840.webp";
 import { CortexLogo } from "@/components/brand/CortexLogo";
 import { LandingSections } from "@/landing/LandingSections";
 import "./HeroLabScreen.css";
+import "@/landing/landing-mobile.css";
 
 type WaitlistStatus = "idle" | "invalid" | "loading" | "success" | "error";
 
