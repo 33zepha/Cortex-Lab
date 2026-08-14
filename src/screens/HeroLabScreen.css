@@ -5,10 +5,8 @@
  * exist in the current landing DOM. The old inside-journey scene was removed
  * from the active stylesheet; its visual language belongs to no live surface.
  *
- * Syne remains imported temporarily because the current post-hero stylesheet
- * still references it. Typography unification is a later, explicit step.
+ * All live landing surfaces use the same Cortex Inter family as the hero.
  */
-@import "@fontsource-variable/syne/wght.css";
 
 @font-face {
   font-family: "Cortex Inter";
