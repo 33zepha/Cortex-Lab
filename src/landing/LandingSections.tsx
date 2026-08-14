@@ -43,7 +43,7 @@ function useSoftProgress(target: RefObject<HTMLElement | null>, offset: ScrollOf
 
 function PixelPlane({ className }: { className: string }) {
   return (
-    <div className={\`cortex-pixel-plane \${className}\`} aria-hidden="true">
+    <div className={`cortex-pixel-plane \${className}`} aria-hidden="true">
       <img src={heroPixelCloud1920} alt="" draggable={false} />
     </div>
   );
@@ -216,7 +216,7 @@ function CapabilitiesSection() {
         {capabilityMoments.map((moment) => (
           <motion.article
             key={moment.verb}
-            className={\`cortex-capability \${moment.className}\`}
+            className={`cortex-capability \${moment.className}`}
             initial={{ opacity: 0, y: 48 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ amount: 0.32, once: false }}
