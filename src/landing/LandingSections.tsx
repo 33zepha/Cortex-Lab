@@ -145,9 +145,22 @@ function StatementSection() {
 }
 
 export function LandingSections() {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: rootRef,
+    offset: ["start start", "end end"],
+  });
+  const atmosphereProgress = useSpring(scrollYProgress, {
+    stiffness: reducedMotion ? 1000 : 82,
+    damping: reducedMotion ? 1000 : 28,
+    mass: reducedMotion ? 0.01 : 0.32,
+    restDelta: 0.0005,
+  });
+
   return (
-    <div className="landing-sections">
-      <LandingAtmosphere />
+    <div ref={rootRef} className="landing-sections">
+      <LandingAtmosphere progress={atmosphereProgress} />
       <div className="landing-sections__content">
         <ProblemSection />
         <ControlSection />
