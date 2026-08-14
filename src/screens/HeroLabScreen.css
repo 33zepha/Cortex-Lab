@@ -342,7 +342,7 @@
 .inside-closing::after {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle, rgba(22, 143, 218, 0.2) 0 0.7px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(88, 106, 242, 0.2) 0 0.7px, transparent 1px);
   background-size: 11px 11px;
   content: "";
   mask-image: radial-gradient(ellipse 48% 68% at 79% 50%, black, transparent 74%);
@@ -363,7 +363,7 @@
   height: min(17vw, 250px);
   background-image: radial-gradient(circle, currentColor 0 1.25px, transparent 1.7px);
   background-size: 9px 9px;
-  color: rgba(22, 143, 218, 0.22);
+  color: rgba(88, 106, 242, 0.22);
   mask-image: linear-gradient(135deg, transparent 4%, black 50%, transparent 96%);
 }
 
@@ -403,23 +403,19 @@
 .inside-closing__content {
   position: relative;
   z-index: 2;
-  display: grid;
-  width: min(1080px, 100%);
-  grid-template-columns: minmax(250px, 0.78fr) minmax(360px, 1fr);
-  grid-template-rows: auto auto auto auto;
-  column-gap: clamp(52px, 10vw, 160px);
+  display: flex;
+  width: min(760px, 100%);
+  flex-direction: column;
   align-items: center;
-  justify-items: start;
-  text-align: left;
+  text-align: center;
 }
 
 .inside-closing__signal {
   display: flex;
-  grid-column: 1;
-  grid-row: 1;
   align-items: center;
+  justify-content: center;
   gap: 9px;
-  color: #0871be;
+  color: #4054e8;
   font-size: 10px;
   font-weight: 750;
   letter-spacing: 0.14em;
@@ -431,22 +427,19 @@
   width: 6px;
   height: 6px;
   border-radius: 1px;
-  background: #168fda;
-  box-shadow: 0 0 0 4px rgba(22, 143, 218, 0.1);
+  background: #586af2;
+  box-shadow: 0 0 0 4px rgba(88, 106, 242, 0.1);
 }
 
 .inside-closing__mark {
-  grid-column: 1;
-  grid-row: 2;
   width: 58px;
   height: 58px;
   margin-top: 34px;
-  filter: drop-shadow(0 12px 24px rgba(22, 143, 218, 0.16));
+  filter: drop-shadow(0 12px 24px rgba(88, 106, 242, 0.16));
 }
 
 .inside-closing h2 {
-  grid-column: 1;
-  grid-row: 3;
+  max-width: 720px;
   margin-top: 22px;
   color: var(--ink);
   font-family: "Cortex Inter", Inter, system-ui, sans-serif;
@@ -454,29 +447,26 @@
   font-weight: 650;
   letter-spacing: -0.082em;
   line-height: 0.91;
+  text-align: center;
 }
 
 .inside-closing h2 em {
-  color: #0871be;
+  color: #4054e8;
   font-style: normal;
 }
 
 .inside-closing__copy {
-  grid-column: 1;
-  grid-row: 4;
   max-width: 390px;
   margin-top: 25px !important;
   color: rgba(13, 26, 42, 0.58);
   font-size: 15px;
   line-height: 1.58;
+  text-align: center;
 }
 
 .inside-closing .inside-access {
-  grid-column: 2;
-  grid-row: 1 / span 4;
   width: min(520px, 100%);
-  margin-top: 0;
-  align-self: center;
+  margin-top: 34px;
 }
 
 .inside-access {
