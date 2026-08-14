@@ -195,7 +195,7 @@ function CapabilitiesSection() {
     setActiveIndex((current) => (current === next ? current : next));
   });
 
-  const active = capabilities[activeIndex];
+  const active = capabilities[activeIndex] ?? capabilities[0]!;
 
   return (
     <section ref={ref} className="landing-capabilities" aria-labelledby="capabilities-title">
