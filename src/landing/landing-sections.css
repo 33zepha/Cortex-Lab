@@ -26,7 +26,7 @@
 .cortex-control__copy h2,
 .cortex-architecture__copy h2,
 .cortex-mission__intro h2,
-.cortex-mission__object h3,
+.cortex-mission__objective h3,
 .cortex-capabilities__intro h2,
 .cortex-capability h3,
 .cortex-statement__copy h2 {
@@ -245,35 +245,33 @@
   transform: translate(-50%, -50%);
 }
 
-.cortex-provider {
+.cortex-architecture__providers {
   position: absolute;
   z-index: 4;
-  display: inline-flex;
+  top: calc(50% + clamp(92px, 10vw, 138px));
+  left: 50%;
+  display: flex;
+  width: min(720px, 88vw);
+  flex-wrap: wrap;
   align-items: center;
-  gap: 11px;
-  color: rgba(21, 26, 43, 0.5);
-  font-size: clamp(12px, 1.05vw, 15px);
-  font-weight: 500;
-  letter-spacing: -0.015em;
-  animation: cortex-provider-drift 8s ease-in-out infinite alternate;
+  justify-content: center;
+  gap: 10px 22px;
+  color: rgba(21, 26, 43, 0.42);
+  font-size: clamp(11px, 0.9vw, 13px);
+  font-weight: 560;
+  letter-spacing: -0.012em;
+  text-align: center;
+  transform: translateX(-50%);
 }
 
-.cortex-provider svg {
-  width: 22px;
-  height: 22px;
-  color: rgba(91, 106, 191, 0.55);
-  opacity: 0.78;
+.cortex-architecture__providers span {
+  transition: color 220ms ease, opacity 220ms ease;
 }
 
-.cortex-provider:nth-of-type(3) { top: 14%; left: 19%; animation-delay: -1.2s; }
-.cortex-provider:nth-of-type(4) { top: 18%; right: 16%; animation-delay: -3.5s; }
-.cortex-provider:nth-of-type(5) { top: 55%; left: 7%; animation-delay: -5.4s; }
-.cortex-provider:nth-of-type(6) { right: 6%; bottom: 29%; animation-delay: -2.4s; }
-.cortex-provider:nth-of-type(7) { bottom: 9%; left: 38%; animation-delay: -6.2s; }
-
-@keyframes cortex-provider-drift {
-  from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(7px, -10px, 0); }
+.cortex-architecture__providers span:not(:last-child)::after {
+  margin-left: 22px;
+  color: rgba(88, 106, 242, 0.34);
+  content: "/";
 }
 
 .cortex-mission {
@@ -328,7 +326,7 @@
   max-width: 380px;
 }
 
-.cortex-mission__object {
+.cortex-mission__objective {
   position: absolute;
   z-index: 5;
   top: 52%;
@@ -339,33 +337,22 @@
   will-change: transform;
 }
 
-.cortex-mission__status {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: rgba(70, 85, 176, 0.6);
+.cortex-mission__objectiveive-label {
+  display: block;
+  color: rgba(70, 85, 176, 0.58);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 720;
   letter-spacing: 0.13em;
   text-transform: uppercase;
 }
 
-.cortex-mission__status::before {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #586af2;
-  box-shadow: 0 0 0 6px rgba(88, 106, 242, 0.09);
-  content: "";
-}
-
-.cortex-mission__object h3 {
+.cortex-mission__objective h3 {
   margin-top: 18px;
   font-size: clamp(48px, 6.4vw, 98px);
   line-height: 0.9;
 }
 
-.cortex-mission__object > p {
+.cortex-mission__objective > p {
   margin: 16px 0 0;
   color: rgba(21, 26, 43, 0.36);
   font-size: 12px;
@@ -392,36 +379,28 @@
   filter: blur(18px);
 }
 
-.cortex-mission__phase {
+.cortex-mission__sequence {
   position: absolute;
   z-index: 6;
-  width: min(260px, 28vw);
-  will-change: opacity;
-}
-
-.cortex-mission__phase span {
-  display: block;
-  margin-bottom: 8px;
-  color: rgba(21, 26, 43, 0.3);
-  font-size: 9px;
-  font-weight: 720;
+  top: calc(52% + clamp(150px, 23vh, 220px));
+  left: 50%;
+  display: flex;
+  width: min(720px, 88vw);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 22px;
+  color: rgba(21, 26, 43, 0.34);
+  font-size: 10px;
+  font-weight: 680;
   letter-spacing: 0.12em;
+  text-align: center;
   text-transform: uppercase;
+  transform: translateX(-50%);
 }
 
-.cortex-mission__phase strong {
-  display: block;
-  color: rgba(21, 26, 43, 0.62);
-  font-size: clamp(12px, 1vw, 15px);
-  font-weight: 520;
-  line-height: 1.46;
+.cortex-mission__sequence span {
+  transition: color 220ms ease;
 }
-
-.phase-objective { top: 34%; left: 8%; }
-.phase-structure { top: 27%; right: 9%; }
-.phase-execution { right: 7%; bottom: 24%; }
-.phase-verification { bottom: 17%; left: 10%; }
-.phase-handoff { right: 18%; bottom: 11%; }
 
 .cortex-mission__result {
   position: absolute;
@@ -438,169 +417,6 @@
   white-space: nowrap;
 }
 
-.cortex-mission__result i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #586af2;
-  box-shadow: 0 0 0 5px rgba(88, 106, 242, 0.08);
-}
-
-.cortex-capabilities {
-  position: relative;
-  padding: clamp(120px, 18vh, 210px) clamp(24px, 6.4vw, 104px) clamp(90px, 12vh, 150px);
-  overflow: clip;
-}
-
-.cortex-capabilities__intro {
-  width: min(980px, 100%);
-  margin-bottom: clamp(34px, 6vh, 78px);
-}
-
-.cortex-capabilities__intro h2 {
-  max-width: 930px;
-  margin-top: 18px;
-  font-size: clamp(50px, 6.2vw, 98px);
-  line-height: 0.91;
-}
-
-.cortex-capabilities__moments {
-  position: relative;
-}
-
-.cortex-capability {
-  position: relative;
-  min-height: min(82svh, 820px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  overflow: hidden;
-  padding-block: 12vh;
-}
-
-.cortex-capability__index {
-  position: relative;
-  z-index: 2;
-  color: rgba(21, 26, 43, 0.26);
-  font-size: 10px;
-  font-weight: 720;
-  letter-spacing: 0.16em;
-}
-
-.cortex-capability h3 {
-  position: relative;
-  z-index: 2;
-  margin-top: 15px;
-  font-size: clamp(66px, 10.4vw, 168px);
-  line-height: 0.82;
-}
-
-.cortex-capability p {
-  position: relative;
-  z-index: 2;
-  max-width: 490px;
-  margin: 26px 0 0;
-  color: rgba(21, 26, 43, 0.52);
-  font-size: clamp(16px, 1.5vw, 22px);
-  line-height: 1.48;
-}
-
-.cortex-capability__matter {
-  position: absolute;
-  z-index: 0;
-  top: 50%;
-  right: -7%;
-  width: min(62vw, 840px);
-  height: 84%;
-  pointer-events: none;
-  transform: translateY(-50%);
-}
-
-.cortex-capability__matter::before {
-  background-image: radial-gradient(circle, rgba(88, 106, 242, 0.26) 0 1.05px, transparent 1.3px);
-  background-size: 12px 12px;
-  mask-image: radial-gradient(ellipse 68% 58% at 58% 52%, black 5%, transparent 78%);
-  opacity: 0.34;
-}
-
-.cortex-capability__matter::after {
-  inset: 24% 12% 18% 32%;
-  background: radial-gradient(ellipse at center, rgba(83, 105, 242, 0.12), transparent 72%);
-  filter: blur(17px);
-}
-
-.cortex-capability.is-delegate,
-.cortex-capability.is-control {
-  align-items: flex-end;
-  text-align: right;
-}
-
-.cortex-capability.is-delegate p,
-.cortex-capability.is-control p {
-  margin-left: auto;
-}
-
-.cortex-capability.is-delegate .cortex-capability__matter,
-.cortex-capability.is-control .cortex-capability__matter {
-  right: auto;
-  left: -9%;
-  transform: translateY(-50%) scaleX(-1);
-}
-
-.cortex-capability.is-verify .cortex-capability__matter::before {
-  background-size: 9px 9px;
-  opacity: 0.25;
-  filter: blur(0.35px);
-}
-
-.cortex-capability.is-control .cortex-capability__matter::before {
-  background-size: 14px 14px;
-  mask-image: radial-gradient(ellipse 54% 48% at 50% 50%, black 10%, transparent 72%);
-  opacity: 0.3;
-}
-
-.cortex-statement {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 108svh;
-  text-align: center;
-}
-
-.cortex-statement__copy {
-  position: relative;
-  z-index: 2;
-  width: min(1000px, 100%);
-  will-change: transform, opacity;
-}
-
-.cortex-statement__copy h2 {
-  margin-top: 18px;
-  font-size: clamp(58px, 8vw, 132px);
-  line-height: 0.86;
-}
-
-.cortex-matter--statement {
-  top: 18%;
-  left: 50%;
-  width: min(94vw, 1180px);
-  height: 72%;
-  translate: -50% 0;
-}
-
-.cortex-matter--statement::before {
-  background-image: radial-gradient(circle, rgba(88, 106, 242, 0.26) 0 1px, transparent 1.3px);
-  background-size: 13px 13px;
-  mask-image: radial-gradient(ellipse 68% 54% at center, black 6%, transparent 78%);
-  opacity: 0.32;
-}
-
-.cortex-matter--statement::after {
-  inset: 18% 22%;
-  background: radial-gradient(ellipse at center, rgba(88, 106, 242, 0.11), transparent 72%);
-  filter: blur(20px);
-}
-
 @media (max-width: 900px) {
   .cortex-moment {
     padding-inline: 30px;
@@ -615,12 +431,6 @@
     width: min(760px, 94vw);
     height: 620px;
   }
-
-  .cortex-provider:nth-of-type(3) { top: 11%; left: 10%; }
-  .cortex-provider:nth-of-type(4) { top: 16%; right: 7%; }
-  .cortex-provider:nth-of-type(5) { top: 56%; left: 2%; }
-  .cortex-provider:nth-of-type(6) { right: 2%; bottom: 25%; }
-  .cortex-provider:nth-of-type(7) { bottom: 6%; left: 35%; }
 
   .cortex-mission__phase {
     width: 220px;
@@ -720,12 +530,6 @@
     height: 19px;
   }
 
-  .cortex-provider:nth-of-type(3) { top: 13%; left: 8%; }
-  .cortex-provider:nth-of-type(4) { top: 18%; right: 2%; }
-  .cortex-provider:nth-of-type(5) { top: 57%; left: 1%; }
-  .cortex-provider:nth-of-type(6) { right: 1%; bottom: 24%; }
-  .cortex-provider:nth-of-type(7) { bottom: 8%; left: 31%; }
-
   .cortex-mission {
     height: 300svh;
   }
@@ -747,12 +551,12 @@
     font-size: 13px;
   }
 
-  .cortex-mission__object {
+  .cortex-mission__objective {
     top: 55%;
     width: calc(100% - 48px);
   }
 
-  .cortex-mission__object h3 {
+  .cortex-mission__objective h3 {
     max-width: 8ch;
     margin-inline: auto;
     font-size: clamp(48px, 14vw, 70px);
@@ -771,20 +575,13 @@
     opacity: 0.25;
   }
 
-  .cortex-mission__phase {
-    width: min(45vw, 170px);
+  .cortex-mission__sequence {
+    top: calc(55% + 132px);
+    width: calc(100% - 48px);
+    gap: 8px 16px;
+    font-size: 9px;
+    line-height: 1.5;
   }
-
-  .cortex-mission__phase strong {
-    font-size: 11px;
-    line-height: 1.38;
-  }
-
-  .phase-objective { top: 35%; left: 6%; }
-  .phase-structure { top: 35%; right: 6%; text-align: right; }
-  .phase-execution { right: 6%; bottom: 20%; text-align: right; }
-  .phase-verification { bottom: 19%; left: 6%; }
-  .phase-handoff { right: 6%; bottom: 10%; text-align: right; }
 
   .cortex-mission__result {
     bottom: 42px;
