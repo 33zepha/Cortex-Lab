@@ -218,7 +218,6 @@ function PricingCard() {
 
   return (
     <section className="cortex-panel cortex-pricing-card" aria-labelledby="cortex-plan-title">
-      <PanelHeader />
       <div className="cortex-pricing-card__body">
         <h2 id="cortex-plan-title">Choose the right way to start.</h2>
         <p>Choose the access path that fits your work and gives every mission room to grow.</p>
