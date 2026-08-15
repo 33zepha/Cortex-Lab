@@ -68,7 +68,11 @@
 
 .cortex-panel,
 .cortex-column--utility > section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   background: var(--cortex-surface);
+  border: 1px solid rgba(35, 40, 51, 0.045);
   border-radius: 22px;
   box-shadow: 0 14px 30px rgba(35, 40, 51, 0.055);
 }
@@ -87,6 +91,8 @@
 }
 
 .cortex-column--showcase {
+  position: relative;
+  isolation: isolate;
   min-height: 1530px;
   overflow: hidden;
   padding-top: 9px;
@@ -204,6 +210,8 @@
 }
 
 .cortex-column__body {
+  position: relative;
+  z-index: 1;
   padding: 15px;
 }
 
@@ -243,6 +251,8 @@
 }
 
 .cortex-media {
+  position: relative;
+  isolation: isolate;
   overflow: hidden;
   border-radius: 19px;
 }
@@ -702,7 +712,7 @@
   margin-top: 32px;
 }
 
-.cortex-testimonial__controls button {
+.cortex-testimonial__controls span {
   display: grid;
   width: 42px;
   height: 42px;
@@ -710,18 +720,12 @@
   border-radius: 50%;
   background: rgba(125, 89, 143, 0.13);
   color: #4e3154;
-  cursor: pointer;
 }
 
 .cortex-testimonial__controls svg {
   width: 17px;
   height: 17px;
   stroke-width: 1.7;
-}
-
-.cortex-testimonial__controls button:hover,
-.cortex-testimonial__controls button:focus-visible {
-  background: rgba(125, 89, 143, 0.22);
 }
 
 .cortex-showcase__body {
