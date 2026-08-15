@@ -40,7 +40,7 @@ function PanelHeader() {
       </Link>
       <div className="cortex-panel-header__actions">
         <Link className="cortex-pill cortex-pill--dark cortex-panel-header__cta" to="/signup">
-          Enter Cortex
+          Get started
         </Link>
         <motion.button className="cortex-menu-button" type="button" aria-label="Open menu" whileTap={{ scale: 0.92 }}>
           <Menu aria-hidden="true" />
@@ -158,56 +158,18 @@ function AdsPreview() {
   );
 }
 
-const testimonialSlides = [
-  {
-    quote: "“Cortex has transformed the way we direct complex work. Its clear operating model, coordinated agents, and traceable execution give our team a system we trust when decisions need to move.”",
-    name: "Early design partner",
-    role: "Operations team",
-  },
-  {
-    quote: "“For the first time, every agent has a role, every decision has context, and every outcome comes back with a traceable reason.”",
-    name: "Private beta team",
-    role: "Mission operations",
-  },
-] as const;
-
 function Testimonial() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [direction, setDirection] = useState(1);
-  const reducedMotion = useReducedMotion();
-  const current = testimonialSlides[currentIndex]!;
-
-  const move = (offset: number) => {
-    setDirection(offset);
-    setCurrentIndex((index) => (index + offset + testimonialSlides.length) % testimonialSlides.length);
-  };
-
   return (
     <figure className="cortex-testimonial">
-      <AnimatePresence initial={false} mode="wait" custom={direction}>
-        <motion.blockquote
-          key={currentIndex}
-          custom={direction}
-          initial={reducedMotion ? false : { opacity: 0, x: direction * 16 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={reducedMotion ? undefined : { opacity: 0, x: direction * -16 }}
-          transition={reducedMotion ? { duration: 0 } : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {current.quote}
-        </motion.blockquote>
-      </AnimatePresence>
+      <blockquote>“Cortex has transformed the way we direct complex work. Its clear operating model, coordinated agents, and traceable execution give our team a system we trust when decisions need to move.”</blockquote>
       <div className="cortex-testimonial__person">
         <div className="cortex-avatar" aria-hidden="true">M</div>
-        <strong>{current.name}</strong>
-        <span>{current.role}</span>
+        <strong>Early design partner</strong>
+        <span>Operations team</span>
       </div>
-      <div className="cortex-testimonial__controls">
-        <motion.button type="button" aria-label="Previous testimonial" onClick={() => move(-1)} whileTap={{ scale: 0.92 }}>
-          <ArrowLeft aria-hidden="true" />
-        </motion.button>
-        <motion.button type="button" aria-label="Next testimonial" onClick={() => move(1)} whileTap={{ scale: 0.92 }}>
-          <ArrowRight aria-hidden="true" />
-        </motion.button>
+      <div className="cortex-testimonial__controls" aria-hidden="true">
+        <span><ArrowLeft /></span>
+        <span><ArrowRight /></span>
       </div>
     </figure>
   );
@@ -227,7 +189,7 @@ function MenuCard() {
       </nav>
       <div className="cortex-menu-card__actions">
         <Link className="cortex-pill cortex-pill--lavender" to="/login">Log in</Link>
-        <Link className="cortex-pill cortex-pill--dark" to="/signup">Enter Cortex</Link>
+        <Link className="cortex-pill cortex-pill--dark" to="/signup">Get started</Link>
       </div>
     </section>
   );
@@ -309,13 +271,12 @@ export function ReferenceAppScreen() {
           <div className="cortex-column__body cortex-intro">
             <h1 id="cortex-page-title">Turn scattered intelligence into coordinated action</h1>
             <p>Coordinate your agents, direct complex work, and return each outcome with a reason you can trust.</p>
-            <Link className="cortex-pill cortex-pill--dark cortex-intro__cta" to="/signup">Enter Cortex</Link>
+            <Link className="cortex-pill cortex-pill--dark cortex-intro__cta" to="/signup">Start a mission</Link>
             <div className="cortex-media cortex-media--dashboard"><DashboardPreview /></div>
           </div>
         </ReferenceColumn>
 
         <ReferenceColumn className="cortex-panel cortex-column cortex-column--metrics" delay={0.1}>
-          <PanelHeader />
           <div className="cortex-column__body">
             <div className="cortex-media cortex-media--sessions"><SessionsChart /></div>
             <h2>Unlock coordinated execution</h2>
@@ -332,7 +293,7 @@ export function ReferenceAppScreen() {
           <div className="cortex-showcase__body">
             <h2>Direct Your Agents. Transform Your Work.</h2>
             <p>Experience the power of Cortex and rethink how complex work is planned, executed, and reviewed. Unlock the potential of coordinated intelligence. Begin today and turn scattered effort into reliable outcomes.</p>
-            <Link className="cortex-pill cortex-pill--dark cortex-showcase__cta" to="/signup">Enter Cortex</Link>
+            <Link className="cortex-pill cortex-pill--dark cortex-showcase__cta" to="/signup">Explore the system</Link>
             <div className="cortex-product-menu">
               <h3>Cortex</h3>
               {["Missions", "Agents", "Integrations", "Security & privacy", "Documentation"].map((item) => <span key={item}>{item}</span>)}
