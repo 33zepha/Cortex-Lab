@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { MotionConfig, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, ChevronRight, Menu, MoreHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CortexLogo } from "@/components/brand/CortexLogo";
@@ -228,7 +228,8 @@ function PricingCard() {
 
 export function ReferenceAppScreen() {
   return (
-    <main className="cortex-reference" aria-labelledby="cortex-page-title">
+    <MotionConfig reducedMotion="user">
+      <main className="cortex-reference" aria-labelledby="cortex-page-title">
       <div className="cortex-reference__stage">
         <ReferenceColumn className="cortex-panel cortex-column cortex-column--intro" delay={0.04}>
           <PanelHeader />
@@ -275,6 +276,7 @@ export function ReferenceAppScreen() {
         <span>© {new Date().getFullYear()} Cortex</span>
         <span>Operational intelligence for consequential work.</span>
       </footer>
-    </main>
+      </main>
+    </MotionConfig>
   );
 }
