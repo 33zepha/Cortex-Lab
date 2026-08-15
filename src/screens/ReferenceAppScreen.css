@@ -271,7 +271,7 @@
 }
 
 .cortex-media--sessions {
-  height: 404px;
+  height: 456px;
   padding: 20px;
   background: var(--cortex-soft-blue);
 }
@@ -327,93 +327,164 @@
   line-height: 1;
 }
 
-.cortex-ai-flow {
+.cortex-ai-system-map {
+  position: relative;
   display: flex;
   min-height: 0;
   flex: 1;
+  padding: 6px 0 5px 9px;
   flex-direction: column;
   justify-content: space-between;
+  gap: 5px;
 }
 
-.cortex-ai-flow__connector {
-  display: grid;
-  width: 100%;
-  height: 14px;
-  flex: 0 0 14px;
-  place-items: center;
-  color: #9ba8d7;
+.cortex-ai-system-map__thread {
+  position: absolute;
+  z-index: 0;
+  top: 12px;
+  bottom: 12px;
+  left: 3px;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, #b2bde5 8%, #9eabe0 50%, #b2bde5 92%, transparent);
+  opacity: 0.95;
 }
 
-.cortex-ai-flow__connector svg {
-  width: 14px;
-  height: 14px;
-  stroke-width: 1.45;
-}
-
-.cortex-ai-flow__stage {
-  display: flex;
+.cortex-ai-zone {
+  position: relative;
+  z-index: 1;
   min-width: 0;
-  min-height: 30px;
   flex: 0 0 auto;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 8px;
-  border-radius: 11px;
+  padding: 6px 7px 7px 9px;
+  border-radius: 12px;
   background: #fafbfc;
   box-shadow: inset 0 0 0 1px rgba(20, 25, 33, 0.018);
 }
 
-.cortex-ai-flow__stage--cortex,
-.cortex-ai-flow__stage--cortex-return {
+.cortex-ai-zone::before {
+  position: absolute;
+  top: 11px;
+  left: -9px;
+  width: 6px;
+  height: 6px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #9eabe0;
+  box-shadow: 0 0 0 1px rgba(85, 109, 228, 0.15);
+  content: "";
+}
+
+.cortex-ai-zone--control {
   background: #eef0ff;
 }
 
-.cortex-ai-flow__stage--hermes {
-  min-height: 36px;
-  background: #f0f2ff;
+.cortex-ai-zone--control::before,
+.cortex-ai-zone--synthesis::before,
+.cortex-ai-zone--output::before {
+  background: var(--cortex-blue);
 }
 
-.cortex-ai-flow__stage--result {
-  min-height: 32px;
+.cortex-ai-zone--orchestration {
+  background: #f5f2ff;
+}
+
+.cortex-ai-zone--synthesis {
+  background: #f5f6fb;
+}
+
+.cortex-ai-zone--output {
   background: #edf0ff;
 }
 
-.cortex-ai-flow__stage-mark {
+.cortex-ai-zone__header,
+.cortex-ai-subzone__header {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  line-height: 1;
+}
+
+.cortex-ai-zone__header {
+  margin-bottom: 5px;
+  color: #5c6578;
+  font-size: 5.3px;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.cortex-ai-zone__header span,
+.cortex-ai-subzone__header span {
+  color: var(--cortex-ink);
+  font-weight: 720;
+}
+
+.cortex-ai-zone__header small,
+.cortex-ai-subzone__header small {
+  min-width: 0;
+  overflow: hidden;
+  color: #8a909d;
+  font-size: 5.15px;
+  font-weight: 520;
+  letter-spacing: -0.015em;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.cortex-ai-system-node {
+  display: flex;
+  min-width: 0;
+  min-height: 28px;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 7px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(20, 25, 33, 0.018);
+}
+
+.cortex-ai-system-node + .cortex-ai-system-node {
+  margin-top: 4px;
+}
+
+.cortex-ai-system-node__mark {
   display: grid;
-  width: 23px;
-  height: 23px;
-  flex: 0 0 23px;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
   place-items: center;
-  border-radius: 6px;
+  border-radius: 7px;
   background: #eef0f4;
   color: var(--cortex-blue);
 }
 
-.cortex-ai-flow__stage-mark svg {
-  width: 14px;
-  height: 14px;
+.cortex-ai-system-node__mark svg {
+  width: 13px;
+  height: 13px;
   stroke-width: 1.9;
 }
 
-.cortex-ai-flow__stage-mark--cortex {
+.cortex-ai-system-node__mark .cortex-logo {
+  width: 12px;
+  height: 14px;
+}
+
+.cortex-ai-system-node--cortex .cortex-ai-system-node__mark,
+.cortex-ai-system-node--cortex-return .cortex-ai-system-node__mark {
   background: #ffffff;
 }
 
-.cortex-ai-flow__stage-mark--cortex .cortex-logo {
-  width: 13px;
-  height: 15px;
-}
-
-.cortex-ai-flow__stage-mark--hermes {
-  width: 29px;
-  height: 29px;
-  flex-basis: 29px;
+.cortex-ai-system-node--hermes .cortex-ai-system-node__mark {
+  width: 27px;
+  height: 27px;
+  flex-basis: 27px;
   border-radius: 6px;
   background: #ffffff;
   box-shadow: 0 1px 2px rgba(20, 25, 33, 0.06);
 }
 
-.cortex-ai-flow__stage-mark--hermes img {
+.cortex-ai-system-node--hermes .cortex-ai-system-node__mark img {
   display: block;
   width: 100%;
   height: 100%;
@@ -422,32 +493,32 @@
   object-position: center 42%;
 }
 
-.cortex-ai-flow__stage-mark--result {
+.cortex-ai-system-node--result .cortex-ai-system-node__mark {
   background: var(--cortex-blue);
   color: #ffffff;
 }
 
-.cortex-ai-flow__stage > div {
+.cortex-ai-system-node > div {
   display: flex;
   min-width: 0;
   flex-direction: column;
   gap: 3px;
 }
 
-.cortex-ai-flow__stage strong {
+.cortex-ai-system-node strong {
   color: var(--cortex-ink);
-  font-size: 8px;
+  font-size: 7.8px;
   font-weight: 720;
   letter-spacing: -0.035em;
   line-height: 1;
 }
 
-.cortex-ai-flow__stage small,
-.cortex-ai-flow__context {
+.cortex-ai-system-node small,
+.cortex-ai-system-node__context {
   min-width: 0;
   overflow: hidden;
   color: #777d8c;
-  font-size: 5.5px;
+  font-size: 5.35px;
   font-weight: 520;
   letter-spacing: -0.02em;
   line-height: 1;
@@ -455,40 +526,33 @@
   white-space: nowrap;
 }
 
-.cortex-ai-flow__context {
+.cortex-ai-system-node__context {
   margin-left: auto;
   color: #8e929d;
-  white-space: nowrap;
 }
 
-.cortex-ai-flow__subheading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
+.cortex-ai-subzone {
+  min-width: 0;
+  padding: 5px 5px 6px;
+  border: 1px solid rgba(20, 25, 33, 0.055);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.cortex-ai-subzone + .cortex-ai-subzone {
   margin-top: 5px;
-  padding: 0 1px;
-  color: #8e929d;
-  font-size: 5.5px;
-  line-height: 1;
 }
 
-.cortex-ai-flow__subheading span {
-  color: var(--cortex-ink);
-  font-weight: 680;
-  letter-spacing: -0.02em;
-}
-
-.cortex-ai-flow__subheading small {
-  font-size: inherit;
-  font-weight: 500;
+.cortex-ai-subzone__header {
+  color: #646d7d;
+  font-size: 5.3px;
 }
 
 .cortex-ai-panel__providers {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 4px;
-  margin-top: 6px;
+  gap: 3px;
+  margin-top: 5px;
 }
 
 .cortex-ai-provider {
@@ -496,9 +560,9 @@
   min-width: 0;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   color: #6f737c;
-  font-size: 5.5px;
+  font-size: 5.2px;
   font-weight: 570;
   letter-spacing: -0.025em;
   line-height: 1;
@@ -507,17 +571,17 @@
 
 .cortex-ai-provider__mark {
   display: grid;
-  width: 27px;
-  height: 27px;
+  width: 24px;
+  height: 24px;
   place-items: center;
   border: 1px solid rgba(20, 25, 33, 0.045);
-  border-radius: 8px;
+  border-radius: 7px;
   background: #f3f4f8;
 }
 
 .cortex-ai-provider__mark svg {
-  width: 13px;
-  height: 13px;
+  width: 12px;
+  height: 12px;
 }
 
 .cortex-grok-mark {
@@ -527,7 +591,7 @@
   place-items: center;
   color: currentColor;
   font-family: "Cortex Inter", Inter, ui-sans-serif, system-ui, sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 740;
   letter-spacing: -0.12em;
   line-height: 1;
@@ -558,51 +622,29 @@
   color: #427f98;
 }
 
-.cortex-ai-panel__roles-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 6px;
-  padding: 0 1px 5px;
-  color: #8e929d;
-  font-size: 5.5px;
-  line-height: 1;
-}
-
-.cortex-ai-panel__roles-heading span {
-  color: var(--cortex-ink);
-  font-weight: 680;
-  letter-spacing: -0.02em;
-}
-
-.cortex-ai-panel__roles-heading small {
-  font-size: inherit;
-  font-weight: 500;
-}
-
 .cortex-ai-panel__roles {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 5px;
+  gap: 4px;
+  margin-top: 5px;
 }
 
 .cortex-ai-role {
   display: flex;
   min-width: 0;
-  min-height: 37px;
+  min-height: 34px;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  padding: 6px 7px 5px;
+  padding: 5px 6px 4px;
   border: 1px solid #ebedf1;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #fafbfc;
 }
 
 .cortex-ai-role svg {
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
   color: var(--cortex-blue);
   stroke-width: 2;
 }
@@ -617,18 +659,18 @@
 }
 
 .cortex-ai-role span {
-  margin-top: 4px;
+  margin-top: 3px;
   color: var(--cortex-ink);
-  font-size: 6.4px;
+  font-size: 6px;
   font-weight: 680;
   letter-spacing: -0.025em;
   line-height: 1;
 }
 
 .cortex-ai-role small {
-  margin-top: 3px;
+  margin-top: 2px;
   color: #989ca5;
-  font-size: 5.3px;
+  font-size: 5px;
   font-weight: 500;
   line-height: 1;
 }
