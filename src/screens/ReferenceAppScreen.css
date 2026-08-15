@@ -374,34 +374,89 @@
 .cortex-command-rail {
   width: 100%;
   margin-top: 60px;
-  padding: 9px 12px;
+  min-height: 132px;
+  padding: 12px 13px 14px;
   border: 1px solid rgba(20, 25, 33, 0.1);
-  border-radius: 16px;
+  border-radius: 22px;
   background: rgba(255, 255, 255, 0.88);
   box-shadow: 0 16px 30px rgba(35, 40, 51, 0.08), 0 2px 8px rgba(35, 40, 51, 0.04);
   backdrop-filter: blur(10px);
 }
 
-.cortex-command-rail__field {
+.cortex-command-rail__messages {
   display: flex;
-  min-width: 0;
-  min-height: 62px;
+  min-height: 104px;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cortex-command-rail__bubble {
+  max-width: 92%;
+  border: 1px solid rgba(20, 25, 33, 0.06);
+  box-shadow: 0 6px 14px rgba(35, 40, 51, 0.045);
+}
+
+.cortex-command-rail__bubble--user {
+  align-self: flex-end;
+  min-height: 45px;
+  padding: 10px 14px;
+  border-radius: 18px 18px 6px 18px;
+  background: #f1f3fb;
+  text-align: left;
+}
+
+.cortex-command-rail__bubble--thinking {
+  display: flex;
+  width: 46px;
+  height: 30px;
   align-items: center;
-  padding: 0 4px;
-  color: var(--cortex-ink);
-  text-align: center;
+  justify-content: center;
+  align-self: flex-start;
+  border-radius: 18px 18px 18px 6px;
+  background: #f8f9fc;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
+  transition: opacity 480ms ease, transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cortex-command-rail__bubble--thinking.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cortex-command-rail__thinking-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.cortex-command-rail__thinking-dots i {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--cortex-blue);
+  animation: cortex-thinking-pulse 1.2s ease-in-out infinite;
+}
+
+.cortex-command-rail__thinking-dots i:nth-child(2) {
+  animation-delay: 140ms;
+}
+
+.cortex-command-rail__thinking-dots i:nth-child(3) {
+  animation-delay: 280ms;
 }
 
 .cortex-command-rail__phrases {
   position: relative;
-  display: flex;
+  display: block;
   min-width: 0;
-  min-height: 2.7em;
-  flex: 1 1 auto;
+  min-height: 1.35em;
   overflow: visible;
-  align-items: center;
   color: var(--cortex-ink);
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 560;
   letter-spacing: -0.025em;
   line-height: 1.35;
@@ -409,7 +464,7 @@
 
 .cortex-command-rail__phrase {
   display: block;
-  width: 100%;
+  width: auto;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -423,6 +478,19 @@
   content: "";
   vertical-align: -0.12em;
   animation: cortex-command-caret 820ms steps(1, end) infinite;
+}
+
+@keyframes cortex-thinking-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
 }
 
 @keyframes cortex-command-caret {
@@ -2157,10 +2225,31 @@
 
   .cortex-command-rail {
     margin-top: clamp(42px, 6vh, 62px);
+    min-height: 148px;
+    padding: 14px 14px 16px;
   }
 
-  .cortex-command-rail__field {
-    min-height: 68px;
+  .cortex-command-rail__messages {
+    min-height: 118px;
+    gap: 9px;
+  }
+
+  .cortex-command-rail__bubble--user {
+    max-width: 94%;
+    min-height: 51px;
+    padding: 12px 15px;
+    border-radius: 20px 20px 7px 20px;
+  }
+
+  .cortex-command-rail__phrases {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .cortex-command-rail__bubble--thinking {
+    width: 50px;
+    height: 32px;
+    border-radius: 19px 19px 19px 7px;
   }
 
   .cortex-testimonial {
@@ -2209,5 +2298,13 @@
 
   .cortex-command-rail__caret {
     animation: none;
+  }
+
+  .cortex-command-rail__thinking-dots i {
+    animation: none;
+  }
+
+  .cortex-command-rail__bubble--thinking {
+    transition: none;
   }
 }
