@@ -844,15 +844,25 @@
   text-align: center;
 }
 
-.cortex-segmented span {
+.cortex-segmented button {
   display: grid;
   min-height: 42px;
   place-items: center;
+  border: 0;
   border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.cortex-segmented button:focus-visible {
+  outline: 2px solid var(--cortex-blue);
+  outline-offset: 2px;
 }
 
 .cortex-segmented__active {
-  background: var(--cortex-blue);
+  background: var(--cortex-blue) !important;
   color: #ffffff;
 }
 
