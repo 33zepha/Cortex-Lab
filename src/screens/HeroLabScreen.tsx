@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useRef,
   useState,
   type FormEvent,
@@ -78,6 +79,16 @@ export function HeroLabScreen() {
   const [requestError, setRequestError] = useState("");
   const [email, setEmail] = useState("");
 
+  useEffect(() => {
+    if (window.location.hash !== "#access") return;
+
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById("access")?.scrollIntoView({ block: "start" });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
   const handleEmailChange = (value: string) => {
     setEmail(value);
     if (requestStatus === "invalid" || requestStatus === "error") {
@@ -155,7 +166,7 @@ export function HeroLabScreen() {
           <div className="inside-entry__content">
             <h1 id="inside-title"><span>One objective.</span><span>Every action aligned.</span></h1>
             <p>Cortex turns one objective into coordinated work—with the evidence to stand behind it.</p>
-            <a className="inside-entry__cta" href="#access">Request access</a>
+            <a className="inside-entry__cta" href="#access">Join the waitlist</a>
           </div>
           <a className="inside-entry__scroll" href="#manifesto" aria-label="Scroll to discover Cortex" />
         </div>
