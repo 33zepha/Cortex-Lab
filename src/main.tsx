@@ -10,6 +10,7 @@ import { VpsProvider } from "@/lib/VpsContext";
 const AppShell = lazy(() => import("@/components/shell/AppShell").then(({ AppShell: component }) => ({ default: component })));
 const AuthScreen = lazy(() => import("@/screens/AuthScreen").then(({ AuthScreen: component }) => ({ default: component })));
 const HeroLabScreen = lazy(() => import("@/screens/HeroLabScreen").then(({ HeroLabScreen: component }) => ({ default: component })));
+const ReferenceAppScreen = lazy(() => import("@/screens/ReferenceAppScreen").then(({ ReferenceAppScreen: component }) => ({ default: component })));
 const ProjectScreen = lazy(() => import("@/screens/ProjectScreen").then(({ ProjectScreen: component }) => ({ default: component })));
 const OverviewScreen = lazy(() => import("@/screens/OverviewScreen").then(({ OverviewScreen: component }) => ({ default: component })));
 const MissionsScreen = lazy(() => import("@/screens/MissionsScreen").then(({ MissionsScreen: component }) => ({ default: component })));
@@ -42,7 +43,7 @@ createRoot(root).render(
       <BrowserRouter>
         <VpsProvider>
           <Routes>
-            <Route path="/" element={<Suspense fallback={<LoadingScreen />}><HeroLabScreen /></Suspense>} />
+            <Route path="/" element={<Suspense fallback={<LoadingScreen />}><ReferenceAppScreen /></Suspense>} />
             <Route path="/hero-lab" element={<Suspense fallback={<LoadingScreen />}><HeroLabScreen /></Suspense>} />
             <Route path="/project" element={<Suspense fallback={<LoadingScreen />}><ProjectScreen /></Suspense>} />
             <Route path="/login" element={<Suspense fallback={<LoadingScreen />}><AuthScreen initialMode="login" /></Suspense>} />
