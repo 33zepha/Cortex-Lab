@@ -1,5 +1,5 @@
-import { useEffect, useState, type PropsWithChildren, type ReactNode } from "react";
-import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "framer-motion";
+import { useCallback, useEffect, useRef, useState, type PropsWithChildren, type ReactNode } from "react";
+import { AnimatePresence, MotionConfig, motion, useInView, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Brain, Check, ChevronRight, GitBranch, Radio, Search, UserRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ClaudeMark } from "@/components/brand/ClaudeMark";
@@ -193,17 +193,34 @@ function CortexSystemNode({ className, context, detail, mark, title }: CortexSys
 type CortexSystemZoneProps = PropsWithChildren<{
   className: string;
   delay: number;
+  index: number;
+  onReveal: (index: number) => void;
+  revealedThrough: number;
 }>;
 
-function CortexSystemZone({ children, className, delay }: CortexSystemZoneProps) {
+function CortexSystemZone({ children, className, delay, index, onReveal, revealedThrough }: CortexSystemZoneProps) {
   const reducedMotion = useReducedMotion();
+  const zoneRef = useRef<HTMLElement | null>(null);
+  const isInView = useInView(zoneRef, {
+    once: false,
+    amount: 0.58,
+    margin: "-40% 0px -40% 0px",
+  });
+  const isRevealed = revealedThrough >= index;
+  const previousIsRevealed = index === 0 || revealedThrough >= index - 1;
+
+  useEffect(() => {
+    if (!reducedMotion && isInView && previousIsRevealed && !isRevealed) {
+      onReveal(index);
+    }
+  }, [index, isInView, isRevealed, onReveal, previousIsRevealed, reducedMotion]);
 
   return (
     <motion.section
+      ref={zoneRef}
       className={className}
       initial={reducedMotion ? false : { opacity: 0, x: 16, y: 12 }}
-      whileInView={{ opacity: 1, x: 0, y: 0 }}
-      viewport={{ once: true, amount: 0.58, margin: "-40% 0px -40% 0px" }}
+      animate={reducedMotion || isRevealed ? { opacity: 1, x: 0, y: 0 } : { opacity: 0, x: 16, y: 12 }}
       transition={
         reducedMotion
           ? { duration: 0 }
@@ -215,11 +232,29 @@ function CortexSystemZone({ children, className, delay }: CortexSystemZoneProps)
   );
 }
 
-function CortexSystemLink() {
-  return <span className="cortex-ai-link" aria-hidden="true"><span className="cortex-ai-link__port" /></span>;
+function CortexSystemLink({ visible }: { visible: boolean }) {
+  return (
+    <motion.span
+      className="cortex-ai-link"
+      aria-hidden="true"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: visible ? 1 : 0 }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <span className="cortex-ai-link__port" />
+    </motion.span>
+  );
 }
 
 function AiAccessPanel() {
+  const [revealedThrough, setRevealedThrough] = useState(-1);
+  const revealZone = useCallback((index: number) => {
+    setRevealedThrough((current) => {
+      if (current >= index || (index !== 0 && current !== index - 1)) return current;
+      return index;
+    });
+  }, []);
+
   return (
     <div className="cortex-ai-panel" aria-label="Cortex linked operating system">
       <div className="cortex-ai-panel__header">
@@ -230,7 +265,7 @@ function AiAccessPanel() {
         <span className="cortex-ai-panel__status">brief in · result out</span>
       </div>
       <div className="cortex-ai-system-map">
-        <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--input" delay={0.08}>
+        <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--input" delay={0.08} index={0} onReveal={revealZone} revealedThrough={revealedThrough}>
           <CortexSystemZoneHeader index="01" label="Input state" detail="human intent" />
           <CortexSystemNode
             className="cortex-ai-system-node--human"
@@ -239,9 +274,9 @@ function AiAccessPanel() {
             title="Human"
           />
         </CortexSystemZone>
-        <CortexSystemLink />
+        <CortexSystemLink visible={revealedThrough >= 0} />
 
-        <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--control" delay={0.16}>
+        <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--control" delay={0.16} index={1} onReveal={revealZone} revealedThrough={revealedThrough}>
           <CortexSystemZoneHeader index="02" label="Control plane" detail="Cortex owns the mission" />
           <CortexSystemNode
             className="cortex-ai-system-node--cortex"
@@ -258,9 +293,9 @@ function AiAccessPanel() {
             title="Hermes"
           />
         </CortexSystemZone>
-        <CortexSystemLink />
+        <CortexSystemLink visible={revealedThrough >= 1} />
 
-        <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--orchestration" delay={0.24}>
+        <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--orchestration" delay={0.24} index={2} onReveal={revealZone} revealedThrough={revealedThrough}>
           <CortexSystemZoneHeader index="03" label="Orchestration" detail="Hermes composes the run" />
           <div className="cortex-ai-branch-field">
             <div className="cortex-ai-branch cortex-ai-branch--models">
@@ -300,9 +335,9 @@ function AiAccessPanel() {
             </div>
           </div>
         </CortexSystemZone>
-        <CortexSystemLink />
+        <CortexSystemLink visible={revealedThrough >= 2} />
 
-        <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--synthesis" delay={0.32}>
+        <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--synthesis" delay={0.32} index={3} onReveal={revealZone} revealedThrough={revealedThrough}>
           <CortexSystemZoneHeader index="04" label="Synthesis state" detail="Cortex closes the loop" />
           <CortexSystemNode
             className="cortex-ai-system-node--cortex-return"
@@ -312,9 +347,9 @@ function AiAccessPanel() {
             title="Cortex"
           />
         </CortexSystemZone>
-        <CortexSystemLink />
+        <CortexSystemLink visible={revealedThrough >= 3} />
 
-        <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--output" delay={0.4}>
+        <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--output" delay={0.4} index={4} onReveal={revealZone} revealedThrough={revealedThrough}>
           <CortexSystemZoneHeader index="05" label="Output state" detail="ready for the human" />
           <CortexSystemNode
             className="cortex-ai-system-node--result"
