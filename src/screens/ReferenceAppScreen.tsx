@@ -333,7 +333,7 @@ function AiAccessPanel() {
           <div className="cortex-ai-branch-field">
             <div className="cortex-ai-branch cortex-ai-branch--models" aria-label="AI models">
               <div className="cortex-ai-panel__providers" aria-label="AI models available to Hermes">
-                {aiProviders.map(({ id, name, fullName, Mark, tone, description }) => (
+                {aiProviders.map(({ id, name, fullName, Mark, tone }) => (
                   <button
                     type="button"
                     className={`cortex-ai-provider ${tone}${selectedSystemItem === id ? " is-selected" : ""}`}
