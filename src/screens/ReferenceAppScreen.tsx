@@ -1,5 +1,5 @@
-import type { PropsWithChildren } from "react";
-import { MotionConfig, motion, useReducedMotion } from "framer-motion";
+import { useState, type PropsWithChildren } from "react";
+import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, ChevronRight, Menu, MoreHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CortexLogo } from "@/components/brand/CortexLogo";
@@ -42,9 +42,9 @@ function PanelHeader() {
         <Link className="cortex-pill cortex-pill--dark cortex-panel-header__cta" to="/signup">
           Enter Cortex
         </Link>
-        <button className="cortex-menu-button" type="button" aria-label="Open menu">
+        <motion.button className="cortex-menu-button" type="button" aria-label="Open menu" whileTap={{ scale: 0.92 }}>
           <Menu aria-hidden="true" />
-        </button>
+        </motion.button>
       </div>
     </header>
   );
@@ -158,20 +158,54 @@ function AdsPreview() {
   );
 }
 
+const testimonialSlides = [
+  {
+    quote: "“Cortex has transformed the way we direct complex work. Its clear operating model, coordinated agents, and traceable execution give our team a system we trust when decisions need to move.”",
+    name: "Early design partner",
+    role: "Operations team",
+  },
+  {
+    quote: "“For the first time, every agent has a role, every decision has context, and every outcome comes back with a traceable reason.”",
+    name: "Private beta team",
+    role: "Mission operations",
+  },
+] as const;
+
 function Testimonial() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const reducedMotion = useReducedMotion();
+  const current = testimonialSlides[currentIndex];
+
+  const move = (offset: number) => {
+    setDirection(offset);
+    setCurrentIndex((index) => (index + offset + testimonialSlides.length) % testimonialSlides.length);
+  };
+
   return (
     <figure className="cortex-testimonial">
-      <blockquote>“Cortex has transformed the way we direct complex work. Its clear operating model, coordinated agents, and traceable execution give our team a system we trust when decisions need to move.”</blockquote>
+      <AnimatePresence initial={false} mode="wait" custom={direction}>
+        <motion.blockquote
+          key={currentIndex}
+          custom={direction}
+          initial={reducedMotion ? false : { opacity: 0, x: direction * 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={reducedMotion ? undefined : { opacity: 0, x: direction * -16 }}
+          transition={reducedMotion ? { duration: 0 } : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {current.quote}
+        </motion.blockquote>
+      </AnimatePresence>
       <div className="cortex-testimonial__person">
         <div className="cortex-avatar" aria-hidden="true">M</div>
-        <strong>Early design partner</strong>
-        <span>Operations team</span>
+        <strong>{current.name}</strong>
+        <span>{current.role}</span>
       </div>
       <div className="cortex-testimonial__controls">
-        <motion.button type="button" aria-label="Previous testimonial" whileTap={{ scale: 0.92 }}>
+        <motion.button type="button" aria-label="Previous testimonial" onClick={() => move(-1)} whileTap={{ scale: 0.92 }}>
           <ArrowLeft aria-hidden="true" />
         </motion.button>
-        <motion.button type="button" aria-label="Next testimonial" whileTap={{ scale: 0.92 }}>
+        <motion.button type="button" aria-label="Next testimonial" onClick={() => move(1)} whileTap={{ scale: 0.92 }}>
           <ArrowRight aria-hidden="true" />
         </motion.button>
       </div>
@@ -199,28 +233,67 @@ function MenuCard() {
   );
 }
 
+const pricingModes = {
+  monthly: {
+    label: "Monthly",
+    title: "Private beta",
+    access: "Early access",
+    description: "Bring one focused workflow into Cortex and see what coordinated intelligence can return.",
+    features: ["1 workspace.", "One active mission.", "Core agent coordination.", "Traceable outcomes."],
+  },
+  yearly: {
+    label: "Yearly",
+    title: "Design partner",
+    access: "Priority access",
+    description: "Bring a larger operating problem into Cortex and shape the system around the work that matters.",
+    features: ["1 workspace.", "Priority onboarding.", "Core agent coordination.", "Shared review sessions."],
+  },
+} as const;
+
 function PricingCard() {
+  const [mode, setMode] = useState<keyof typeof pricingModes>("monthly");
+  const details = pricingModes[mode];
+
   return (
     <section className="cortex-panel cortex-pricing-card" aria-labelledby="cortex-plan-title">
       <PanelHeader />
       <div className="cortex-pricing-card__body">
         <h2 id="cortex-plan-title">Choose the right way to start.</h2>
         <p>Choose the access path that fits your work and gives every mission room to grow.</p>
-        <div className="cortex-segmented" role="group" aria-label="Billing period">
-          <span className="cortex-segmented__active">Monthly</span>
-          <span>Yearly</span>
+        <div className="cortex-segmented" role="tablist" aria-label="Access path">
+          {(Object.keys(pricingModes) as Array<keyof typeof pricingModes>).map((key) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={mode === key}
+              className={mode === key ? "cortex-segmented__active" : undefined}
+              onClick={() => setMode(key)}
+            >
+              {pricingModes[key].label}
+            </button>
+          ))}
         </div>
-        <div className="cortex-plan">
-          <h3>Private beta</h3>
-          <p>Bring one focused workflow into Cortex and see what coordinated intelligence can return.</p>
-          <hr />
-          <h4>Early access</h4>
-          <ul>
-            {["1 workspace.", "One active mission.", "Core agent coordination.", "Traceable outcomes."].map((item) => (
-              <li key={item}><Check aria-hidden="true" />{item}</li>
-            ))}
-          </ul>
-        </div>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            className="cortex-plan"
+            key={mode}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <h3>{details.title}</h3>
+            <p>{details.description}</p>
+            <hr />
+            <h4>{details.access}</h4>
+            <ul>
+              {details.features.map((item) => (
+                <li key={item}><Check aria-hidden="true" />{item}</li>
+              ))}
+            </ul>
+          </motion.div>
+        </AnimatePresence>
       </div>
     </section>
   );
