@@ -70,13 +70,17 @@ const agentRoles = [
 
 function AiAccessPanel() {
   return (
-    <div className="cortex-ai-panel">
+    <div className="cortex-ai-panel" aria-label="Cortex agent system">
       <div className="cortex-ai-panel__header">
         <div>
-          <small>Available intelligence</small>
-          <strong>Agent library</strong>
+          <small>Cortex operating system</small>
+          <strong>Agent system</strong>
         </div>
         <span className="cortex-ai-panel__status">5 model families</span>
+      </div>
+      <div className="cortex-ai-panel__section-label">
+        <span>Model pool</span>
+        <small>available to Hermes</small>
       </div>
       <div className="cortex-ai-panel__providers" aria-label="Available AI providers">
         {aiProviders.map(({ name, fullName, Mark, tone }) => (
@@ -86,19 +90,22 @@ function AiAccessPanel() {
           </div>
         ))}
       </div>
-      <div className="cortex-ai-panel__route">
-        <span className="cortex-ai-panel__route-node"><CortexLogo aria-hidden="true" /></span>
-        <span>Hermes</span>
-        <i aria-hidden="true" />
-        <strong>spawns</strong>
-        <i aria-hidden="true" />
-        <span>agent roles</span>
+      <div className="cortex-ai-panel__hermes">
+        <span className="cortex-ai-panel__hermes-mark"><CortexLogo aria-hidden="true" /></span>
+        <div className="cortex-ai-panel__hermes-copy">
+          <strong>Hermes</strong>
+          <small>operator / orchestrator</small>
+        </div>
+        <span className="cortex-ai-panel__hermes-context">inside Cortex</span>
+      </div>
+      <div className="cortex-ai-panel__flow-caption" aria-hidden="true">
+        models in&nbsp; · &nbsp;mission roles out
       </div>
       <div className="cortex-ai-panel__roles-heading">
-        <span>Spawnable roles</span>
-        <small>per mission</small>
+        <span>Mission roles</span>
+        <small>spawned by Hermes</small>
       </div>
-      <div className="cortex-ai-panel__roles" aria-label="Agent roles Cortex can spawn">
+      <div className="cortex-ai-panel__roles" aria-label="Agent roles spawned by Hermes">
         {agentRoles.map(({ label, detail, Icon }) => (
           <div className="cortex-ai-role" key={label}>
             <Icon aria-hidden="true" />
