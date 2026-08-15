@@ -135,12 +135,12 @@ function CortexCommandRail() {
 }
 
 const aiProviders = [
-  { name: "GPT", fullName: "OpenAI", Mark: OpenAiMark, tone: "cortex-ai-provider--openai" },
-  { name: "Claude", fullName: "Anthropic", Mark: ClaudeMark, tone: "cortex-ai-provider--claude" },
-  { name: "Grok", fullName: "xAI", Mark: GrokMark, tone: "cortex-ai-provider--grok" },
-  { name: "Gemini", fullName: "Google", Mark: GeminiMark, tone: "cortex-ai-provider--gemini" },
-  { name: "Mistral", fullName: "Mistral", Mark: MistralMark, tone: "cortex-ai-provider--mistral" },
-  { name: "DeepSeek", fullName: "DeepSeek", Mark: DeepSeekMark, tone: "cortex-ai-provider--deepseek" },
+  { id: "gpt", name: "GPT", fullName: "OpenAI", description: "General reasoning for open-ended missions.", Mark: OpenAiMark, tone: "cortex-ai-provider--openai" },
+  { id: "claude", name: "Claude", fullName: "Anthropic", description: "Careful synthesis for nuanced work.", Mark: ClaudeMark, tone: "cortex-ai-provider--claude" },
+  { id: "grok", name: "Grok", fullName: "xAI", description: "Fast context for live signals and research.", Mark: GrokMark, tone: "cortex-ai-provider--grok" },
+  { id: "gemini", name: "Gemini", fullName: "Google", description: "Multimodal reasoning across broad context.", Mark: GeminiMark, tone: "cortex-ai-provider--gemini" },
+  { id: "mistral", name: "Mistral", fullName: "Mistral", description: "Efficient execution for focused tasks.", Mark: MistralMark, tone: "cortex-ai-provider--mistral" },
+  { id: "deepseek", name: "DeepSeek", fullName: "DeepSeek", description: "Deep technical reasoning when the run needs it.", Mark: DeepSeekMark, tone: "cortex-ai-provider--deepseek" },
 ] as const;
 
 function GrokMark({ title }: { title?: string }) {
@@ -157,39 +157,68 @@ function GrokMark({ title }: { title?: string }) {
 }
 
 const agentRoles = [
-  { label: "Manager", detail: "directs", Icon: Brain },
-  { label: "Runners", detail: "executes", Icon: GitBranch },
-  { label: "Research", detail: "grounds", Icon: Search },
-  { label: "RTC", detail: "syncs", Icon: Radio },
+  { id: "manager", label: "Manager", description: "Shapes the mission and keeps every role aligned.", Icon: Brain },
+  { id: "runners", label: "Runners", description: "Carry out the concrete tasks inside the run.", Icon: GitBranch },
+  { id: "research", label: "Research", description: "Finds, checks, and grounds the work in evidence.", Icon: Search },
+  { id: "rtc", label: "RTC", description: "Keeps the active work synchronised as it moves.", Icon: Radio },
 ] as const;
 
 type CortexSystemNodeProps = {
   className?: string;
-  context?: string;
   detail: string;
   mark: ReactNode;
   title: string;
 };
 
-function CortexSystemZoneHeader({ detail, index, label }: { detail: string; index: string; label: string }) {
+function CortexSystemNode({ className, detail, mark, onSelect, selected, title }: CortexSystemNodeProps & { onSelect: () => void; selected: boolean }) {
   return (
-    <div className="cortex-ai-zone__header">
-      <span><em>{index}</em>{label}</span>
-      <small>{detail}</small>
-    </div>
+    <motion.button
+      layout
+      type="button"
+      className={`cortex-ai-system-node${className ? ` ${className}` : ""}${selected ? " is-selected" : ""}`}
+      aria-expanded={selected}
+      onClick={onSelect}
+      transition={{ layout: { duration: 0.52, ease: [0.16, 1, 0.3, 1] } }}
+    >
+      <span className="cortex-ai-system-node__mark">{mark}</span>
+      <span className="cortex-ai-system-node__copy">
+        <strong>{title}</strong>
+        <AnimatePresence initial={false} mode="wait">
+          {selected ? (
+            <motion.small
+              key={detail}
+              className="cortex-ai-system-node__detail"
+              initial={{ opacity: 0, height: 0, y: -3 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -3 }}
+              transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {detail}
+            </motion.small>
+          ) : null}
+        </AnimatePresence>
+      </span>
+    </motion.button>
   );
 }
 
-function CortexSystemNode({ className, context, detail, mark, title }: CortexSystemNodeProps) {
+type CortexSystemSelectionProps = {
+  description: string;
+  label: string;
+};
+
+function CortexSystemSelection({ description, label }: CortexSystemSelectionProps) {
   return (
-    <div className={`cortex-ai-system-node${className ? ` ${className}` : ""}`}>
-      <span className="cortex-ai-system-node__mark">{mark}</span>
-      <div>
-        <strong>{title}</strong>
-        <small>{detail}</small>
-      </div>
-      {context ? <span className="cortex-ai-system-node__context">{context}</span> : null}
-    </div>
+    <motion.div
+      className="cortex-ai-selection"
+      initial={{ opacity: 0, height: 0, y: -4 }}
+      animate={{ opacity: 1, height: "auto", y: 0 }}
+      exit={{ opacity: 0, height: 0, y: -4 }}
+      transition={{ duration: 0.46, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <strong>{label}</strong>
+      <p>{description}</p>
+    </motion.div>
   );
 }
 
@@ -243,6 +272,7 @@ function AiAccessPanel() {
     margin: "-12% 0px -12% 0px",
   });
   const [revealedThrough, setRevealedThrough] = useState(-1);
+  const [selectedSystemItem, setSelectedSystemItem] = useState<string | null>(null);
 
   useEffect(() => {
     if (reducedMotion === null || !panelInView) return;
@@ -264,103 +294,111 @@ function AiAccessPanel() {
   return (
     <div ref={panelRef} className="cortex-ai-panel" aria-label="Cortex linked operating system">
       <div className="cortex-ai-panel__header">
-        <div>
-          <small>Cortex operating system</small>
-          <strong>Linked system</strong>
-        </div>
-        <span className="cortex-ai-panel__status">brief in · result out</span>
+        <strong>Cortex system</strong>
       </div>
       <div className="cortex-ai-system-map">
         <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--input" delay={0.08} index={0} revealedThrough={revealedThrough}>
-          <CortexSystemZoneHeader index="01" label="Input state" detail="human intent" />
           <CortexSystemNode
             className="cortex-ai-system-node--human"
-            detail="brief / objective"
+            detail="Defines the brief, objective, and boundary of the work."
             mark={<UserRound aria-hidden="true" />}
+            onSelect={() => setSelectedSystemItem("human")}
+            selected={selectedSystemItem === "human"}
             title="Human"
           />
         </CortexSystemZone>
         <CortexSystemLink visible={revealedThrough >= 0} />
 
         <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--control" delay={0.16} index={1} revealedThrough={revealedThrough}>
-          <CortexSystemZoneHeader index="02" label="Control plane" detail="Cortex owns the mission" />
           <CortexSystemNode
             className="cortex-ai-system-node--cortex"
-            context="frames the work"
-            detail="mission layer"
+            detail="Frames the mission and keeps the decision path coherent."
             mark={<CortexLogo aria-hidden="true" />}
+            onSelect={() => setSelectedSystemItem("cortex")}
+            selected={selectedSystemItem === "cortex"}
             title="Cortex"
           />
           <CortexSystemNode
             className="cortex-ai-system-node--hermes"
-            context="routes the mission"
-            detail="operator / orchestrator"
+            detail="Routes the mission across models and agent roles."
             mark={<img src="/hermes-logo.jpeg" alt="" />}
+            onSelect={() => setSelectedSystemItem("hermes")}
+            selected={selectedSystemItem === "hermes"}
             title="Hermes"
           />
         </CortexSystemZone>
         <CortexSystemLink visible={revealedThrough >= 1} />
 
         <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--orchestration" delay={0.24} index={2} revealedThrough={revealedThrough}>
-          <CortexSystemZoneHeader index="03" label="Orchestration" detail="Hermes composes the run" />
           <div className="cortex-ai-branch-field">
-            <div className="cortex-ai-branch cortex-ai-branch--models">
-              <div className="cortex-ai-branch__header">
-                <span className="cortex-ai-branch__signal" aria-hidden="true" />
-                <div>
-                  <span>Model fabric</span>
-                  <small>selected per task</small>
-                </div>
-              </div>
+            <div className="cortex-ai-branch cortex-ai-branch--models" aria-label="AI models">
               <div className="cortex-ai-panel__providers" aria-label="AI models available to Hermes">
-                {aiProviders.map(({ name, fullName, Mark, tone }) => (
-                  <div className={`cortex-ai-provider ${tone}`} key={name} title={fullName}>
+                {aiProviders.map(({ id, name, fullName, Mark, tone, description }) => (
+                  <button
+                    type="button"
+                    className={`cortex-ai-provider ${tone}${selectedSystemItem === id ? " is-selected" : ""}`}
+                    key={id}
+                    title={fullName}
+                    aria-pressed={selectedSystemItem === id}
+                    onClick={() => setSelectedSystemItem(id)}
+                  >
                     <span className="cortex-ai-provider__mark"><Mark title={fullName} /></span>
-                    <span>{name}</span>
-                  </div>
+                    <span className="cortex-ai-provider__name">{name}</span>
+                  </button>
                 ))}
               </div>
+              <AnimatePresence initial={false} mode="wait">
+                {selectedSystemItem && aiProviders.some(({ id }) => id === selectedSystemItem) ? (() => {
+                  const provider = aiProviders.find(({ id }) => id === selectedSystemItem);
+                  return provider ? <CortexSystemSelection key={provider.id} label={provider.name} description={provider.description} /> : null;
+                })() : null}
+              </AnimatePresence>
             </div>
-            <div className="cortex-ai-branch cortex-ai-branch--agents">
-              <div className="cortex-ai-branch__header">
-                <span className="cortex-ai-branch__signal" aria-hidden="true" />
-                <div>
-                  <span>Agent runtime</span>
-                  <small>roles spawned for the run</small>
-                </div>
-              </div>
+            <div className="cortex-ai-branch cortex-ai-branch--agents" aria-label="Agent roles">
               <div className="cortex-ai-panel__roles" aria-label="Agent roles spawned by Hermes">
-                {agentRoles.map(({ label, detail, Icon }) => (
-                  <div className="cortex-ai-role" key={label}>
+                {agentRoles.map(({ id, label, Icon }) => (
+                  <button
+                    type="button"
+                    className={`cortex-ai-role${selectedSystemItem === id ? " is-selected" : ""}`}
+                    key={id}
+                    aria-pressed={selectedSystemItem === id}
+                    onClick={() => setSelectedSystemItem(id)}
+                  >
                     <Icon aria-hidden="true" />
-                    <span>{label}</span>
-                    <small>{detail}</small>
-                  </div>
+                    <span className="cortex-ai-role__name">{label}</span>
+                  </button>
                 ))}
               </div>
+              <AnimatePresence initial={false} mode="wait">
+                {selectedSystemItem && agentRoles.some(({ id }) => id === selectedSystemItem) ? (() => {
+                  const role = agentRoles.find(({ id }) => id === selectedSystemItem);
+                  return role ? <CortexSystemSelection key={role.id} label={role.label} description={role.description} /> : null;
+                })() : null}
+              </AnimatePresence>
             </div>
           </div>
         </CortexSystemZone>
         <CortexSystemLink visible={revealedThrough >= 2} />
 
         <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--synthesis" delay={0.32} index={3} revealedThrough={revealedThrough}>
-          <CortexSystemZoneHeader index="04" label="Synthesis state" detail="Cortex closes the loop" />
           <CortexSystemNode
             className="cortex-ai-system-node--cortex-return"
-            context="keeps the trace"
-            detail="reviews / assembles"
+            detail="Reviews the trace before the result is returned."
             mark={<CortexLogo aria-hidden="true" />}
+            onSelect={() => setSelectedSystemItem("cortex-return")}
+            selected={selectedSystemItem === "cortex-return"}
             title="Cortex"
           />
         </CortexSystemZone>
         <CortexSystemLink visible={revealedThrough >= 3} />
 
         <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--output" delay={0.4} index={4} revealedThrough={revealedThrough}>
-          <CortexSystemZoneHeader index="05" label="Output state" detail="ready for the human" />
           <CortexSystemNode
             className="cortex-ai-system-node--result"
-            detail="research · build · review · delivery"
+            detail="Research, build, review, or delivery returned to the human."
             mark={<Check aria-hidden="true" />}
+            onSelect={() => setSelectedSystemItem("result")}
+            selected={selectedSystemItem === "result"}
             title="Result"
           />
         </CortexSystemZone>
