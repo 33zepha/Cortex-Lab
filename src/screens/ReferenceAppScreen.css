@@ -91,6 +91,78 @@
   margin-top: 221px;
 }
 
+.cortex-column--intro::before,
+.cortex-column--intro::after {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+}
+
+/* A quiet Cortex signature: an orbit-like trace that gives the empty field a sense of motion. */
+.cortex-column--intro::before {
+  right: -238px;
+  bottom: -184px;
+  width: 438px;
+  height: 438px;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      ellipse at center,
+      transparent 0 47%,
+      rgba(85, 109, 228, 0.12) 47.35% 47.7%,
+      transparent 48.05% 61%,
+      rgba(85, 109, 228, 0.085) 61.35% 61.7%,
+      transparent 62.05% 75.5%,
+      rgba(85, 109, 228, 0.06) 75.85% 76.2%,
+      transparent 76.55%
+    );
+  opacity: 0.78;
+  transform: rotate(-14deg);
+  animation: cortex-trace-drift 18s ease-in-out infinite alternate;
+}
+
+.cortex-column--intro::after {
+  right: 43px;
+  bottom: 103px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cortex-blue);
+  box-shadow: 0 0 0 7px rgba(85, 109, 228, 0.08), 0 0 24px rgba(85, 109, 228, 0.12);
+  opacity: 0.56;
+  animation: cortex-trace-pulse 4.8s ease-in-out infinite;
+}
+
+.cortex-column--intro .cortex-panel-header,
+.cortex-column--intro .cortex-column__body {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes cortex-trace-drift {
+  from {
+    transform: rotate(-14deg) translate3d(0, 0, 0) scale(0.98);
+  }
+
+  to {
+    transform: rotate(-9deg) translate3d(-10px, -8px, 0) scale(1.02);
+  }
+}
+
+@keyframes cortex-trace-pulse {
+  0%,
+  100% {
+    opacity: 0.38;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 0.72;
+    transform: scale(1.12);
+  }
+}
+
 .cortex-column--metrics {
   margin-top: 83px;
 }
@@ -1563,6 +1635,16 @@
 }
 
 @media (max-width: 720px) {
+  html:has(.cortex-reference),
+  body:has(.cortex-reference),
+  body:has(.cortex-reference) #root {
+    background-color: #ffffff;
+  }
+
+  .cortex-reference {
+    background: #ffffff;
+  }
+
   .cortex-reference__stage {
     display: block;
     padding: 0 0 52px;
@@ -1580,9 +1662,23 @@
     margin-top: 0;
     min-height: 100svh;
     min-height: 100dvh;
+    background: #ffffff;
     border: 0;
     border-radius: 0;
     box-shadow: none;
+  }
+
+  .cortex-column--intro::before {
+    right: -290px;
+    bottom: -200px;
+    width: 480px;
+    height: 480px;
+    opacity: 0.66;
+  }
+
+  .cortex-column--intro::after {
+    right: 42px;
+    bottom: 118px;
   }
 
   .cortex-column--intro .cortex-panel-header {
@@ -1691,5 +1787,10 @@
   .cortex-reference *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .cortex-column--intro::before,
+  .cortex-column--intro::after {
+    animation: none;
   }
 }
