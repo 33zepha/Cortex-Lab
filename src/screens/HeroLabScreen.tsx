@@ -9,11 +9,11 @@ function PanelHeader() {
     <header className="cortex-panel-header">
       <Link className="cortex-panel-header__brand" to="/" aria-label="Cortex home">
         <CortexLogo aria-hidden="true" />
-        <span>CORTEX</span>
+        <span>Cortex</span>
       </Link>
       <div className="cortex-panel-header__actions">
         <Link className="cortex-pill cortex-pill--dark cortex-panel-header__cta" to="/signup">
-          Get started
+          Enter Cortex
         </Link>
         <button className="cortex-menu-button" type="button" aria-label="Open menu">
           <Menu aria-hidden="true" />
@@ -27,14 +27,14 @@ function SessionsChart() {
   return (
     <div className="cortex-chart">
       <div className="cortex-chart__topline">
-        <strong>Sessions</strong>
+        <strong>Mission activity</strong>
         <MoreHorizontal aria-hidden="true" />
       </div>
       <div className="cortex-chart__legend">
-        <span><i className="cortex-chart__dot cortex-chart__dot--yellow" />New signal</span>
-        <span><i className="cortex-chart__dot cortex-chart__dot--blue" />Active mission</span>
+        <span><i className="cortex-chart__dot cortex-chart__dot--yellow" />Active agents</span>
+        <span><i className="cortex-chart__dot cortex-chart__dot--blue" />Completed runs</span>
       </div>
-      <svg viewBox="0 0 300 138" role="img" aria-label="Sessions trend chart">
+      <svg viewBox="0 0 300 138" role="img" aria-label="Mission activity trend chart">
         <g className="cortex-chart__grid">
           <path d="M29 15H289" />
           <path d="M29 48H289" />
@@ -63,12 +63,12 @@ function RevenueChart() {
     <div className="cortex-chart cortex-chart--revenue">
       <div className="cortex-chart__topline">
         <div>
-          <small>Impact</small>
-          <strong>$45.43K</strong>
+          <small>Throughput</small>
+          <strong>42 runs</strong>
         </div>
-        <span className="cortex-growth">↗ 11% this last month</span>
+        <span className="cortex-growth">↑ 11% vs last cycle</span>
       </div>
-      <svg viewBox="0 0 300 135" role="img" aria-label="Impact trend chart">
+      <svg viewBox="0 0 300 135" role="img" aria-label="Throughput trend chart">
         <g className="cortex-chart__grid">
           <path d="M28 20H288" />
           <path d="M28 52H288" />
@@ -95,7 +95,7 @@ function DashboardPreview() {
   return (
     <div className="cortex-dashboard-preview" aria-hidden="true">
       <aside className="cortex-dashboard-preview__sidebar">
-        <div className="cortex-dashboard-preview__mini-brand"><CortexLogo /> <span>CORTEX</span></div>
+        <div className="cortex-dashboard-preview__mini-brand"><CortexLogo /> <span>Cortex</span></div>
         <span className="cortex-dashboard-preview__nav cortex-dashboard-preview__nav--active">Mission overview</span>
         <span className="cortex-dashboard-preview__nav">Signals</span>
         <span className="cortex-dashboard-preview__nav">Evidence</span>
@@ -103,15 +103,15 @@ function DashboardPreview() {
         <span className="cortex-dashboard-preview__nav">History</span>
       </aside>
       <div className="cortex-dashboard-preview__main">
-        <div className="cortex-dashboard-preview__toolbar"><span>Profile</span><span>03 Sep 2025 — 27 Sep 2025</span></div>
+        <div className="cortex-dashboard-preview__toolbar"><span>Mission overview</span><span>Objective / Launch briefing</span></div>
         <div className="cortex-dashboard-preview__stats">
-          <div><small>Signals</small><strong>605</strong></div>
-          <div><small>Mission time</small><strong>00:13:52</strong></div>
-          <div><small>Sources</small><strong>617</strong></div>
-          <div><small>Teams</small><strong>34</strong></div>
+          <div><small>Agents</small><strong>06</strong></div>
+          <div><small>Elapsed</small><strong>00:13:52</strong></div>
+          <div><small>Runs</small><strong>17</strong></div>
+          <div><small>Proofs</small><strong>04</strong></div>
         </div>
         <div className="cortex-dashboard-preview__graph">
-          <div className="cortex-dashboard-preview__graph-head"><span>Signal movement</span><i /><i /></div>
+          <div className="cortex-dashboard-preview__graph-head"><span>Mission activity</span><i /><i /></div>
           <svg viewBox="0 0 240 90"><path d="M3 58c18-30 28-28 45-2s26 15 40-1 24-22 37-7 20 24 34 7 23-36 39-18 21 26 39 17" /><path d="M3 39c15 17 25 24 41 19s25-34 39-18 25 30 38 13 21-24 36-14 22 23 37 5 25-19 43 11" /></svg>
         </div>
       </div>
@@ -122,10 +122,10 @@ function DashboardPreview() {
 function AdsPreview() {
   return (
     <div className="cortex-ads-preview" aria-hidden="true">
-      <div className="cortex-ads-preview__title"><span className="cortex-meta-icon">◉</span><strong>Mission channels</strong></div>
+      <div className="cortex-ads-preview__title"><span className="cortex-meta-icon">◉</span><strong>Mission signals</strong></div>
       <div className="cortex-ads-preview__metrics">
-        <div><small>Sources</small><strong>$2.60k</strong><span className="cortex-metric-chip cortex-metric-chip--green">↗ 14% this month</span></div>
-        <div><small>Evidence</small><strong>$4.90k</strong><span className="cortex-metric-chip cortex-metric-chip--red">↘ 8% this month</span></div>
+        <div><small>Active runs</small><strong>06</strong><span className="cortex-metric-chip cortex-metric-chip--green">↗ 14% vs last cycle</span></div>
+        <div><small>Proofs returned</small><strong>18</strong><span className="cortex-metric-chip cortex-metric-chip--red">↘ 8% vs last cycle</span></div>
       </div>
     </div>
   );
@@ -134,11 +134,11 @@ function AdsPreview() {
 function Testimonial() {
   return (
     <figure className="cortex-testimonial">
-      <blockquote>“Cortex has transformed the way we move from one objective to work people can actually prove. The clarity is a game changer.”</blockquote>
+      <blockquote>“Cortex has transformed the way we direct complex work. Its clear operating model, coordinated agents, and traceable execution give our team a system we trust when decisions need to move.”</blockquote>
       <div className="cortex-testimonial__person">
         <div className="cortex-avatar" aria-hidden="true">M</div>
-        <strong>Maya Chen</strong>
-        <span>Operations Lead, Northstar</span>
+        <strong>Early design partner</strong>
+        <span>Operations team</span>
       </div>
       <div className="cortex-testimonial__controls">
         <button type="button" aria-label="Previous testimonial"><ArrowLeft aria-hidden="true" /></button>
@@ -149,7 +149,7 @@ function Testimonial() {
 }
 
 function MenuCard() {
-  const items = ["Product", "Missions", "Solutions", "Company", "Pricing"];
+  const items = ["Platform", "Agent layer", "Workflows", "About Cortex", "Access"];
   return (
     <section className="cortex-menu-card" aria-label="Cortex menu">
       <nav>
@@ -162,7 +162,7 @@ function MenuCard() {
       </nav>
       <div className="cortex-menu-card__actions">
         <Link className="cortex-pill cortex-pill--lavender" to="/login">Log in</Link>
-        <Link className="cortex-pill cortex-pill--dark" to="/signup">Get started</Link>
+        <Link className="cortex-pill cortex-pill--dark" to="/signup">Enter Cortex</Link>
       </div>
     </section>
   );
@@ -173,19 +173,19 @@ function PricingCard() {
     <section className="cortex-panel cortex-pricing-card" aria-labelledby="cortex-plan-title">
       <PanelHeader />
       <div className="cortex-pricing-card__body">
-        <h2 id="cortex-plan-title">Choose your right plan.</h2>
-        <p>Choose the plan that fits the complexity of your work and keeps every decision connected to evidence.</p>
+        <h2 id="cortex-plan-title">Choose the right way to start.</h2>
+        <p>Choose the access path that fits your work and gives every mission room to grow.</p>
         <div className="cortex-segmented" role="group" aria-label="Billing period">
           <span className="cortex-segmented__active">Monthly</span>
           <span>Yearly</span>
         </div>
         <div className="cortex-plan">
-          <h3>Field</h3>
-          <p>Start with the essential context to move from objective to action with precision.</p>
+          <h3>Private beta</h3>
+          <p>Bring one focused workflow into Cortex and see what coordinated intelligence can return.</p>
           <hr />
-          <h4>Free</h4>
+          <h4>Early access</h4>
           <ul>
-            {["1 active mission.", "Up to 50,000 source pages per month.", "Templates to start quickly.", "Unlimited collaborators."].map((item) => (
+            {["1 workspace.", "One active mission.", "Core agent coordination.", "Traceable outcomes."].map((item) => (
               <li key={item}><Check aria-hidden="true" />{item}</li>
             ))}
           </ul>
@@ -202,9 +202,9 @@ export function HeroLabScreen() {
         <section className="cortex-panel cortex-column cortex-column--intro">
           <PanelHeader />
           <div className="cortex-column__body cortex-intro">
-            <h1 id="cortex-page-title">Uncover the signal behind every decision.</h1>
-            <p>Turn complex work into a clear operating picture, connect the evidence, and move with precision.</p>
-            <Link className="cortex-pill cortex-pill--dark cortex-intro__cta" to="/signup">Start a mission</Link>
+            <h1 id="cortex-page-title">Turn scattered intelligence into coordinated action</h1>
+            <p>Coordinate your agents, direct complex work, and return each outcome with a reason you can trust.</p>
+            <Link className="cortex-pill cortex-pill--dark cortex-intro__cta" to="/signup">Enter Cortex</Link>
             <div className="cortex-media cortex-media--dashboard"><DashboardPreview /></div>
           </div>
         </section>
@@ -213,11 +213,11 @@ export function HeroLabScreen() {
           <PanelHeader />
           <div className="cortex-column__body">
             <div className="cortex-media cortex-media--sessions"><SessionsChart /></div>
-            <h2>Unlock operational clarity</h2>
-            <p>Gain instant insight into the state of your work, with real-time signals that keep every decision connected.</p>
+            <h2>Unlock coordinated execution</h2>
+            <p>Gain instant visibility into your agents’ work with live orchestration, empowering you to direct complex missions with clarity.</p>
             <div className="cortex-media cortex-media--revenue"><RevenueChart /></div>
-            <h2>Increase confidence with live context</h2>
-            <p>Use Cortex to surface the right evidence at the right moment, so your team can act without losing the thread.</p>
+            <h2>Increase output through orchestration</h2>
+            <p>Give every agent a role, keep complex work moving, and return with a clear record of what was done.</p>
             <div className="cortex-media cortex-media--ads"><AdsPreview /></div>
           </div>
         </section>
@@ -225,12 +225,12 @@ export function HeroLabScreen() {
         <section className="cortex-column cortex-column--showcase">
           <Testimonial />
           <div className="cortex-showcase__body">
-            <h2>Make the right move. Transform your strategy.</h2>
-            <p>Experience a clearer way to understand consequential work. Bring objectives, signals, and proof into one operating system.</p>
-            <Link className="cortex-pill cortex-pill--dark cortex-showcase__cta" to="/signup">Get started</Link>
+            <h2>Direct Your Agents. Transform Your Work.</h2>
+            <p>Experience the power of Cortex and rethink how complex work is planned, executed, and reviewed. Unlock the potential of coordinated intelligence. Begin today and turn scattered effort into reliable outcomes.</p>
+            <Link className="cortex-pill cortex-pill--dark cortex-showcase__cta" to="/signup">Enter Cortex</Link>
             <div className="cortex-product-menu">
-              <h3>Product</h3>
-              {["Analysis", "Scale", "Integrations", "Security & Privacy", "Evidence"].map((item) => <span key={item}>{item}</span>)}
+              <h3>Cortex</h3>
+              {["Missions", "Agents", "Integrations", "Security & privacy", "Documentation"].map((item) => <span key={item}>{item}</span>)}
             </div>
           </div>
         </section>
