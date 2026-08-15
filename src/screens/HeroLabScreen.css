@@ -155,6 +155,14 @@
   color: #ffffff;
 }
 
+.cortex-reference a.cortex-pill--dark {
+  color: #ffffff;
+}
+
+.cortex-reference a.cortex-pill--lavender {
+  color: var(--cortex-blue);
+}
+
 .cortex-pill--dark:hover,
 .cortex-pill--dark:focus-visible {
   background: #303641;
@@ -485,7 +493,7 @@
   background: #556de4;
 }
 
-.cortex-chart svg {
+.cortex-chart > svg {
   display: block;
   width: 100%;
   height: calc(100% - 32px);
@@ -560,7 +568,7 @@
   stroke: none;
 }
 
-.cortex-chart--revenue svg {
+.cortex-chart--revenue > svg {
   height: calc(100% - 33px);
   margin-top: 2px;
 }
