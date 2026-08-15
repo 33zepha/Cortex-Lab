@@ -102,26 +102,13 @@ function CortexCommandRail() {
           : { delay: 0.46, duration: 0.72, ease: [0.22, 1, 0.36, 1] }
       }
     >
-      <div className="cortex-command-rail__header">
-        <span className="cortex-command-rail__label">
-          <span className="cortex-command-rail__signal" aria-hidden="true" />
-          Try a brief
-        </span>
-        <span className="cortex-command-rail__status">orchestrated</span>
-      </div>
       <div className="cortex-command-rail__field" aria-hidden="true">
-        <span className="cortex-command-rail__prompt-mark">›</span>
         <span className="cortex-command-rail__phrases">
           <span className="cortex-command-rail__phrase">
             {displayedCommand}
             <span className="cortex-command-rail__caret" />
           </span>
         </span>
-        <span className="cortex-command-rail__submit">↗</span>
-      </div>
-      <div className="cortex-command-rail__footer">
-        <span>Hermes routes the work</span>
-        <span>agents execute · Cortex returns</span>
       </div>
       <span className="sr-only">Example commands: map the signal across the market; turn this brief into a launch plan; research the field and show what changed.</span>
     </motion.div>
@@ -204,12 +191,16 @@ function CortexSystemZone({ children, className, delay }: CortexSystemZoneProps)
       transition={
         reducedMotion
           ? { duration: 0 }
-          : { delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+          : { delay, duration: 0.78, ease: [0.16, 1, 0.3, 1] }
       }
     >
       {children}
     </motion.section>
   );
+}
+
+function CortexSystemLink() {
+  return <span className="cortex-ai-link" aria-hidden="true"><span className="cortex-ai-link__port" /></span>;
 }
 
 function AiAccessPanel() {
@@ -223,7 +214,6 @@ function AiAccessPanel() {
         <span className="cortex-ai-panel__status">brief in · result out</span>
       </div>
       <div className="cortex-ai-system-map">
-        <span className="cortex-ai-system-map__thread" aria-hidden="true" />
         <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--input" delay={0.08}>
           <CortexSystemZoneHeader index="01" label="Input state" detail="human intent" />
           <CortexSystemNode
@@ -233,6 +223,7 @@ function AiAccessPanel() {
             title="Human"
           />
         </CortexSystemZone>
+        <CortexSystemLink />
 
         <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--control" delay={0.16}>
           <CortexSystemZoneHeader index="02" label="Control plane" detail="Cortex owns the mission" />
@@ -251,6 +242,7 @@ function AiAccessPanel() {
             title="Hermes"
           />
         </CortexSystemZone>
+        <CortexSystemLink />
 
         <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--orchestration" delay={0.24}>
           <CortexSystemZoneHeader index="03" label="Orchestration" detail="Hermes composes the run" />
@@ -292,6 +284,7 @@ function AiAccessPanel() {
             </div>
           </div>
         </CortexSystemZone>
+        <CortexSystemLink />
 
         <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--synthesis" delay={0.32}>
           <CortexSystemZoneHeader index="04" label="Synthesis state" detail="Cortex closes the loop" />
@@ -303,6 +296,7 @@ function AiAccessPanel() {
             title="Cortex"
           />
         </CortexSystemZone>
+        <CortexSystemLink />
 
         <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--output" delay={0.4}>
           <CortexSystemZoneHeader index="05" label="Output state" detail="ready for the human" />
@@ -485,10 +479,10 @@ export function ReferenceAppScreen() {
             <div className="cortex-media cortex-media--sessions">
               <motion.div
                 className="cortex-system-module"
-                initial={{ opacity: 0, x: 92, y: 42, scale: 0.88, rotate: 1.4 }}
+                initial={{ opacity: 0, x: 42, y: 22, scale: 0.95, rotate: 0.5 }}
                 whileInView={{ opacity: 1, x: 0, y: 0, scale: 1, rotate: 0 }}
                 viewport={{ once: true, amount: 0.28 }}
-                transition={{ type: "spring", stiffness: 82, damping: 18, mass: 0.82 }}
+                transition={{ delay: 0.08, duration: 1.18, ease: [0.16, 1, 0.3, 1] }}
               >
                 <AiAccessPanel />
               </motion.div>
