@@ -1,6 +1,6 @@
 import { useState, type PropsWithChildren } from "react";
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Brain, Check, ChevronDown, ChevronRight, GitBranch, Menu, Radio, Search, UserRound } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, Brain, Check, ChevronRight, GitBranch, Menu, Radio, Search, UserRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ClaudeMark } from "@/components/brand/ClaudeMark";
 import { CortexLogo } from "@/components/brand/CortexLogo";
@@ -85,7 +85,7 @@ const agentRoles = [
 function FlowConnector() {
   return (
     <span className="cortex-ai-flow__connector" aria-hidden="true">
-      <ChevronDown />
+      <ArrowDown />
     </span>
   );
 }
