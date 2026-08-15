@@ -43,6 +43,33 @@ function SceneIndex({ children }: { children: string }) {
   return <span className="cortex-scene-index">{children}</span>;
 }
 
+function CortexThread({
+  className = "",
+  progress,
+}: {
+  className?: string;
+  progress: MotionValue<number>;
+}) {
+  const x = useTransform(progress, [0, 0.5, 1], ["-4%", "0%", "6%"]);
+  const y = useTransform(progress, [0, 0.5, 1], [18, 0, -16]);
+  const scale = useTransform(progress, [0, 0.5, 1], [0.9, 1.04, 0.96]);
+  const opacity = useTransform(progress, [0.04, 0.22, 0.82, 0.98], [0, 0.92, 0.92, 0.12]);
+
+  return (
+    <motion.div
+      className={"cortex-thread " + className}
+      style={{ opacity, x, y, scale }}
+      aria-hidden="true"
+    >
+      <span className="cortex-thread__pixel cortex-thread__pixel--a" />
+      <span className="cortex-thread__pixel cortex-thread__pixel--b" />
+      <span className="cortex-thread__pixel cortex-thread__pixel--c" />
+      <span className="cortex-thread__pixel cortex-thread__pixel--d" />
+      <span className="cortex-thread__pixel cortex-thread__pixel--e" />
+    </motion.div>
+  );
+}
+
 function CoordinationScene() {
   const ref = useRef<HTMLElement>(null);
   const progress = useSoftProgress(ref, ["start end", "end start"]);
@@ -60,6 +87,8 @@ function CoordinationScene() {
       >
         <PixelMaterial className="cortex-material--cloud" />
       </motion.div>
+
+      <CortexThread className="cortex-thread--coordination" progress={progress} />
 
       <motion.div className="cortex-coordination__copy" style={{ opacity: copyOpacity, y: copyY }}>
         <SceneIndex>01 / Coordination</SceneIndex>
@@ -129,6 +158,8 @@ function OperatingScene() {
           person responsible never loses the thread.
         </p>
       </motion.div>
+
+      <CortexThread className="cortex-thread--operating" progress={progress} />
 
       <motion.div className="cortex-operating__mark" style={{ opacity: markOpacity, y: markY }}>
         <CortexLogo />
@@ -206,17 +237,13 @@ function SequenceStep({
 function SequenceScene() {
   const ref = useRef<HTMLElement>(null);
   const progress = useSoftProgress(ref, ["start end", "end start"]);
-  const materialOpacity = useTransform(progress, [0, 0.18, 0.55, 0.92, 1], [0, 0.25, 0.2, 0.1, 0]);
-  const materialScale = useTransform(progress, [0, 0.5, 1], [1.08, 1, 1.12]);
   const markOpacity = useTransform(progress, [0.06, 0.18, 0.84, 0.96], [0, 0.7, 0.7, 0]);
   const markRotate = useTransform(progress, [0, 1], [-5, 5]);
 
   return (
     <section ref={ref} className="cortex-sequence" aria-labelledby="sequence-title">
       <div className="cortex-sequence__sticky">
-        <motion.div className="cortex-sequence__material" style={{ opacity: materialOpacity, scale: materialScale }}>
-          <PixelMaterial className="cortex-material--record" />
-        </motion.div>
+        <CortexThread className="cortex-thread--sequence" progress={progress} />
 
         <div className="cortex-sequence__intro">
           <SceneIndex>03 / The sequence</SceneIndex>
@@ -254,6 +281,8 @@ function ProofScene() {
 
   return (
     <section ref={ref} className="cortex-scene cortex-proof" aria-labelledby="proof-title">
+      <CortexThread className="cortex-thread--proof" progress={progress} />
+
       <motion.div className="cortex-proof__copy" style={{ opacity: copyOpacity, y: copyY }}>
         <SceneIndex>04 / Proof</SceneIndex>
         <h2 id="proof-title">
