@@ -203,7 +203,7 @@ function CortexSystemZone({ children, className, delay }: CortexSystemZoneProps)
       className={className}
       initial={reducedMotion ? false : { opacity: 0, x: 16, y: 12 }}
       whileInView={{ opacity: 1, x: 0, y: 0 }}
-      viewport={{ once: true, amount: 0.72, margin: "-24% 0px -30% 0px" }}
+      viewport={{ once: true, amount: 0.58, margin: "-40% 0px -40% 0px" }}
       transition={
         reducedMotion
           ? { duration: 0 }
