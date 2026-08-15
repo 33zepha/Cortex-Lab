@@ -88,7 +88,7 @@
 }
 
 .cortex-column--intro {
-  margin-top: 221px;
+  margin-top: clamp(156px, 16vw, 194px);
 }
 
 .cortex-column--intro::before,
@@ -164,7 +164,7 @@
 }
 
 .cortex-column--metrics {
-  margin-top: 83px;
+  margin-top: clamp(52px, 6vw, 72px);
 }
 
 .cortex-column--showcase {
@@ -375,14 +375,14 @@
   position: relative;
   isolation: isolate;
   width: 100%;
-  height: 280px;
-  margin-top: clamp(60px, 9vh, 98px);
-  margin-bottom: -42px;
+  height: 304px;
+  margin-top: clamp(42px, 6vh, 68px);
+  margin-bottom: -44px;
   padding: 12px 13px 0;
   overflow: hidden;
   border: 1px solid rgba(20, 25, 33, 0.1);
   border-bottom-color: rgba(20, 25, 33, 0.045);
-  border-radius: 24px 24px 0 0;
+  border-radius: 26px 26px 0 0;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 249, 253, 0.82));
   box-shadow: 0 20px 38px rgba(35, 40, 51, 0.1), 0 2px 8px rgba(35, 40, 51, 0.04);
   backdrop-filter: blur(10px);
@@ -406,7 +406,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  height: 46px;
+  height: 54px;
   background: linear-gradient(180deg, rgba(248, 249, 253, 0), rgba(248, 249, 253, 0.98));
 }
 
@@ -417,30 +417,55 @@
   overflow: hidden;
 }
 
+.cortex-command-rail__chat-space {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(20, 25, 33, 0.055);
+  border-radius: 20px 20px 0 0;
+  background: linear-gradient(180deg, rgba(249, 250, 253, 0.86), rgba(255, 255, 255, 0.7));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.cortex-command-rail__chat-mark {
+  position: absolute;
+  z-index: 1;
+  top: 22px;
+  left: 22px;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(85, 109, 228, 0.08);
+  opacity: 0.78;
+}
+
+.cortex-command-rail__chat-mark .cortex-logo {
+  width: 13px;
+  height: 15px;
+}
+
 .cortex-command-rail__messages {
   display: flex;
   height: 100%;
   flex-direction: column;
-  justify-content: flex-end;
-  padding: 16px 0 34px;
+  justify-content: flex-start;
+  padding: 78px 13px 46px;
 }
 
-.cortex-command-rail__bubble {
+.cortex-command-rail__composer {
   display: flex;
   width: 100%;
-  min-height: 66px;
-  align-items: flex-start;
+  min-height: 74px;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   border: 1px solid rgba(20, 25, 33, 0.06);
-  box-shadow: 0 6px 14px rgba(35, 40, 51, 0.045);
-}
-
-.cortex-command-rail__bubble--user {
-  flex: 0 0 auto;
-  padding: 14px 14px 14px 16px;
-  border-radius: 18px;
-  background: rgba(243, 245, 252, 0.94);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 24px rgba(35, 40, 51, 0.075), 0 2px 5px rgba(35, 40, 51, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  padding: 16px 14px 16px 18px;
   text-align: left;
 }
 
@@ -468,13 +493,13 @@
   position: relative;
   display: block;
   min-width: 0;
-  min-height: 1.35em;
+  min-height: 1.45em;
   overflow: visible;
   color: var(--cortex-ink);
-  font-size: 12.5px;
-  font-weight: 560;
-  letter-spacing: -0.025em;
-  line-height: 1.35;
+  font-size: 13px;
+  font-weight: 540;
+  letter-spacing: -0.03em;
+  line-height: 1.42;
 }
 
 .cortex-command-rail__phrase {
@@ -512,6 +537,41 @@
   isolation: isolate;
   overflow: hidden;
   border-radius: 19px;
+}
+
+.cortex-system-lede {
+  padding: 0 1px 25px;
+}
+
+.cortex-system-lede__eyebrow {
+  display: block;
+  color: #8a909d;
+  font-size: 8px;
+  font-weight: 560;
+  letter-spacing: 0.045em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.cortex-system-lede h2 {
+  max-width: 270px;
+  margin-top: 9px;
+  color: var(--cortex-ink);
+  font-family: var(--cortex-display);
+  font-size: 25px;
+  font-weight: 540;
+  letter-spacing: -0.065em;
+  line-height: 1.08;
+}
+
+.cortex-system-lede p {
+  max-width: 300px;
+  margin-top: 11px;
+  color: var(--cortex-muted);
+  font-size: 13px;
+  font-weight: 430;
+  letter-spacing: -0.024em;
+  line-height: 1.48;
 }
 
 .cortex-column--metrics .cortex-column__body > h2 {
@@ -2269,6 +2329,28 @@
     margin-inline: -20px;
   }
 
+  .cortex-system-lede {
+    padding: 0 0 22px;
+  }
+
+  .cortex-system-lede__eyebrow {
+    font-size: 8.5px;
+  }
+
+  .cortex-system-lede h2 {
+    max-width: 320px;
+    margin-top: 10px;
+    font-size: 30px;
+    line-height: 1.02;
+  }
+
+  .cortex-system-lede p {
+    max-width: 330px;
+    margin-top: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
   .cortex-ai-panel {
     padding: 20px 18px 16px;
     border-radius: 26px;
@@ -2515,20 +2597,29 @@
   }
 
   .cortex-command-rail {
-    height: clamp(390px, 52vh, 520px);
-    margin-top: clamp(48px, 7vh, 72px);
-    margin-bottom: -38px;
+    height: clamp(304px, 40vh, 360px);
+    margin-top: clamp(38px, 5vh, 52px);
+    margin-bottom: -28px;
     padding: 14px 14px 0;
   }
 
-  .cortex-command-rail__messages {
-    padding: 22px 0 40px;
+  .cortex-command-rail__chat-space {
+    border-radius: 21px 21px 0 0;
   }
 
-  .cortex-command-rail__bubble--user {
-    min-height: 74px;
-    padding: 15px 15px 15px 16px;
-    border-radius: 20px;
+  .cortex-command-rail__chat-mark {
+    top: 20px;
+    left: 20px;
+  }
+
+  .cortex-command-rail__messages {
+    padding: 72px 12px 42px;
+  }
+
+  .cortex-command-rail__composer {
+    min-height: 78px;
+    padding: 16px 14px 16px 17px;
+    border-radius: 22px;
   }
 
   .cortex-command-rail__phrases {
