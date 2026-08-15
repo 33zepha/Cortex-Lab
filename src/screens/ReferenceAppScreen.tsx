@@ -306,8 +306,8 @@ export function ReferenceAppScreen() {
         <ReferenceColumn className="cortex-panel cortex-column cortex-column--metrics" delay={0.1}>
           <div className="cortex-column__body">
             <div className="cortex-media cortex-media--sessions"><AiAccessPanel /></div>
-            <h2>One model layer. Many specialized agents.</h2>
-            <p>Cortex gives Hermes access to a living pool of model families, then turns each one into the right specialist for the mission.</p>
+            <h2>One system. Many ways to work.</h2>
+            <p>Models, Hermes, and mission roles work together inside Cortex — from research and analysis to building, review, and delivery.</p>
             <div className="cortex-media cortex-media--revenue"><RevenueChart /></div>
             <h2>Increase output through orchestration</h2>
             <p>Give every agent a role, keep complex work moving, and return with a clear record of what was done.</p>
