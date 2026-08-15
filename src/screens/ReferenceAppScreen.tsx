@@ -105,27 +105,30 @@ function CortexCommandRail() {
       }
     >
       <div className="cortex-command-rail__viewport" aria-hidden="true">
-        <div className="cortex-command-rail__messages">
-          <div className="cortex-command-rail__bubble cortex-command-rail__bubble--user">
-            <span className="cortex-command-rail__phrases">
-              <span className="cortex-command-rail__phrase">
-                {displayedCommand}
-                <span className="cortex-command-rail__caret" />
+        <div className="cortex-command-rail__chat-space">
+          <span className="cortex-command-rail__chat-mark"><CortexLogo aria-hidden="true" /></span>
+          <div className="cortex-command-rail__messages">
+            <div className="cortex-command-rail__composer">
+              <span className="cortex-command-rail__phrases">
+                <span className="cortex-command-rail__phrase">
+                  {displayedCommand}
+                  <span className="cortex-command-rail__caret" />
+                </span>
               </span>
-            </span>
-            <AnimatePresence initial={false}>
-              {hasMessage ? (
-                <motion.span
-                  className="cortex-command-rail__sent-mark"
-                  initial={{ opacity: 0, scale: 0.72, y: 4 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.72, y: 4 }}
-                  transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <Check aria-hidden="true" />
-                </motion.span>
-              ) : null}
-            </AnimatePresence>
+              <AnimatePresence initial={false}>
+                {hasMessage ? (
+                  <motion.span
+                    className="cortex-command-rail__sent-mark"
+                    initial={{ opacity: 0, scale: 0.72, y: 4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.72, y: 4 }}
+                    transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <Check aria-hidden="true" />
+                  </motion.span>
+                ) : null}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>
@@ -571,6 +574,11 @@ export function ReferenceAppScreen() {
 
         <ReferenceColumn className="cortex-panel cortex-column cortex-column--metrics" delay={0.1}>
           <div className="cortex-column__body">
+            <div className="cortex-system-lede">
+              <span className="cortex-system-lede__eyebrow">Cortex operating system</span>
+              <h2>A brief becomes a coordinated outcome.</h2>
+              <p>Cortex frames the mission, Hermes directs the run, and the system returns work you can inspect, review, and use.</p>
+            </div>
             <div className="cortex-media cortex-media--sessions">
               <motion.div
                 className="cortex-system-module"
@@ -582,8 +590,6 @@ export function ReferenceAppScreen() {
                 <AiAccessPanel />
               </motion.div>
             </div>
-            <h2>A brief becomes a finished outcome.</h2>
-            <p>Cortex frames the mission, Hermes coordinates the models and agents, then brings the work back for review and delivery.</p>
             <div className="cortex-media cortex-media--revenue"><RevenueChart /></div>
             <h2>Increase output through orchestration</h2>
             <p>Give every agent a role, keep complex work moving, and return with a clear record of what was done.</p>
