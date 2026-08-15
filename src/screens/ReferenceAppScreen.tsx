@@ -55,7 +55,6 @@ function CortexCommandRail() {
   const [commandIndex, setCommandIndex] = useState(0);
   const [displayedCommand, setDisplayedCommand] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isThinking, setIsThinking] = useState(false);
 
   useEffect(() => {
     if (reducedMotion === null) return;
@@ -65,28 +64,18 @@ function CortexCommandRail() {
     if (reducedMotion) {
       setDisplayedCommand(command);
       setIsDeleting(false);
-      setIsThinking(false);
       return;
     }
 
-    if (!isDeleting && !isThinking && displayedCommand === command) {
-      const holdTimer = window.setTimeout(() => setIsThinking(true), 1200);
+    if (!isDeleting && displayedCommand === command) {
+      const holdTimer = window.setTimeout(() => setIsDeleting(true), 1650);
       return () => window.clearTimeout(holdTimer);
-    }
-
-    if (isThinking) {
-      const thinkingTimer = window.setTimeout(() => {
-        setIsThinking(false);
-        setIsDeleting(true);
-      }, 1350);
-      return () => window.clearTimeout(thinkingTimer);
     }
 
     if (isDeleting && displayedCommand.length === 0) {
       const gapTimer = window.setTimeout(() => {
         setCommandIndex((current) => (current + 1) % cortexCommands.length);
         setIsDeleting(false);
-        setIsThinking(false);
       }, 320);
       return () => window.clearTimeout(gapTimer);
     }
@@ -99,31 +88,45 @@ function CortexCommandRail() {
     }, isDeleting ? 30 : 48);
 
     return () => window.clearTimeout(typingTimer);
-  }, [commandIndex, displayedCommand, isDeleting, isThinking, reducedMotion]);
+  }, [commandIndex, displayedCommand, isDeleting, reducedMotion]);
+
+  const hasMessage = displayedCommand.length > 0;
 
   return (
     <motion.div
       className="cortex-command-rail"
       aria-label="Example Cortex commands"
-      initial={reducedMotion ? false : { opacity: 0, y: 54 }}
+      initial={reducedMotion ? false : { opacity: 0, y: 112 }}
       animate={{ opacity: 1, y: 0 }}
       transition={
         reducedMotion
           ? { duration: 0 }
-          : { delay: 0.46, duration: 0.72, ease: [0.22, 1, 0.36, 1] }
+          : { delay: 0.46, duration: 1.1, ease: [0.16, 1, 0.3, 1] }
       }
     >
-      <div className="cortex-command-rail__messages" aria-hidden="true">
-        <div className="cortex-command-rail__bubble cortex-command-rail__bubble--user">
-          <span className="cortex-command-rail__phrases">
-            <span className="cortex-command-rail__phrase">
-              {displayedCommand}
-              <span className="cortex-command-rail__caret" />
+      <div className="cortex-command-rail__viewport" aria-hidden="true">
+        <div className="cortex-command-rail__messages">
+          <div className="cortex-command-rail__bubble cortex-command-rail__bubble--user">
+            <span className="cortex-command-rail__phrases">
+              <span className="cortex-command-rail__phrase">
+                {displayedCommand}
+                <span className="cortex-command-rail__caret" />
+              </span>
             </span>
-          </span>
-        </div>
-        <div className={`cortex-command-rail__bubble cortex-command-rail__bubble--thinking${isThinking ? " is-visible" : ""}`}>
-          <span className="cortex-command-rail__thinking-dots"><i /><i /><i /></span>
+            <AnimatePresence initial={false}>
+              {hasMessage ? (
+                <motion.span
+                  className="cortex-command-rail__sent-mark"
+                  initial={{ opacity: 0, scale: 0.72, y: 4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.72, y: 4 }}
+                  transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Check aria-hidden="true" />
+                </motion.span>
+              ) : null}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
       <span className="sr-only">Example commands: map the signal across the market; turn this brief into a launch plan; research the field and show what changed.</span>
