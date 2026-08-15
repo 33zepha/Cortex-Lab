@@ -1,6 +1,6 @@
 import { useState, type PropsWithChildren } from "react";
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Brain, Check, ChevronRight, GitBranch, Menu, Radio, Search } from "lucide-react";
+import { ArrowLeft, ArrowRight, Brain, Check, ChevronDown, ChevronRight, GitBranch, Menu, Radio, Search, UserRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ClaudeMark } from "@/components/brand/ClaudeMark";
 import { CortexLogo } from "@/components/brand/CortexLogo";
@@ -56,10 +56,24 @@ function PanelHeader() {
 const aiProviders = [
   { name: "GPT", fullName: "OpenAI", Mark: OpenAiMark, tone: "cortex-ai-provider--openai" },
   { name: "Claude", fullName: "Anthropic", Mark: ClaudeMark, tone: "cortex-ai-provider--claude" },
+  { name: "Grok", fullName: "xAI", Mark: GrokMark, tone: "cortex-ai-provider--grok" },
   { name: "Gemini", fullName: "Google", Mark: GeminiMark, tone: "cortex-ai-provider--gemini" },
   { name: "Mistral", fullName: "Mistral", Mark: MistralMark, tone: "cortex-ai-provider--mistral" },
   { name: "DeepSeek", fullName: "DeepSeek", Mark: DeepSeekMark, tone: "cortex-ai-provider--deepseek" },
 ] as const;
+
+function GrokMark({ title }: { title?: string }) {
+  return (
+    <span
+      className="cortex-grok-mark"
+      role={title ? "img" : undefined}
+      aria-label={title}
+      aria-hidden={title ? undefined : true}
+    >
+      𝕏
+    </span>
+  );
+}
 
 const agentRoles = [
   { label: "Manager", detail: "directs", Icon: Brain },
@@ -68,74 +82,102 @@ const agentRoles = [
   { label: "RTC", detail: "syncs", Icon: Radio },
 ] as const;
 
-const capabilityGroups = [
-  { label: "Discover", detail: "research · analysis", Icon: Search },
-  { label: "Create", detail: "writing · code · design", Icon: Brain },
-  { label: "Coordinate", detail: "agents · workflows · RTC", Icon: GitBranch },
-  { label: "Verify", detail: "review · testing · trace", Icon: Check },
-] as const;
+function FlowConnector() {
+  return (
+    <span className="cortex-ai-flow__connector" aria-hidden="true">
+      <ChevronDown />
+    </span>
+  );
+}
 
 function AiAccessPanel() {
   return (
-    <div className="cortex-ai-panel" aria-label="Cortex agent system">
+    <div className="cortex-ai-panel" aria-label="Cortex operating loop">
       <div className="cortex-ai-panel__header">
         <div>
           <small>Cortex operating system</small>
-          <strong>Agent system</strong>
+          <strong>Operating loop</strong>
         </div>
-        <span className="cortex-ai-panel__status">5 model families</span>
+        <span className="cortex-ai-panel__status">brief in · result out</span>
       </div>
-      <div className="cortex-ai-panel__section-label">
-        <span>Model pool</span>
-        <small>available to Hermes</small>
-      </div>
-      <div className="cortex-ai-panel__providers" aria-label="Available AI providers">
-        {aiProviders.map(({ name, fullName, Mark, tone }) => (
-          <div className={`cortex-ai-provider ${tone}`} key={name} title={fullName}>
-            <span className="cortex-ai-provider__mark"><Mark title={fullName} /></span>
-            <span>{name}</span>
+      <div className="cortex-ai-flow">
+        <div className="cortex-ai-flow__stage cortex-ai-flow__stage--human">
+          <span className="cortex-ai-flow__stage-mark">
+            <UserRound aria-hidden="true" />
+          </span>
+          <div>
+            <strong>Human</strong>
+            <small>brief / objective</small>
           </div>
-        ))}
-      </div>
-      <div className="cortex-ai-panel__hermes">
-        <span className="cortex-ai-panel__hermes-mark">
-          <img src="/hermes-logo.jpeg" alt="" />
-        </span>
-        <div className="cortex-ai-panel__hermes-copy">
-          <strong>Hermes</strong>
-          <small>operator / orchestrator</small>
         </div>
-        <span className="cortex-ai-panel__hermes-context">inside Cortex</span>
-      </div>
-      <div className="cortex-ai-panel__flow-caption" aria-hidden="true">
-        models in&nbsp; · &nbsp;mission roles out
-      </div>
-      <div className="cortex-ai-panel__roles-heading">
-        <span>Mission roles</span>
-        <small>spawned by Hermes</small>
-      </div>
-      <div className="cortex-ai-panel__roles" aria-label="Agent roles spawned by Hermes">
-        {agentRoles.map(({ label, detail, Icon }) => (
-          <div className="cortex-ai-role" key={label}>
-            <Icon aria-hidden="true" />
-            <span>{label}</span>
-            <small>{detail}</small>
+        <FlowConnector />
+        <div className="cortex-ai-flow__stage cortex-ai-flow__stage--cortex">
+          <span className="cortex-ai-flow__stage-mark cortex-ai-flow__stage-mark--cortex">
+            <CortexLogo aria-hidden="true" />
+          </span>
+          <div>
+            <strong>Cortex</strong>
+            <small>mission layer</small>
           </div>
-        ))}
-      </div>
-      <div className="cortex-ai-panel__capabilities">
-        <div className="cortex-ai-panel__capabilities-heading">
-          <span>Capability set</span>
-          <small>what Cortex can orchestrate</small>
+          <span className="cortex-ai-flow__context">frames the work</span>
         </div>
-        <div className="cortex-ai-panel__capabilities-list" aria-label="Cortex capabilities">
-          {capabilityGroups.map(({ label, detail, Icon }) => (
-            <div className="cortex-ai-capability" key={label}>
+        <FlowConnector />
+        <div className="cortex-ai-flow__stage cortex-ai-flow__stage--hermes">
+          <span className="cortex-ai-flow__stage-mark cortex-ai-flow__stage-mark--hermes">
+            <img src="/hermes-logo.jpeg" alt="" />
+          </span>
+          <div>
+            <strong>Hermes</strong>
+            <small>operator / orchestrator</small>
+          </div>
+          <span className="cortex-ai-flow__context">routes the mission</span>
+        </div>
+        <div className="cortex-ai-flow__subheading">
+          <span>AI layer</span>
+          <small>Hermes selects the right model</small>
+        </div>
+        <div className="cortex-ai-panel__providers" aria-label="AI models available to Hermes">
+          {aiProviders.map(({ name, fullName, Mark, tone }) => (
+            <div className={`cortex-ai-provider ${tone}`} key={name} title={fullName}>
+              <span className="cortex-ai-provider__mark"><Mark title={fullName} /></span>
+              <span>{name}</span>
+            </div>
+          ))}
+        </div>
+        <FlowConnector />
+        <div className="cortex-ai-panel__roles-heading">
+          <span>Agent layer</span>
+          <small>roles spawned for the mission</small>
+        </div>
+        <div className="cortex-ai-panel__roles" aria-label="Agent roles spawned by Hermes">
+          {agentRoles.map(({ label, detail, Icon }) => (
+            <div className="cortex-ai-role" key={label}>
               <Icon aria-hidden="true" />
-              <strong>{label}</strong>
+              <span>{label}</span>
               <small>{detail}</small>
             </div>
           ))}
+        </div>
+        <FlowConnector />
+        <div className="cortex-ai-flow__stage cortex-ai-flow__stage--cortex-return">
+          <span className="cortex-ai-flow__stage-mark cortex-ai-flow__stage-mark--cortex">
+            <CortexLogo aria-hidden="true" />
+          </span>
+          <div>
+            <strong>Cortex</strong>
+            <small>reviews / assembles</small>
+          </div>
+          <span className="cortex-ai-flow__context">keeps the trace</span>
+        </div>
+        <FlowConnector />
+        <div className="cortex-ai-flow__stage cortex-ai-flow__stage--result">
+          <span className="cortex-ai-flow__stage-mark cortex-ai-flow__stage-mark--result">
+            <Check aria-hidden="true" />
+          </span>
+          <div>
+            <strong>Result</strong>
+            <small>research · build · review · delivery</small>
+          </div>
         </div>
       </div>
     </div>
@@ -306,8 +348,8 @@ export function ReferenceAppScreen() {
         <ReferenceColumn className="cortex-panel cortex-column cortex-column--metrics" delay={0.1}>
           <div className="cortex-column__body">
             <div className="cortex-media cortex-media--sessions"><AiAccessPanel /></div>
-            <h2>One system. Many ways to work.</h2>
-            <p>Models, Hermes, and mission roles work together inside Cortex — from research and analysis to building, review, and delivery.</p>
+            <h2>A brief becomes a finished outcome.</h2>
+            <p>Cortex frames the mission, Hermes coordinates the models and agents, then brings the work back for review and delivery.</p>
             <div className="cortex-media cortex-media--revenue"><RevenueChart /></div>
             <h2>Increase output through orchestration</h2>
             <p>Give every agent a role, keep complex work moving, and return with a clear record of what was done.</p>
