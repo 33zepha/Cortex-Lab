@@ -1,0 +1,1056 @@
+@font-face {
+  font-family: "Cortex Inter";
+  src: url("../fonts/inter/Inter-Variable.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+.cortex-reference {
+  --cortex-canvas: #eceef2;
+  --cortex-surface: #ffffff;
+  --cortex-ink: #141921;
+  --cortex-muted: #4f5159;
+  --cortex-line: #e5e7ea;
+  --cortex-blue: #556de4;
+  --cortex-soft-blue: #dde2fb;
+  --cortex-soft-yellow: #fcf2d1;
+  --cortex-soft-lavender: #f7ebff;
+  --cortex-soft-auth: #e6eafd;
+  --cortex-dark: #222222;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: var(--cortex-canvas);
+  color: var(--cortex-ink);
+  color-scheme: light;
+  font-family: "Cortex Inter", Inter, ui-sans-serif, system-ui, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.cortex-reference *,
+.cortex-reference *::before,
+.cortex-reference *::after {
+  box-sizing: border-box;
+}
+
+.cortex-reference a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.cortex-reference button,
+.cortex-reference h1,
+.cortex-reference h2,
+.cortex-reference h3,
+.cortex-reference h4,
+.cortex-reference p,
+.cortex-reference figure,
+.cortex-reference blockquote,
+.cortex-reference ul {
+  margin: 0;
+}
+
+.cortex-reference button {
+  border: 0;
+  font: inherit;
+}
+
+.cortex-reference__stage {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  gap: clamp(28px, 2.4vw, 40px);
+  padding: 0 clamp(20px, 3.45vw, 56px) 74px;
+}
+
+.cortex-panel,
+.cortex-column--utility > section {
+  background: var(--cortex-surface);
+  border-radius: 22px;
+  box-shadow: 0 14px 30px rgba(35, 40, 51, 0.055);
+}
+
+.cortex-panel,
+.cortex-column {
+  min-width: 0;
+}
+
+.cortex-column--intro {
+  margin-top: 221px;
+}
+
+.cortex-column--metrics {
+  margin-top: 83px;
+}
+
+.cortex-column--showcase {
+  min-height: 1530px;
+  overflow: hidden;
+  background: var(--cortex-surface);
+}
+
+.cortex-column--utility {
+  min-width: 0;
+}
+
+.cortex-panel-header {
+  display: flex;
+  min-height: 71px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 13px 0 14px;
+  border-bottom: 1px solid rgba(20, 25, 33, 0.09);
+  background: var(--cortex-surface);
+}
+
+.cortex-panel-header__brand {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  color: var(--cortex-ink);
+  font-size: 19px;
+  font-weight: 720;
+  letter-spacing: -0.055em;
+  line-height: 1;
+}
+
+.cortex-panel-header__brand .cortex-logo {
+  width: 30px;
+  height: 33px;
+  flex: 0 0 auto;
+}
+
+.cortex-panel-header__actions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+}
+
+.cortex-pill {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 560;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  transition: transform 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.cortex-pill:hover,
+.cortex-pill:focus-visible {
+  transform: translateY(-1px);
+}
+
+.cortex-pill--dark {
+  background: var(--cortex-ink);
+  color: #ffffff;
+}
+
+.cortex-reference a.cortex-pill--dark {
+  color: #ffffff;
+}
+
+.cortex-reference a.cortex-pill--lavender {
+  color: var(--cortex-blue);
+}
+
+.cortex-pill--dark:hover,
+.cortex-pill--dark:focus-visible {
+  background: #303641;
+}
+
+.cortex-pill--lavender {
+  background: var(--cortex-soft-auth);
+  color: var(--cortex-blue);
+}
+
+.cortex-panel-header__cta {
+  width: 119px;
+  min-height: 42px;
+  font-size: 14px;
+}
+
+.cortex-menu-button {
+  display: inline-grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid rgba(20, 25, 33, 0.11);
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--cortex-ink);
+  cursor: pointer;
+}
+
+.cortex-menu-button svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.8;
+}
+
+.cortex-menu-button:hover,
+.cortex-menu-button:focus-visible {
+  background: #f6f7f9;
+}
+
+.cortex-column__body {
+  padding: 15px;
+}
+
+.cortex-intro {
+  padding-top: 36px;
+}
+
+.cortex-intro h1,
+.cortex-showcase__body h2,
+.cortex-pricing-card__body h2 {
+  color: var(--cortex-ink);
+  font-size: clamp(29px, 2.05vw, 33px);
+  font-weight: 700;
+  letter-spacing: -0.065em;
+  line-height: 1.21;
+}
+
+.cortex-intro p,
+.cortex-column--metrics .cortex-column__body > p,
+.cortex-showcase__body > p,
+.cortex-pricing-card__body > p {
+  color: var(--cortex-ink);
+  font-size: 16px;
+  font-weight: 430;
+  letter-spacing: -0.028em;
+  line-height: 1.52;
+}
+
+.cortex-intro p {
+  margin-top: 17px;
+}
+
+.cortex-intro__cta,
+.cortex-showcase__cta {
+  width: 171px;
+  margin-top: 21px;
+}
+
+.cortex-media {
+  overflow: hidden;
+  border-radius: 19px;
+}
+
+.cortex-media--dashboard {
+  height: 326px;
+  margin-top: 35px;
+  padding: 25px;
+  background: var(--cortex-soft-blue);
+}
+
+.cortex-dashboard-preview {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  grid-template-columns: 30% 70%;
+  overflow: hidden;
+  border-radius: 7px;
+  background: #fbfcff;
+  box-shadow: 0 4px 12px rgba(20, 25, 33, 0.08);
+  font-size: 5px;
+}
+
+.cortex-dashboard-preview__sidebar {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 7px;
+  background: #171b25;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.cortex-dashboard-preview__mini-brand {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-bottom: 8px;
+  color: #ffffff;
+  font-size: 5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.cortex-dashboard-preview__mini-brand .cortex-logo {
+  width: 9px;
+  height: 10px;
+}
+
+.cortex-dashboard-preview__nav {
+  display: block;
+  padding: 3px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.cortex-dashboard-preview__nav--active {
+  background: rgba(255, 255, 255, 0.11);
+  color: #ffffff;
+}
+
+.cortex-dashboard-preview__main {
+  min-width: 0;
+  padding: 10px 9px;
+  background: #fbfcff;
+  color: #202532;
+}
+
+.cortex-dashboard-preview__toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  color: #8a8f9b;
+  font-size: 4.5px;
+}
+
+.cortex-dashboard-preview__toolbar span:first-child {
+  color: #202532;
+  font-size: 7px;
+  font-weight: 720;
+}
+
+.cortex-dashboard-preview__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-top: 12px;
+}
+
+.cortex-dashboard-preview__stats div {
+  padding: 5px 4px;
+  border: 1px solid #eceef3;
+  border-radius: 3px;
+  background: #ffffff;
+}
+
+.cortex-dashboard-preview__stats small,
+.cortex-dashboard-preview__stats strong {
+  display: block;
+}
+
+.cortex-dashboard-preview__stats small {
+  color: #9097a5;
+  font-size: 4px;
+}
+
+.cortex-dashboard-preview__stats strong {
+  margin-top: 3px;
+  font-size: 8px;
+  font-weight: 720;
+}
+
+.cortex-dashboard-preview__graph {
+  margin-top: 12px;
+  padding: 7px;
+  border: 1px solid #eceef3;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.cortex-dashboard-preview__graph-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #596071;
+  font-size: 5px;
+}
+
+.cortex-dashboard-preview__graph-head i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #556de4;
+}
+
+.cortex-dashboard-preview__graph-head i:last-child {
+  background: #e5c965;
+}
+
+.cortex-dashboard-preview__graph svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 8px;
+}
+
+.cortex-dashboard-preview__graph path {
+  fill: none;
+  stroke: #556de4;
+  stroke-linecap: round;
+  stroke-width: 2.4;
+}
+
+.cortex-dashboard-preview__graph path:last-child {
+  stroke: #e5c965;
+  stroke-width: 1.8;
+}
+
+.cortex-column--metrics .cortex-column__body > h2 {
+  margin-top: 20px;
+  color: var(--cortex-ink);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  line-height: 1.22;
+}
+
+.cortex-column--metrics .cortex-column__body > p {
+  margin-top: 9px;
+}
+
+.cortex-media--sessions {
+  height: 218px;
+  padding: 20px;
+  background: var(--cortex-soft-blue);
+}
+
+.cortex-media--revenue {
+  height: 218px;
+  margin-top: 27px;
+  padding: 20px;
+  background: var(--cortex-soft-yellow);
+}
+
+.cortex-media--ads {
+  height: 218px;
+  margin-top: 28px;
+  padding: 20px;
+  background: var(--cortex-soft-blue);
+}
+
+.cortex-chart {
+  width: 100%;
+  height: 100%;
+  padding: 16px 17px 9px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.cortex-chart__topline {
+  display: flex;
+  min-height: 18px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--cortex-ink);
+}
+
+.cortex-chart__topline strong {
+  font-size: 11px;
+  font-weight: 720;
+  letter-spacing: -0.035em;
+}
+
+.cortex-chart__topline svg {
+  width: 14px;
+  height: 14px;
+  color: #262a32;
+}
+
+.cortex-chart__legend {
+  display: flex;
+  gap: 10px;
+  margin-top: 7px;
+  color: #989da8;
+  font-size: 6.5px;
+  white-space: nowrap;
+}
+
+.cortex-chart__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cortex-chart__dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+}
+
+.cortex-chart__dot--yellow {
+  background: #e5c965;
+}
+
+.cortex-chart__dot--blue {
+  background: #556de4;
+}
+
+.cortex-chart > svg {
+  display: block;
+  width: 100%;
+  height: calc(100% - 32px);
+  margin-top: 3px;
+}
+
+.cortex-chart__grid path {
+  fill: none;
+  stroke: #ececf0;
+  stroke-dasharray: 4 5;
+  stroke-width: 1;
+}
+
+.cortex-chart__line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.cortex-chart__line--yellow {
+  stroke: #e5c965;
+}
+
+.cortex-chart__line--blue,
+.cortex-chart__line--violet {
+  stroke: #556de4;
+}
+
+.cortex-chart__labels {
+  fill: #b0b3bb;
+  font-family: "Cortex Inter", Inter, sans-serif;
+  font-size: 7px;
+}
+
+.cortex-chart--revenue {
+  padding-top: 14px;
+}
+
+.cortex-chart--revenue .cortex-chart__topline {
+  align-items: center;
+}
+
+.cortex-chart--revenue .cortex-chart__topline small,
+.cortex-chart--revenue .cortex-chart__topline strong {
+  display: block;
+}
+
+.cortex-chart--revenue .cortex-chart__topline small {
+  color: #8d919b;
+  font-size: 7px;
+  font-weight: 500;
+}
+
+.cortex-chart--revenue .cortex-chart__topline strong {
+  margin-top: 2px;
+  font-size: 17px;
+}
+
+.cortex-growth {
+  align-self: center;
+  padding: 3px 5px;
+  border-radius: 999px;
+  background: #e9f4df;
+  color: #698f4f;
+  font-size: 5.5px;
+  white-space: nowrap;
+}
+
+.cortex-chart__area {
+  fill: #edf0ff;
+  stroke: none;
+}
+
+.cortex-chart--revenue > svg {
+  height: calc(100% - 33px);
+  margin-top: 2px;
+}
+
+.cortex-ads-preview {
+  height: 100%;
+  padding: 30px 17px 20px;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.cortex-ads-preview__title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--cortex-ink);
+  font-size: 8px;
+}
+
+.cortex-meta-icon {
+  display: inline-grid;
+  width: 13px;
+  height: 13px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--cortex-ink);
+  color: #ffffff;
+  font-size: 7px;
+}
+
+.cortex-ads-preview__metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.cortex-ads-preview__metrics small,
+.cortex-ads-preview__metrics strong {
+  display: block;
+}
+
+.cortex-ads-preview__metrics small {
+  color: #898e9a;
+  font-size: 7px;
+}
+
+.cortex-ads-preview__metrics strong {
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+
+.cortex-metric-chip {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 5px;
+  border-radius: 999px;
+  font-size: 5.5px;
+  white-space: nowrap;
+}
+
+.cortex-metric-chip--green {
+  background: #e8f3dd;
+  color: #658c4b;
+}
+
+.cortex-metric-chip--red {
+  background: #f9e2e3;
+  color: #c1747a;
+}
+
+.cortex-testimonial {
+  display: flex;
+  min-height: 565px;
+  margin: 9px 15px 0;
+  flex-direction: column;
+  align-items: center;
+  padding: 42px 21px 34px;
+  border-radius: 20px;
+  background: var(--cortex-soft-lavender);
+  color: #4e3154;
+  text-align: center;
+}
+
+.cortex-testimonial blockquote {
+  max-width: 275px;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.43;
+}
+
+.cortex-testimonial__person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: auto;
+}
+
+.cortex-avatar {
+  display: grid;
+  width: 50px;
+  height: 50px;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #988c75, #45423a 52%, #211f22);
+  color: #f8f1e7;
+  font-size: 17px;
+  font-weight: 650;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+.cortex-testimonial__person strong {
+  margin-top: 13px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.cortex-testimonial__person span {
+  margin-top: 5px;
+  font-size: 13px;
+  font-weight: 430;
+}
+
+.cortex-testimonial__controls {
+  display: flex;
+  gap: 11px;
+  margin-top: 32px;
+}
+
+.cortex-testimonial__controls button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(125, 89, 143, 0.13);
+  color: #4e3154;
+  cursor: pointer;
+}
+
+.cortex-testimonial__controls svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.7;
+}
+
+.cortex-testimonial__controls button:hover,
+.cortex-testimonial__controls button:focus-visible {
+  background: rgba(125, 89, 143, 0.22);
+}
+
+.cortex-showcase__body {
+  padding: 43px 15px 60px;
+}
+
+.cortex-showcase__body h2 {
+  font-size: 31px;
+  line-height: 1.27;
+}
+
+.cortex-showcase__body > p {
+  margin-top: 17px;
+}
+
+.cortex-showcase__cta {
+  margin-top: 25px;
+}
+
+.cortex-product-menu {
+  margin-top: 42px;
+  padding: 28px 21px 36px;
+  border-radius: 18px 18px 0 0;
+  background: var(--cortex-dark);
+  color: #ffffff;
+}
+
+.cortex-product-menu h3 {
+  padding-bottom: 13px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.17);
+  font-size: 18px;
+  font-weight: 680;
+  letter-spacing: -0.035em;
+}
+
+.cortex-product-menu span {
+  display: block;
+  margin-top: 15px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.cortex-menu-card {
+  min-height: 448px;
+  padding: 30px 21px 30px;
+  border-radius: 0 0 22px 22px;
+  background: var(--cortex-surface);
+  box-shadow: 0 14px 30px rgba(35, 40, 51, 0.055);
+}
+
+.cortex-menu-card nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.cortex-menu-card nav a {
+  display: flex;
+  min-height: 54px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: var(--cortex-ink);
+  font-size: 21px;
+  font-weight: 680;
+  letter-spacing: -0.045em;
+  line-height: 1.2;
+}
+
+.cortex-menu-card nav a svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  stroke-width: 1.8;
+}
+
+.cortex-menu-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.cortex-menu-card__actions .cortex-pill {
+  width: 100%;
+  min-height: 42px;
+  font-size: 14px;
+}
+
+.cortex-pricing-card {
+  margin-top: 40px;
+  overflow: hidden;
+}
+
+.cortex-pricing-card__body {
+  padding: 27px 15px 40px;
+}
+
+.cortex-pricing-card__body h2 {
+  font-size: 31px;
+  line-height: 1.26;
+}
+
+.cortex-pricing-card__body > p {
+  margin-top: 16px;
+}
+
+.cortex-segmented {
+  display: grid;
+  min-height: 48px;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  margin-top: 25px;
+  padding: 3px;
+  border-radius: 999px;
+  background: #e8ebff;
+  color: var(--cortex-ink);
+  font-size: 14px;
+  font-weight: 560;
+  text-align: center;
+}
+
+.cortex-segmented span {
+  display: grid;
+  min-height: 42px;
+  place-items: center;
+  border-radius: 999px;
+}
+
+.cortex-segmented__active {
+  background: var(--cortex-blue);
+  color: #ffffff;
+}
+
+.cortex-plan {
+  margin-top: 27px;
+  padding: 27px 15px 24px;
+  border: 1px solid #dfe1e6;
+  border-radius: 19px;
+  background: #ffffff;
+}
+
+.cortex-plan h3 {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.cortex-plan > p {
+  margin-top: 10px;
+  color: #4f5159;
+  font-size: 14px;
+  line-height: 1.52;
+}
+
+.cortex-plan hr {
+  margin: 25px 0 23px;
+  border: 0;
+  border-top: 1px solid #e6e7eb;
+}
+
+.cortex-plan h4 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.06em;
+}
+
+.cortex-plan ul {
+  display: flex;
+  padding: 0;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 22px;
+  list-style: none;
+}
+
+.cortex-plan li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--cortex-ink);
+  font-size: 14px;
+  line-height: 1.38;
+}
+
+.cortex-plan li svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--cortex-blue);
+  stroke-width: 2.4;
+}
+
+.cortex-reference__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 clamp(20px, 3.45vw, 56px) 26px;
+  color: rgba(20, 25, 33, 0.48);
+  font-size: 11px;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 1180px) {
+  .cortex-reference__stage {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-inline: 28px;
+  }
+
+  .cortex-column--intro,
+  .cortex-column--metrics {
+    margin-top: 30px;
+  }
+
+  .cortex-column--showcase,
+  .cortex-column--utility {
+    margin-top: 0;
+  }
+
+  .cortex-column--showcase {
+    min-height: 0;
+  }
+
+  .cortex-panel-header__brand {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 720px) {
+  .cortex-reference__stage {
+    display: block;
+    padding: 16px 16px 52px;
+  }
+
+  .cortex-column--intro,
+  .cortex-column--metrics,
+  .cortex-column--showcase,
+  .cortex-column--utility {
+    width: 100%;
+    margin-top: 16px;
+  }
+
+  .cortex-column--intro {
+    margin-top: 0;
+  }
+
+  .cortex-column--showcase {
+    min-height: 0;
+    border-radius: 22px;
+  }
+
+  .cortex-panel-header {
+    min-height: 68px;
+    padding-inline: 13px;
+  }
+
+  .cortex-panel-header__brand {
+    font-size: 18px;
+  }
+
+  .cortex-panel-header__brand .cortex-logo {
+    width: 28px;
+    height: 31px;
+  }
+
+  .cortex-panel-header__cta {
+    width: 108px;
+    min-height: 40px;
+    font-size: 13px;
+  }
+
+  .cortex-menu-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .cortex-intro {
+    padding-top: 30px;
+  }
+
+  .cortex-intro h1,
+  .cortex-showcase__body h2,
+  .cortex-pricing-card__body h2 {
+    font-size: 30px;
+  }
+
+  .cortex-media--dashboard {
+    height: 310px;
+    padding: 21px;
+    margin-top: 31px;
+  }
+
+  .cortex-testimonial {
+    min-height: 540px;
+    margin-inline: 13px;
+    padding: 38px 18px 28px;
+  }
+
+  .cortex-testimonial blockquote {
+    font-size: 21px;
+  }
+
+  .cortex-showcase__body {
+    padding: 36px 14px 45px;
+  }
+
+  .cortex-menu-card {
+    min-height: 418px;
+    border-radius: 22px;
+  }
+
+  .cortex-pricing-card {
+    margin-top: 16px;
+  }
+
+  .cortex-reference__footer {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-inline: 16px;
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cortex-reference *,
+  .cortex-reference *::before,
+  .cortex-reference *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
