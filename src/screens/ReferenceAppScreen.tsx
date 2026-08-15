@@ -1,6 +1,6 @@
 import { useEffect, useState, type PropsWithChildren, type ReactNode } from "react";
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Brain, Check, ChevronRight, GitBranch, Menu, Radio, Search, UserRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, Brain, Check, ChevronRight, GitBranch, Radio, Search, UserRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ClaudeMark } from "@/components/brand/ClaudeMark";
 import { CortexLogo } from "@/components/brand/CortexLogo";
@@ -40,11 +40,6 @@ function PanelHeader() {
       <Link className="cortex-panel-header__brand" to="/" aria-label="Cortex home">
         <CortexLogo aria-hidden="true" />
       </Link>
-      <div className="cortex-panel-header__actions">
-        <motion.button className="cortex-menu-button" type="button" aria-label="Open menu" whileTap={{ scale: 0.92 }}>
-          <Menu aria-hidden="true" />
-        </motion.button>
-      </div>
     </header>
   );
 }
@@ -96,7 +91,17 @@ function CortexCommandRail() {
   }, [commandIndex, displayedCommand, isDeleting, reducedMotion]);
 
   return (
-    <div className="cortex-command-rail" aria-label="Example Cortex commands">
+    <motion.div
+      className="cortex-command-rail"
+      aria-label="Example Cortex commands"
+      initial={reducedMotion ? false : { opacity: 0, y: 54 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={
+        reducedMotion
+          ? { duration: 0 }
+          : { delay: 0.46, duration: 0.72, ease: [0.22, 1, 0.36, 1] }
+      }
+    >
       <div className="cortex-command-rail__header">
         <span className="cortex-command-rail__label">
           <span className="cortex-command-rail__signal" aria-hidden="true" />
@@ -119,7 +124,7 @@ function CortexCommandRail() {
         <span>agents execute · Cortex returns</span>
       </div>
       <span className="sr-only">Example commands: map the signal across the market; turn this brief into a launch plan; research the field and show what changed.</span>
-    </div>
+    </motion.div>
   );
 }
 
@@ -477,15 +482,17 @@ export function ReferenceAppScreen() {
 
         <ReferenceColumn className="cortex-panel cortex-column cortex-column--metrics" delay={0.1}>
           <div className="cortex-column__body">
-            <motion.div
-              className="cortex-media cortex-media--sessions"
-              initial={{ opacity: 0, x: 70, y: 18, rotate: 1.2 }}
-              whileInView={{ opacity: 1, x: 0, y: 0, rotate: 0 }}
-              viewport={{ once: true, amount: 0.28 }}
-              transition={{ type: "spring", stiffness: 88, damping: 18, mass: 0.78 }}
-            >
-              <AiAccessPanel />
-            </motion.div>
+            <div className="cortex-media cortex-media--sessions">
+              <motion.div
+                className="cortex-system-module"
+                initial={{ opacity: 0, x: 92, y: 42, scale: 0.88, rotate: 1.4 }}
+                whileInView={{ opacity: 1, x: 0, y: 0, scale: 1, rotate: 0 }}
+                viewport={{ once: true, amount: 0.28 }}
+                transition={{ type: "spring", stiffness: 82, damping: 18, mass: 0.82 }}
+              >
+                <AiAccessPanel />
+              </motion.div>
+            </div>
             <h2>A brief becomes a finished outcome.</h2>
             <p>Cortex frames the mission, Hermes coordinates the models and agents, then brings the work back for review and delivery.</p>
             <div className="cortex-media cortex-media--revenue"><RevenueChart /></div>
