@@ -238,7 +238,7 @@ export function ReferenceAppScreen() {
             <Link className="cortex-pill cortex-pill--dark cortex-intro__cta" to="/signup">Enter Cortex</Link>
             <div className="cortex-media cortex-media--dashboard"><DashboardPreview /></div>
           </div>
-        </section>
+        </ReferenceColumn>
 
         <ReferenceColumn className="cortex-panel cortex-column cortex-column--metrics" delay={0.1}>
           <PanelHeader />
