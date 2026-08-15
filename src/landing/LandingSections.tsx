@@ -93,18 +93,12 @@ function OperatingWord({
   index: number;
   progress: MotionValue<number>;
 }) {
-  const start = 0.12 + index * 0.28;
-  const end = start + 0.22;
-  const opacity = useTransform(
-    progress,
-    [Math.max(0, start - 0.08), start, end, Math.min(1, end + 0.08)],
-    [0, 0.9, 0.9, 0],
-  );
-  const y = useTransform(
-    progress,
-    [Math.max(0, start - 0.08), start, end, Math.min(1, end + 0.08)],
-    [20, 0, 0, -20],
-  );
+  const start = 0.08 + index * 0.31;
+  const end = start + 0.14;
+  const fade = 0.025;
+  const range = [start - fade, start, end, end + fade];
+  const opacity = useTransform(progress, range, [0, 0.94, 0.94, 0]);
+  const y = useTransform(progress, range, [16, 0, 0, -16]);
 
   return (
     <motion.span className="cortex-operating__word" style={{ opacity, y }}>
@@ -193,18 +187,12 @@ function SequenceStep({
   progress: MotionValue<number>;
 }) {
   const segment = 1 / sequenceSteps.length;
-  const start = index * segment + segment * 0.18;
-  const end = (index + 1) * segment - segment * 0.14;
-  const opacity = useTransform(
-    progress,
-    [Math.max(0, start - segment * 0.3), start, end, Math.min(1, end + segment * 0.3)],
-    [0, 1, 1, 0],
-  );
-  const y = useTransform(
-    progress,
-    [Math.max(0, start - segment * 0.3), start, end, Math.min(1, end + segment * 0.3)],
-    [24, 0, 0, -24],
-  );
+  const start = index * segment + segment * 0.19;
+  const end = (index + 1) * segment - segment * 0.19;
+  const fade = segment * 0.08;
+  const range = [Math.max(0, start - fade), start, end, Math.min(1, end + fade)];
+  const opacity = useTransform(progress, range, [0, 1, 1, 0]);
+  const y = useTransform(progress, range, [20, 0, 0, -20]);
 
   return (
     <motion.div className="cortex-sequence__step" style={{ opacity, y }}>
