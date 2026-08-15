@@ -1,245 +1,186 @@
-import { ArrowLeft, ArrowRight, Check, ChevronRight, Menu, MoreHorizontal } from "lucide-react";
+import {
+  useRef,
+  useState,
+  type FormEvent,
+  type RefObject,
+} from "react";
+import { Check } from "lucide-react";
 import { Link } from "react-router-dom";
+import heroPixelCloud1920 from "@/assets/cortex-hero-pixel-cloud-1920.webp";
+import heroPixelCloud2560 from "@/assets/cortex-hero-pixel-cloud-2560.webp";
+import heroPixelCloud3840 from "@/assets/cortex-hero-pixel-cloud-3840.webp";
 import { CortexLogo } from "@/components/brand/CortexLogo";
+import { LandingSections } from "@/landing/LandingSections";
 import "./HeroLabScreen.css";
 
-function PanelHeader() {
-  return (
-    <header className="cortex-panel-header">
-      <Link className="cortex-panel-header__brand" to="/" aria-label="Cortex home">
-        <CortexLogo aria-hidden="true" />
-        <span>Cortex</span>
-      </Link>
-      <div className="cortex-panel-header__actions">
-        <Link className="cortex-pill cortex-pill--dark cortex-panel-header__cta" to="/signup">
-          Enter Cortex
-        </Link>
-        <button className="cortex-menu-button" type="button" aria-label="Open menu">
-          <Menu aria-hidden="true" />
-        </button>
-      </div>
-    </header>
-  );
-}
+type WaitlistStatus = "idle" | "invalid" | "loading" | "success" | "error";
 
-function SessionsChart() {
-  return (
-    <div className="cortex-chart">
-      <div className="cortex-chart__topline">
-        <strong>Mission activity</strong>
-        <MoreHorizontal aria-hidden="true" />
-      </div>
-      <div className="cortex-chart__legend">
-        <span><i className="cortex-chart__dot cortex-chart__dot--yellow" />Active agents</span>
-        <span><i className="cortex-chart__dot cortex-chart__dot--blue" />Completed runs</span>
-      </div>
-      <svg viewBox="0 0 300 138" role="img" aria-label="Mission activity trend chart">
-        <g className="cortex-chart__grid">
-          <path d="M29 15H289" />
-          <path d="M29 48H289" />
-          <path d="M29 81H289" />
-          <path d="M29 114H289" />
-        </g>
-        <path className="cortex-chart__line cortex-chart__line--yellow" d="M29 48C45 58 54 105 73 90S97 46 114 62s20 27 36 19 24 31 44 11 23-49 39-19 33 38 56 11" />
-        <path className="cortex-chart__line cortex-chart__line--blue" d="M29 28C43 50 52 75 69 82s28-17 43-8 19 16 31 14 21-15 36-14 23 29 38 17 27-34 40-20 21 25 32 19 26 18 40 36" />
-        <g className="cortex-chart__labels">
-          <text x="26" y="132">1 Sep</text>
-          <text x="103" y="132">7 Sep</text>
-          <text x="181" y="132">14 Sep</text>
-          <text x="261" y="132">21 Sep</text>
-          <text x="0" y="18">100</text>
-          <text x="2" y="51">75</text>
-          <text x="2" y="84">50</text>
-          <text x="2" y="117">0</text>
-        </g>
-      </svg>
-    </div>
-  );
-}
-
-function RevenueChart() {
-  return (
-    <div className="cortex-chart cortex-chart--revenue">
-      <div className="cortex-chart__topline">
+function AccessForm({
+  email,
+  emailRef,
+  status,
+  error,
+  onEmailChange,
+  onSubmit,
+}: {
+  email: string;
+  emailRef: RefObject<HTMLInputElement>;
+  status: WaitlistStatus;
+  error: string;
+  onEmailChange: (value: string) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+}) {
+  if (status === "success") {
+    return (
+      <div className="inside-access inside-access--success" role="status" aria-live="polite">
+        <Check aria-hidden="true" />
         <div>
-          <small>Throughput</small>
-          <strong>42 runs</strong>
-        </div>
-        <span className="cortex-growth">↑ 11% vs last cycle</span>
-      </div>
-      <svg viewBox="0 0 300 135" role="img" aria-label="Throughput trend chart">
-        <g className="cortex-chart__grid">
-          <path d="M28 20H288" />
-          <path d="M28 52H288" />
-          <path d="M28 84H288" />
-          <path d="M28 116H288" />
-        </g>
-        <path className="cortex-chart__area" d="M28 82C50 96 60 109 80 101s25-37 43-36 27 43 45 45 25-43 44-47 44 1 76 7v46H28Z" />
-        <path className="cortex-chart__line cortex-chart__line--violet" d="M28 82C50 96 60 109 80 101s25-37 43-36 27 43 45 45 25-43 44-47 44 1 76 7" />
-        <g className="cortex-chart__labels">
-          <text x="25" y="132">1 Sep</text>
-          <text x="91" y="132">7 Sep</text>
-          <text x="157" y="132">14 Sep</text>
-          <text x="223" y="132">21 Sep</text>
-          <text x="275" y="132">28 Sep</text>
-          <text x="0" y="22">$16k</text>
-          <text x="0" y="86">$8k</text>
-        </g>
-      </svg>
-    </div>
-  );
-}
-
-function DashboardPreview() {
-  return (
-    <div className="cortex-dashboard-preview" aria-hidden="true">
-      <aside className="cortex-dashboard-preview__sidebar">
-        <div className="cortex-dashboard-preview__mini-brand"><CortexLogo /> <span>Cortex</span></div>
-        <span className="cortex-dashboard-preview__nav cortex-dashboard-preview__nav--active">Mission overview</span>
-        <span className="cortex-dashboard-preview__nav">Signals</span>
-        <span className="cortex-dashboard-preview__nav">Evidence</span>
-        <span className="cortex-dashboard-preview__nav">Collaborators</span>
-        <span className="cortex-dashboard-preview__nav">History</span>
-      </aside>
-      <div className="cortex-dashboard-preview__main">
-        <div className="cortex-dashboard-preview__toolbar"><span>Mission overview</span><span>Objective / Launch briefing</span></div>
-        <div className="cortex-dashboard-preview__stats">
-          <div><small>Agents</small><strong>06</strong></div>
-          <div><small>Elapsed</small><strong>00:13:52</strong></div>
-          <div><small>Runs</small><strong>17</strong></div>
-          <div><small>Proofs</small><strong>04</strong></div>
-        </div>
-        <div className="cortex-dashboard-preview__graph">
-          <div className="cortex-dashboard-preview__graph-head"><span>Mission activity</span><i /><i /></div>
-          <svg viewBox="0 0 240 90"><path d="M3 58c18-30 28-28 45-2s26 15 40-1 24-22 37-7 20 24 34 7 23-36 39-18 21 26 39 17" /><path d="M3 39c15 17 25 24 41 19s25-34 39-18 25 30 38 13 21-24 36-14 22 23 37 5 25-19 43 11" /></svg>
+          <strong>Request received</strong>
+          <span>We will be in touch when the next wave opens.</span>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-function AdsPreview() {
-  return (
-    <div className="cortex-ads-preview" aria-hidden="true">
-      <div className="cortex-ads-preview__title"><span className="cortex-meta-icon">◉</span><strong>Mission signals</strong></div>
-      <div className="cortex-ads-preview__metrics">
-        <div><small>Active runs</small><strong>06</strong><span className="cortex-metric-chip cortex-metric-chip--green">↗ 14% vs last cycle</span></div>
-        <div><small>Proofs returned</small><strong>18</strong><span className="cortex-metric-chip cortex-metric-chip--red">↘ 8% vs last cycle</span></div>
-      </div>
-    </div>
-  );
-}
+  const hasMessage = status === "invalid" || status === "error";
 
-function Testimonial() {
   return (
-    <figure className="cortex-testimonial">
-      <blockquote>“Cortex has transformed the way we direct complex work. Its clear operating model, coordinated agents, and traceable execution give our team a system we trust when decisions need to move.”</blockquote>
-      <div className="cortex-testimonial__person">
-        <div className="cortex-avatar" aria-hidden="true">M</div>
-        <strong>Early design partner</strong>
-        <span>Operations team</span>
-      </div>
-      <div className="cortex-testimonial__controls">
-        <button type="button" aria-label="Previous testimonial"><ArrowLeft aria-hidden="true" /></button>
-        <button type="button" aria-label="Next testimonial"><ArrowRight aria-hidden="true" /></button>
-      </div>
-    </figure>
-  );
-}
-
-function MenuCard() {
-  const items = ["Platform", "Agent layer", "Workflows", "About Cortex", "Access"];
-  return (
-    <section className="cortex-menu-card" aria-label="Cortex menu">
-      <nav>
-        {items.map((item) => (
-          <Link to="/project" key={item}>
-            <span>{item}</span>
-            <ChevronRight aria-hidden="true" />
-          </Link>
-        ))}
-      </nav>
-      <div className="cortex-menu-card__actions">
-        <Link className="cortex-pill cortex-pill--lavender" to="/login">Log in</Link>
-        <Link className="cortex-pill cortex-pill--dark" to="/signup">Enter Cortex</Link>
-      </div>
-    </section>
-  );
-}
-
-function PricingCard() {
-  return (
-    <section className="cortex-panel cortex-pricing-card" aria-labelledby="cortex-plan-title">
-      <PanelHeader />
-      <div className="cortex-pricing-card__body">
-        <h2 id="cortex-plan-title">Choose the right way to start.</h2>
-        <p>Choose the access path that fits your work and gives every mission room to grow.</p>
-        <div className="cortex-segmented" role="group" aria-label="Billing period">
-          <span className="cortex-segmented__active">Monthly</span>
-          <span>Yearly</span>
-        </div>
-        <div className="cortex-plan">
-          <h3>Private beta</h3>
-          <p>Bring one focused workflow into Cortex and see what coordinated intelligence can return.</p>
-          <hr />
-          <h4>Early access</h4>
-          <ul>
-            {["1 workspace.", "One active mission.", "Core agent coordination.", "Traceable outcomes."].map((item) => (
-              <li key={item}><Check aria-hidden="true" />{item}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </section>
+    <form className="inside-access" noValidate onSubmit={onSubmit}>
+      <label className="sr-only" htmlFor="cortex-access-email">Work email</label>
+      <input
+        ref={emailRef}
+        id="cortex-access-email"
+        name="email"
+        type="email"
+        autoComplete="email"
+        placeholder="Work email"
+        value={email}
+        aria-invalid={status === "invalid"}
+        aria-describedby={hasMessage ? "cortex-access-message" : undefined}
+        required
+        onChange={(event) => onEmailChange(event.target.value)}
+      />
+      <button type="submit" disabled={status === "loading"}>
+        {status === "loading" ? "Sending" : "Request access"}
+      </button>
+      {hasMessage && (
+        <p id="cortex-access-message" role="alert">
+          {status === "invalid" ? "Enter a valid work email." : error}
+        </p>
+      )}
+    </form>
   );
 }
 
 export function HeroLabScreen() {
+  const emailRef = useRef<HTMLInputElement>(null);
+  const [requestStatus, setRequestStatus] = useState<WaitlistStatus>("idle");
+  const [requestError, setRequestError] = useState("");
+  const [email, setEmail] = useState("");
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (requestStatus === "invalid" || requestStatus === "error") {
+      setRequestStatus("idle");
+      setRequestError("");
+    }
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+
+    if (!form.checkValidity()) {
+      setRequestStatus("invalid");
+      emailRef.current?.focus();
+      return;
+    }
+
+    setRequestStatus("loading");
+    setRequestError("");
+
+    try {
+      const endpoint = import.meta.env.VITE_WAITLIST_ENDPOINT?.trim();
+      if (!endpoint) throw new Error("Waitlist endpoint is not configured");
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      if (!response.ok) throw new Error(`Waitlist request failed with ${response.status}`);
+      setRequestStatus("success");
+    } catch {
+      setRequestStatus("error");
+      setRequestError(
+        import.meta.env.VITE_WAITLIST_ENDPOINT?.trim()
+          ? "The request could not be recorded. Try again."
+          : "Access requests are not connected yet.",
+      );
+    }
+  };
+
   return (
-    <main className="cortex-reference" aria-labelledby="cortex-page-title">
-      <div className="cortex-reference__stage">
-        <section className="cortex-panel cortex-column cortex-column--intro">
-          <PanelHeader />
-          <div className="cortex-column__body cortex-intro">
-            <h1 id="cortex-page-title">Turn scattered intelligence into coordinated action</h1>
-            <p>Coordinate your agents, direct complex work, and return each outcome with a reason you can trust.</p>
-            <Link className="cortex-pill cortex-pill--dark cortex-intro__cta" to="/signup">Enter Cortex</Link>
-            <div className="cortex-media cortex-media--dashboard"><DashboardPreview /></div>
+    <main className="inside" aria-labelledby="inside-title">
+      <header className="inside-nav">
+        <nav className="inside-nav__shell" aria-label="Primary navigation">
+          <Link className="inside-nav__brand" to="/" aria-label="Cortex home">
+            <CortexLogo aria-hidden="true" />
+            <span>CORTEX</span>
+          </Link>
+          <div className="inside-nav__links">
+            <Link to="/project">The system</Link>
+            <a href="#access">Access</a>
           </div>
-        </section>
+          <Link className="inside-nav__signin" to="/login">Sign in</Link>
+        </nav>
+      </header>
 
-        <section className="cortex-panel cortex-column cortex-column--metrics">
-          <PanelHeader />
-          <div className="cortex-column__body">
-            <div className="cortex-media cortex-media--sessions"><SessionsChart /></div>
-            <h2>Unlock coordinated execution</h2>
-            <p>Gain instant visibility into your agents’ work with live orchestration, empowering you to direct complex missions with clarity.</p>
-            <div className="cortex-media cortex-media--revenue"><RevenueChart /></div>
-            <h2>Increase output through orchestration</h2>
-            <p>Give every agent a role, keep complex work moving, and return with a clear record of what was done.</p>
-            <div className="cortex-media cortex-media--ads"><AdsPreview /></div>
+      <section className="inside-entry">
+        <div className="inside-entry__sticky">
+          <picture className="inside-entry__art" aria-hidden="true">
+            <source
+              type="image/webp"
+              srcSet={`${heroPixelCloud1920} 1920w, ${heroPixelCloud2560} 2560w, ${heroPixelCloud3840} 3840w`}
+              sizes="100vw"
+            />
+            <img
+              src={heroPixelCloud1920}
+              alt=""
+              draggable={false}
+              fetchPriority="high"
+            />
+          </picture>
+          <div className="inside-entry__wash" aria-hidden="true" />
+          <div className="inside-entry__content">
+            <h1 id="inside-title"><span>One objective.</span><span>Every action aligned.</span></h1>
+            <p>Cortex turns one objective into coordinated work—with the evidence to stand behind it.</p>
+            <a className="inside-entry__cta" href="#access">Request access</a>
           </div>
-        </section>
+          <a className="inside-entry__scroll" href="#manifesto" aria-label="Scroll to discover Cortex" />
+        </div>
+      </section>
 
-        <section className="cortex-column cortex-column--showcase">
-          <Testimonial />
-          <div className="cortex-showcase__body">
-            <h2>Direct Your Agents. Transform Your Work.</h2>
-            <p>Experience the power of Cortex and rethink how complex work is planned, executed, and reviewed. Unlock the potential of coordinated intelligence. Begin today and turn scattered effort into reliable outcomes.</p>
-            <Link className="cortex-pill cortex-pill--dark cortex-showcase__cta" to="/signup">Enter Cortex</Link>
-            <div className="cortex-product-menu">
-              <h3>Cortex</h3>
-              {["Missions", "Agents", "Integrations", "Security & privacy", "Documentation"].map((item) => <span key={item}>{item}</span>)}
-            </div>
-          </div>
-        </section>
+      <LandingSections />
 
-        <aside className="cortex-column cortex-column--utility">
-          <MenuCard />
-          <PricingCard />
-        </aside>
-      </div>
-      <footer className="cortex-reference__footer">
+      <section className="inside-closing" id="access">
+        <div className="inside-closing__content">
+          <div className="inside-closing__signal"><i /> Private access</div>
+          <CortexLogo className="inside-closing__mark" />
+          <h2>Bring the objective.<br /><em>Leave with the proof.</em></h2>
+          <p className="inside-closing__copy">Bring one difficult workflow. We will show you the system behind it.</p>
+          <AccessForm
+            email={email}
+            emailRef={emailRef}
+            status={requestStatus}
+            error={requestError}
+            onEmailChange={handleEmailChange}
+            onSubmit={handleSubmit}
+          />
+        </div>
+      </section>
+
+      <footer className="inside-footer">
         <span>© {new Date().getFullYear()} Cortex</span>
         <span>Operational intelligence for consequential work.</span>
       </footer>
