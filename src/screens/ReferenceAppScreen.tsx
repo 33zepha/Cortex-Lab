@@ -42,9 +42,6 @@ function PanelHeader() {
         <span>Cortex</span>
       </Link>
       <div className="cortex-panel-header__actions">
-        <Link className="cortex-pill cortex-pill--dark cortex-panel-header__cta" to="/signup">
-          Get started
-        </Link>
         <motion.button className="cortex-menu-button" type="button" aria-label="Open menu" whileTap={{ scale: 0.92 }}>
           <Menu aria-hidden="true" />
         </motion.button>
@@ -294,7 +291,7 @@ function MenuCard() {
       </nav>
       <div className="cortex-menu-card__actions">
         <Link className="cortex-pill cortex-pill--lavender" to="/login">Log in</Link>
-        <Link className="cortex-pill cortex-pill--dark" to="/signup">Get started</Link>
+        <Link className="cortex-pill cortex-pill--dark" to="/hero-lab#access">Join the waitlist</Link>
       </div>
     </section>
   );
@@ -375,7 +372,7 @@ export function ReferenceAppScreen() {
           <div className="cortex-column__body cortex-intro">
             <h1 id="cortex-page-title">Turn scattered intelligence into coordinated action</h1>
             <p>Coordinate your agents, direct complex work, and return each outcome with a reason you can trust.</p>
-            <Link className="cortex-pill cortex-pill--dark cortex-intro__cta" to="/signup">Start a mission</Link>
+            <Link className="cortex-pill cortex-pill--dark cortex-intro__cta" to="/hero-lab#access">Join the waitlist</Link>
           </div>
         </ReferenceColumn>
 
