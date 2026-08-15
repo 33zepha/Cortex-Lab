@@ -1,5 +1,5 @@
 @import "@fontsource-variable/plus-jakarta-sans/wght.css";
-@import "@fontsource-variable/syne/wght.css";
+@import "@fontsource-variable/newsreader/wght.css";
 
 @font-face {
   font-family: "Cortex Inter";
@@ -22,7 +22,7 @@
   --cortex-soft-auth: #e6eafd;
   --cortex-dark: #222222;
   --cortex-ui: "Plus Jakarta Sans Variable", "Avenir Next", "Helvetica Neue", Inter, ui-sans-serif, system-ui, sans-serif;
-  --cortex-display: "Syne Variable", "Avenir Next", "Helvetica Neue", Inter, ui-sans-serif, system-ui, sans-serif;
+  --cortex-display: "Newsreader Variable", Georgia, "Times New Roman", serif;
   min-height: 100vh;
   overflow-x: hidden;
   background: var(--cortex-canvas);
@@ -302,9 +302,9 @@
   color: var(--cortex-ink);
   font-family: var(--cortex-display);
   font-size: clamp(29px, 2.05vw, 33px);
-  font-weight: 620;
-  letter-spacing: -0.075em;
-  line-height: 1.21;
+  font-weight: 520;
+  letter-spacing: -0.048em;
+  line-height: 1.05;
 }
 
 .cortex-intro p,
@@ -328,9 +328,32 @@
   margin-top: 21px;
 }
 
+.cortex-intro__cta {
+  width: auto;
+  min-width: 184px;
+  min-height: 52px;
+  padding-inline: 23px;
+  border: 1px solid rgba(20, 25, 33, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 9px 18px rgba(20, 25, 33, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  font-size: 14px;
+  font-weight: 640;
+  letter-spacing: -0.025em;
+}
+
+.cortex-intro__cta:hover,
+.cortex-intro__cta:focus-visible {
+  box-shadow: 0 12px 22px rgba(20, 25, 33, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.cortex-intro__cta:focus-visible {
+  outline: 3px solid rgba(85, 109, 228, 0.24);
+  outline-offset: 3px;
+}
+
 .cortex-command-rail {
   width: 100%;
-  margin-top: 72px;
+  margin-top: 60px;
   padding: 13px 13px 11px;
   border: 1px solid rgba(20, 25, 33, 0.1);
   border-radius: 18px;
@@ -352,9 +375,8 @@
   color: rgba(20, 25, 33, 0.54);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.015em;
   line-height: 1;
-  text-transform: uppercase;
 }
 
 .cortex-command-rail__label {
@@ -374,7 +396,7 @@
 .cortex-command-rail__status {
   color: var(--cortex-blue);
   font-size: 9px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.01em;
 }
 
 .cortex-command-rail__field {
@@ -1874,8 +1896,8 @@
   .cortex-intro h1,
   .cortex-showcase__body h2,
   .cortex-pricing-card__body h2 {
-    font-size: clamp(34px, 9.2vw, 42px);
-    line-height: 1.08;
+    font-size: clamp(38px, 10.4vw, 48px);
+    line-height: 0.98;
   }
 
   .cortex-intro h1 {
@@ -1888,13 +1910,14 @@
   }
 
   .cortex-intro__cta {
-    width: 184px;
-    min-height: 48px;
-    margin-top: 25px;
+    width: auto;
+    min-width: 184px;
+    min-height: 52px;
+    margin-top: 27px;
   }
 
   .cortex-command-rail {
-    margin-top: clamp(54px, 8vh, 78px);
+    margin-top: clamp(42px, 6vh, 62px);
   }
 
   .cortex-command-rail__field {
