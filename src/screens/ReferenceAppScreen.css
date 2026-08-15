@@ -374,77 +374,22 @@
 .cortex-command-rail {
   width: 100%;
   margin-top: 60px;
-  padding: 13px 13px 11px;
+  padding: 9px 12px;
   border: 1px solid rgba(20, 25, 33, 0.1);
-  border-radius: 18px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.88);
   box-shadow: 0 16px 30px rgba(35, 40, 51, 0.08), 0 2px 8px rgba(35, 40, 51, 0.04);
   backdrop-filter: blur(10px);
 }
 
-.cortex-command-rail__header,
-.cortex-command-rail__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.cortex-command-rail__header {
-  padding: 0 2px 9px;
-  color: rgba(20, 25, 33, 0.54);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.015em;
-  line-height: 1;
-}
-
-.cortex-command-rail__label {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.cortex-command-rail__signal {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--cortex-blue);
-  box-shadow: 0 0 0 4px rgba(85, 109, 228, 0.1);
-}
-
-.cortex-command-rail__status {
-  color: var(--cortex-blue);
-  font-size: 9px;
-  letter-spacing: 0.01em;
-}
-
 .cortex-command-rail__field {
   display: flex;
   min-width: 0;
-  min-height: 57px;
+  min-height: 62px;
   align-items: center;
-  gap: 10px;
-  padding: 0 10px 0 12px;
-  border: 1px solid rgba(20, 25, 33, 0.09);
-  border-radius: 13px;
-  background: #ffffff;
+  padding: 0 4px;
   color: var(--cortex-ink);
-}
-
-.cortex-command-rail__prompt-mark {
-  display: inline-grid;
-  width: 25px;
-  height: 25px;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--cortex-soft-auth);
-  color: var(--cortex-blue);
-  font-family: var(--cortex-display);
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1;
+  text-align: center;
 }
 
 .cortex-command-rail__phrases {
@@ -453,7 +398,7 @@
   min-width: 0;
   min-height: 2.7em;
   flex: 1 1 auto;
-  overflow: hidden;
+  overflow: visible;
   align-items: center;
   color: var(--cortex-ink);
   font-size: 12px;
@@ -478,27 +423,6 @@
   content: "";
   vertical-align: -0.12em;
   animation: cortex-command-caret 820ms steps(1, end) infinite;
-}
-
-.cortex-command-rail__submit {
-  display: inline-grid;
-  width: 27px;
-  height: 27px;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid rgba(85, 109, 228, 0.16);
-  border-radius: 50%;
-  color: var(--cortex-blue);
-  font-size: 15px;
-  line-height: 1;
-}
-
-.cortex-command-rail__footer {
-  padding: 9px 2px 0;
-  color: rgba(20, 25, 33, 0.45);
-  font-size: 9px;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
 }
 
 @keyframes cortex-command-caret {
@@ -541,18 +465,6 @@
   background: transparent;
 }
 
-.cortex-media--sessions::before {
-  position: absolute;
-  z-index: 0;
-  inset: 14px -10px 18px;
-  border-radius: 30px;
-  background: linear-gradient(145deg, #e5e9fc 0%, #dce2fa 58%, #d8def5 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.64), inset 0 -12px 22px rgba(85, 109, 228, 0.035);
-  content: "";
-  opacity: 0.72;
-  transform: rotate(-1.15deg);
-}
-
 .cortex-system-module {
   position: relative;
   z-index: 1;
@@ -568,6 +480,7 @@
   flex-direction: column;
   padding: 14px 15px 12px;
   overflow: hidden;
+  border: 1px solid rgba(20, 25, 33, 0.055);
   border-radius: 16px;
   background: #ffffff;
   color: var(--cortex-ink);
@@ -977,21 +890,51 @@
   --cortex-core-offset: 11%;
   --cortex-core-width: 78%;
   padding: 6px 0 5px;
-  gap: 5px;
+  justify-content: flex-start;
+  gap: 0;
 }
 
 .cortex-ai-system-map__thread {
-  left: calc(var(--cortex-core-offset) - 6px);
-  width: 1px;
-  background: linear-gradient(to bottom, transparent, #b9c3e9 8%, #9aa9e0 48%, #b9c3e9 92%, transparent);
-  opacity: 0.78;
+  display: none;
 }
 
 .cortex-ai-zone {
   padding: 6px 7px 7px 9px;
+  border: 1px solid rgba(20, 25, 33, 0.07);
   border-radius: 11px;
-  background: transparent;
-  box-shadow: none;
+  background: #ffffff;
+  box-shadow: 0 5px 13px rgba(35, 40, 51, 0.035), inset 0 0 0 1px rgba(255, 255, 255, 0.68);
+}
+
+.cortex-ai-link {
+  position: relative;
+  display: flex;
+  width: var(--cortex-core-width);
+  min-height: 16px;
+  margin-left: var(--cortex-core-offset);
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 16px;
+}
+
+.cortex-ai-link::before {
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(154, 169, 224, 0), rgba(126, 143, 209, 0.78) 26%, rgba(126, 143, 209, 0.78) 74%, rgba(154, 169, 224, 0));
+  content: "";
+}
+
+.cortex-ai-link__port {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border: 1px solid #ffffff;
+  border-radius: 50%;
+  background: var(--cortex-blue);
+  box-shadow: 0 0 0 1px rgba(85, 109, 228, 0.22), 0 3px 7px rgba(85, 109, 228, 0.14);
+  transform: translate(-50%, -50%);
 }
 
 .cortex-ai-zone--input,
@@ -1004,7 +947,7 @@
 }
 
 .cortex-ai-zone--input {
-  background: transparent;
+  background: #ffffff;
 }
 
 .cortex-ai-zone--control {
@@ -1022,7 +965,8 @@
 }
 
 .cortex-ai-zone--synthesis {
-  background: transparent;
+  background: #ffffff;
+  box-shadow: 0 5px 13px rgba(35, 40, 51, 0.025), inset 0 0 0 1px rgba(255, 255, 255, 0.68);
 }
 
 .cortex-ai-zone--output {
@@ -1031,24 +975,17 @@
 }
 
 .cortex-ai-zone::before {
-  top: 15px;
-  left: -9px;
-  width: 5px;
-  height: 5px;
-  border: 1px solid #ffffff;
-  background: #aab6e5;
-  box-shadow: 0 0 0 1px rgba(85, 109, 228, 0.12);
+  display: none;
 }
 
 .cortex-ai-zone--control::before,
 .cortex-ai-zone--synthesis::before,
 .cortex-ai-zone--output::before {
-  background: var(--cortex-blue);
+  display: none;
 }
 
 .cortex-ai-zone--orchestration::before {
-  left: calc(var(--cortex-core-offset) - 9px);
-  background: #aa9adc;
+  display: none;
 }
 
 .cortex-ai-zone__header {
@@ -1968,15 +1905,9 @@
   }
 
   .cortex-media--sessions {
-    height: 700px;
-    margin-inline: 0;
-  }
-
-  .cortex-media--sessions::before {
-    inset: 12px -16px 18px;
-    border-radius: 36px;
-    opacity: 0.68;
-    transform: rotate(-0.8deg);
+    width: calc(100% + 40px);
+    height: 720px;
+    margin-inline: -20px;
   }
 
   .cortex-ai-panel {
@@ -2007,13 +1938,17 @@
     --cortex-core-offset: 10%;
     --cortex-core-width: 80%;
     padding: 12px 0 8px;
-    gap: 10px;
+    gap: 0;
   }
 
   .cortex-ai-system-map__thread {
-    top: 18px;
-    bottom: 18px;
-    left: calc(var(--cortex-core-offset) - 8px);
+    display: none;
+  }
+
+  .cortex-ai-link {
+    min-height: 24px;
+    margin-left: var(--cortex-core-offset);
+    flex-basis: 24px;
   }
 
   .cortex-ai-zone {
@@ -2022,15 +1957,11 @@
   }
 
   .cortex-ai-zone::before {
-    top: 19px;
-    left: -14px;
-    width: 7px;
-    height: 7px;
-    border-width: 1.5px;
+    display: none;
   }
 
   .cortex-ai-zone--orchestration::before {
-    left: calc(var(--cortex-core-offset) - 14px);
+    display: none;
   }
 
   .cortex-ai-zone__header {
@@ -2229,13 +2160,7 @@
   }
 
   .cortex-command-rail__field {
-    min-height: 58px;
-  }
-
-  .cortex-command-rail__footer {
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 4px 12px;
+    min-height: 68px;
   }
 
   .cortex-testimonial {
