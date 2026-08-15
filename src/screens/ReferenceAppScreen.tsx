@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type PropsWithChildren, type ReactNode } from "react";
 import { AnimatePresence, MotionConfig, motion, useInView, useReducedMotion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Brain, Check, ChevronRight, GitBranch, Radio, Search, UserRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUp, Brain, Check, ChevronRight, GitBranch, Mic, Paperclip, Plus, Radio, Search, UserRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ClaudeMark } from "@/components/brand/ClaudeMark";
 import { CortexLogo } from "@/components/brand/CortexLogo";
@@ -101,33 +101,46 @@ function CortexCommandRail() {
       transition={
         reducedMotion
           ? { duration: 0 }
-          : { delay: 0.46, duration: 1.1, ease: [0.16, 1, 0.3, 1] }
+          : { delay: 0.18, duration: 1.2, ease: [0.16, 1, 0.3, 1] }
       }
     >
       <div className="cortex-command-rail__viewport" aria-hidden="true">
         <div className="cortex-command-rail__chat-space">
-          <span className="cortex-command-rail__chat-mark"><CortexLogo aria-hidden="true" /></span>
+          <div className="cortex-command-rail__empty-state">
+            <span className="cortex-command-rail__chat-mark"><CortexLogo aria-hidden="true" /></span>
+          </div>
           <div className="cortex-command-rail__messages">
             <div className="cortex-command-rail__composer">
-              <span className="cortex-command-rail__phrases">
-                <span className="cortex-command-rail__phrase">
-                  {displayedCommand}
-                  <span className="cortex-command-rail__caret" />
+              <div className="cortex-command-rail__composer-copy">
+                <span className="cortex-command-rail__phrases">
+                  <span className="cortex-command-rail__phrase">
+                    {displayedCommand}
+                    <span className="cortex-command-rail__caret" />
+                  </span>
                 </span>
-              </span>
-              <AnimatePresence initial={false}>
-                {hasMessage ? (
-                  <motion.span
-                    className="cortex-command-rail__sent-mark"
-                    initial={{ opacity: 0, scale: 0.72, y: 4 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.72, y: 4 }}
-                    transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <Check aria-hidden="true" />
-                  </motion.span>
-                ) : null}
-              </AnimatePresence>
+              </div>
+              <div className="cortex-command-rail__composer-toolbar">
+                <div className="cortex-command-rail__tools">
+                  <span className="cortex-command-rail__tool"><Plus aria-hidden="true" /></span>
+                  <span className="cortex-command-rail__tool"><Paperclip aria-hidden="true" /></span>
+                </div>
+                <div className="cortex-command-rail__actions">
+                  <span className="cortex-command-rail__tool"><Mic aria-hidden="true" /></span>
+                  <AnimatePresence initial={false}>
+                    {hasMessage ? (
+                      <motion.span
+                        className="cortex-command-rail__sent-mark"
+                        initial={{ opacity: 0, scale: 0.72, y: 4 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.72, y: 4 }}
+                        transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
+                      >
+                        <ArrowUp aria-hidden="true" />
+                      </motion.span>
+                    ) : null}
+                  </AnimatePresence>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -296,9 +309,6 @@ function AiAccessPanel() {
 
   return (
     <div ref={panelRef} className="cortex-ai-panel" aria-label="Cortex linked operating system">
-      <div className="cortex-ai-panel__header">
-        <strong>Cortex system</strong>
-      </div>
       <div className="cortex-ai-system-map">
         <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--input" delay={0.08} index={0} revealedThrough={revealedThrough}>
           <CortexSystemNode
@@ -575,9 +585,8 @@ export function ReferenceAppScreen() {
         <ReferenceColumn className="cortex-panel cortex-column cortex-column--metrics" delay={0.1}>
           <div className="cortex-column__body">
             <div className="cortex-system-lede">
-              <span className="cortex-system-lede__eyebrow">Cortex operating system</span>
-              <h2>A brief becomes a coordinated outcome.</h2>
-              <p>Cortex frames the mission, Hermes directs the run, and the system returns work you can inspect, review, and use.</p>
+              <h2>How a brief moves through Cortex.</h2>
+              <p>The system below shows the handoff: human intent enters Cortex, Hermes routes the work through models and agents, and the result comes back ready to use.</p>
             </div>
             <div className="cortex-media cortex-media--sessions">
               <motion.div
