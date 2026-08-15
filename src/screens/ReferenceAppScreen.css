@@ -675,6 +675,350 @@
   line-height: 1;
 }
 
+/* The system map is deliberately asymmetrical: a compact core feeds a wider
+   orchestration field, so the interface reads like a living system rather
+   than a stack of presentation cards. */
+.cortex-media--sessions {
+  padding: 18px;
+  background: linear-gradient(145deg, #e5e9fc 0%, #dce2fa 58%, #d8def5 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62), inset 0 -12px 22px rgba(85, 109, 228, 0.035);
+}
+
+.cortex-ai-panel {
+  padding: 14px 14px 11px;
+  border-radius: 18px;
+  box-shadow: 0 9px 20px rgba(35, 40, 51, 0.06), inset 0 0 0 1px rgba(20, 25, 33, 0.02);
+}
+
+.cortex-ai-system-map {
+  --cortex-core-offset: 11%;
+  --cortex-core-width: 78%;
+  padding: 6px 0 5px;
+  gap: 5px;
+}
+
+.cortex-ai-system-map__thread {
+  left: calc(var(--cortex-core-offset) - 6px);
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, #b9c3e9 8%, #9aa9e0 48%, #b9c3e9 92%, transparent);
+  opacity: 0.78;
+}
+
+.cortex-ai-zone {
+  padding: 6px 7px 7px 9px;
+  border-radius: 11px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.cortex-ai-zone--input,
+.cortex-ai-zone--control,
+.cortex-ai-zone--synthesis,
+.cortex-ai-zone--output {
+  width: var(--cortex-core-width);
+  margin-right: auto;
+  margin-left: var(--cortex-core-offset);
+}
+
+.cortex-ai-zone--input {
+  background: transparent;
+}
+
+.cortex-ai-zone--control {
+  background: linear-gradient(102deg, rgba(238, 240, 255, 0.95), rgba(234, 237, 255, 0.72));
+  box-shadow: 0 5px 12px rgba(85, 109, 228, 0.055), inset 0 0 0 1px rgba(85, 109, 228, 0.045);
+}
+
+.cortex-ai-zone--orchestration {
+  width: 100%;
+  margin-left: 0;
+  padding-right: 7px;
+  padding-left: var(--cortex-core-offset);
+  background: linear-gradient(100deg, rgba(246, 243, 255, 0.95), rgba(248, 246, 255, 0.72) 74%, rgba(241, 238, 252, 0.82));
+  box-shadow: 0 6px 14px rgba(116, 91, 170, 0.045), inset 0 0 0 1px rgba(116, 91, 170, 0.035);
+}
+
+.cortex-ai-zone--synthesis {
+  background: transparent;
+}
+
+.cortex-ai-zone--output {
+  background: rgba(237, 240, 255, 0.72);
+  box-shadow: 0 4px 10px rgba(85, 109, 228, 0.035), inset 0 0 0 1px rgba(85, 109, 228, 0.035);
+}
+
+.cortex-ai-zone::before {
+  top: 15px;
+  left: -9px;
+  width: 5px;
+  height: 5px;
+  border: 1px solid #ffffff;
+  background: #aab6e5;
+  box-shadow: 0 0 0 1px rgba(85, 109, 228, 0.12);
+}
+
+.cortex-ai-zone--control::before,
+.cortex-ai-zone--synthesis::before,
+.cortex-ai-zone--output::before {
+  background: var(--cortex-blue);
+}
+
+.cortex-ai-zone--orchestration::before {
+  left: calc(var(--cortex-core-offset) - 9px);
+  background: #aa9adc;
+}
+
+.cortex-ai-zone__header {
+  margin-bottom: 5px;
+  font-size: 5.5px;
+}
+
+.cortex-ai-zone__header > span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.cortex-ai-zone__header > span em {
+  color: var(--cortex-blue);
+  font-size: 4.6px;
+  font-style: normal;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.cortex-ai-system-node {
+  min-height: 27px;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 3px 8px rgba(35, 40, 51, 0.035), inset 0 0 0 1px rgba(20, 25, 33, 0.018);
+}
+
+.cortex-ai-system-node + .cortex-ai-system-node {
+  margin-top: 4px;
+}
+
+.cortex-ai-system-node__mark {
+  width: 20px;
+  height: 20px;
+  flex-basis: 20px;
+  border-radius: 6px;
+}
+
+.cortex-ai-system-node__mark svg {
+  width: 11px;
+  height: 11px;
+}
+
+.cortex-ai-system-node__mark .cortex-logo {
+  width: 11px;
+  height: 13px;
+}
+
+.cortex-ai-system-node--human .cortex-ai-system-node__mark {
+  width: 17px;
+  height: 17px;
+  flex-basis: 17px;
+  border-radius: 6px;
+}
+
+.cortex-ai-system-node--human .cortex-ai-system-node__mark svg {
+  width: 10px;
+  height: 10px;
+}
+
+.cortex-ai-system-node--hermes .cortex-ai-system-node__mark {
+  width: 25px;
+  height: 25px;
+  flex-basis: 25px;
+  border-radius: 6px;
+}
+
+.cortex-ai-system-node--hermes .cortex-ai-system-node__mark img {
+  border-radius: 5px;
+}
+
+.cortex-ai-system-node--result .cortex-ai-system-node__mark {
+  width: 18px;
+  height: 18px;
+  flex-basis: 18px;
+  border-radius: 6px;
+}
+
+.cortex-ai-system-node--result .cortex-ai-system-node__mark svg {
+  width: 10px;
+  height: 10px;
+}
+
+.cortex-ai-system-node strong {
+  font-size: 8px;
+}
+
+.cortex-ai-system-node small,
+.cortex-ai-system-node__context {
+  font-size: 5.2px;
+}
+
+.cortex-ai-branch-field {
+  position: relative;
+  display: flex;
+  padding: 2px 0 1px 7px;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cortex-ai-branch-field::before {
+  position: absolute;
+  top: 16px;
+  bottom: 16px;
+  left: 3px;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(164, 146, 208, 0.68) 16%, rgba(164, 146, 208, 0.68) 84%, transparent);
+  content: "";
+}
+
+.cortex-ai-branch {
+  position: relative;
+  min-width: 0;
+  margin-left: 13px;
+  padding: 6px 7px 7px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow: 0 4px 10px rgba(74, 59, 111, 0.035), inset 0 0 0 1px rgba(92, 75, 136, 0.035);
+}
+
+.cortex-ai-branch::before {
+  position: absolute;
+  top: 21px;
+  left: -13px;
+  width: 13px;
+  height: 1px;
+  background: rgba(164, 146, 208, 0.68);
+  content: "";
+}
+
+.cortex-ai-branch::after {
+  position: absolute;
+  top: 18px;
+  left: -16px;
+  width: 5px;
+  height: 5px;
+  border: 1px solid #ffffff;
+  border-radius: 50%;
+  background: #a494d0;
+  content: "";
+}
+
+.cortex-ai-branch--agents {
+  margin-left: 27px;
+  background: rgba(248, 250, 255, 0.74);
+}
+
+.cortex-ai-branch__header {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.cortex-ai-branch__header > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cortex-ai-branch__header span:not(.cortex-ai-branch__signal) {
+  color: var(--cortex-ink);
+  font-size: 6.3px;
+  font-weight: 720;
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+
+.cortex-ai-branch__header small {
+  overflow: hidden;
+  color: #8a909d;
+  font-size: 5px;
+  font-weight: 520;
+  letter-spacing: -0.015em;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cortex-ai-branch__signal {
+  display: block;
+  width: 5px;
+  height: 5px;
+  flex: 0 0 5px;
+  border-radius: 50%;
+  background: #9c8bcf;
+  box-shadow: 0 0 0 2px rgba(156, 139, 207, 0.1);
+}
+
+.cortex-ai-panel__providers {
+  gap: 4px;
+  margin-top: 1px;
+}
+
+.cortex-ai-provider {
+  gap: 2px;
+  font-size: 4.9px;
+}
+
+.cortex-ai-provider__mark {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(35, 40, 51, 0.045), inset 0 0 0 1px rgba(20, 25, 33, 0.025);
+}
+
+.cortex-ai-provider__mark svg {
+  width: 9px;
+  height: 9px;
+}
+
+.cortex-grok-mark {
+  font-size: 9px;
+}
+
+.cortex-ai-panel__roles {
+  gap: 3px;
+  margin-top: 1px;
+}
+
+.cortex-ai-role {
+  min-height: 27px;
+  align-items: center;
+  padding: 4px 3px 3px;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: inset 0 0 0 1px rgba(20, 25, 33, 0.025);
+  text-align: center;
+}
+
+.cortex-ai-role svg {
+  width: 9px;
+  height: 9px;
+  stroke-width: 1.8;
+}
+
+.cortex-ai-role span {
+  margin-top: 2px;
+  font-size: 5.4px;
+}
+
+.cortex-ai-role small {
+  margin-top: 2px;
+  font-size: 4.6px;
+}
+
 .cortex-media--revenue {
   height: 218px;
   margin-top: 27px;
