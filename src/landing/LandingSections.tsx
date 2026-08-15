@@ -46,13 +46,21 @@ function SceneIndex({ children }: { children: string }) {
 function CortexThread({
   className = "",
   progress,
+  travel = false,
 }: {
   className?: string;
   progress: MotionValue<number>;
+  travel?: boolean;
 }) {
-  const x = useTransform(progress, [0, 0.5, 1], ["-4%", "0%", "6%"]);
-  const y = useTransform(progress, [0, 0.5, 1], [18, 0, -16]);
-  const scale = useTransform(progress, [0, 0.5, 1], [0.9, 1.04, 0.96]);
+  const restingX = useTransform(progress, [0, 0.5, 1], ["-4%", "0%", "6%"]);
+  const restingY = useTransform(progress, [0, 0.5, 1], [18, 0, -16]);
+  const restingScale = useTransform(progress, [0, 0.5, 1], [0.9, 1.04, 0.96]);
+  const travelingX = useTransform(progress, [0, 0.24, 0.5, 0.76, 1], ["-18%", "12%", "-4%", "18%", "-8%"]);
+  const travelingY = useTransform(progress, [0, 0.24, 0.5, 0.76, 1], [42, -24, 34, -10, 24]);
+  const travelingScale = useTransform(progress, [0, 0.24, 0.5, 0.76, 1], [0.84, 1.02, 0.9, 1.06, 0.88]);
+  const x = travel ? travelingX : restingX;
+  const y = travel ? travelingY : restingY;
+  const scale = travel ? travelingScale : restingScale;
   const opacity = useTransform(progress, [0.04, 0.22, 0.82, 0.98], [0, 0.92, 0.92, 0.12]);
 
   return (
@@ -243,7 +251,7 @@ function SequenceScene() {
   return (
     <section ref={ref} className="cortex-sequence" aria-labelledby="sequence-title">
       <div className="cortex-sequence__sticky">
-        <CortexThread className="cortex-thread--sequence" progress={progress} />
+        <CortexThread className="cortex-thread--sequence" progress={progress} travel />
 
         <div className="cortex-sequence__intro">
           <SceneIndex>03 / The sequence</SceneIndex>
