@@ -375,9 +375,9 @@
   position: relative;
   isolation: isolate;
   width: 100%;
-  height: 184px;
+  height: 280px;
   margin-top: clamp(60px, 9vh, 98px);
-  margin-bottom: -20px;
+  margin-bottom: -42px;
   padding: 12px 13px 0;
   overflow: hidden;
   border: 1px solid rgba(20, 25, 33, 0.1);
@@ -406,7 +406,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  height: 34px;
+  height: 46px;
   background: linear-gradient(180deg, rgba(248, 249, 253, 0), rgba(248, 249, 253, 0.98));
 }
 
@@ -422,7 +422,7 @@
   height: 100%;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 16px 0 24px;
+  padding: 16px 0 34px;
 }
 
 .cortex-command-rail__bubble {
@@ -943,6 +943,142 @@
   line-height: 1;
 }
 
+/* The map carries the hierarchy through its surfaces and links. Labels stay
+   quiet until a user asks one node to explain itself. */
+.cortex-ai-panel__header {
+  min-height: 18px;
+  align-items: center;
+}
+
+.cortex-ai-panel__header strong {
+  margin-top: 0;
+  color: var(--cortex-ink);
+  font-size: 12px;
+  letter-spacing: -0.055em;
+}
+
+.cortex-ai-system-node {
+  width: 100%;
+  appearance: none;
+  border: 1px solid transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 420ms ease, border-color 420ms ease, box-shadow 420ms ease, transform 420ms ease;
+}
+
+.cortex-ai-system-node:hover,
+.cortex-ai-system-node:focus-visible {
+  border-color: rgba(85, 109, 228, 0.18);
+  outline: none;
+}
+
+.cortex-ai-system-node.is-selected {
+  border-color: rgba(85, 109, 228, 0.27);
+  background: rgba(248, 249, 255, 0.98);
+  box-shadow: 0 7px 16px rgba(85, 109, 228, 0.09), inset 0 0 0 1px rgba(85, 109, 228, 0.04);
+  transform: translateY(-1px);
+}
+
+.cortex-ai-system-node__copy {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cortex-ai-system-node__detail {
+  display: block;
+  max-width: 100%;
+  overflow: visible;
+  color: #777d8c;
+  font-size: 5.2px;
+  font-weight: 520;
+  letter-spacing: -0.02em;
+  line-height: 1.22;
+  white-space: normal;
+}
+
+.cortex-ai-provider {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: color 420ms ease, opacity 420ms ease, transform 420ms ease;
+}
+
+.cortex-ai-provider:hover,
+.cortex-ai-provider:focus-visible {
+  color: var(--cortex-ink);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.cortex-ai-provider.is-selected {
+  color: var(--cortex-ink);
+  transform: translateY(-1px);
+}
+
+.cortex-ai-provider.is-selected .cortex-ai-provider__mark {
+  box-shadow: 0 0 0 1px rgba(85, 109, 228, 0.3), 0 5px 11px rgba(85, 109, 228, 0.13), inset 0 0 0 1px rgba(255, 255, 255, 0.38);
+}
+
+.cortex-ai-provider__name,
+.cortex-ai-role__name {
+  display: block;
+}
+
+.cortex-ai-role {
+  width: 100%;
+  appearance: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 420ms ease, box-shadow 420ms ease, transform 420ms ease;
+}
+
+.cortex-ai-role:hover,
+.cortex-ai-role:focus-visible {
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.cortex-ai-role.is-selected {
+  background: rgba(246, 247, 255, 0.98);
+  box-shadow: 0 0 0 1px rgba(85, 109, 228, 0.22), 0 5px 12px rgba(85, 109, 228, 0.09);
+  transform: translateY(-1px);
+}
+
+.cortex-ai-selection {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 7px;
+  padding: 6px 5px 1px;
+  border-top: 1px solid rgba(85, 109, 228, 0.12);
+}
+
+.cortex-ai-selection strong {
+  flex: 0 0 auto;
+  color: var(--cortex-blue);
+  font-size: 5.5px;
+  font-weight: 720;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.cortex-ai-selection p {
+  min-width: 0;
+  color: #777d8c;
+  font-size: 5.15px;
+  font-weight: 520;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
 /* The system map is deliberately asymmetrical: a compact core feeds a wider
    orchestration field, so the interface reads like a living system rather
    than a stack of presentation cards. */
@@ -1307,6 +1443,138 @@
 .cortex-ai-role small {
   margin-top: 2px;
   font-size: 4.6px;
+}
+
+.cortex-ai-panel__header {
+  min-height: 18px;
+  align-items: center;
+}
+
+.cortex-ai-panel__header strong {
+  margin-top: 0;
+  font-size: 12px;
+}
+
+.cortex-ai-system-node {
+  width: 100%;
+  appearance: none;
+  border: 1px solid transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 420ms ease, border-color 420ms ease, box-shadow 420ms ease, transform 420ms ease;
+}
+
+.cortex-ai-system-node:hover,
+.cortex-ai-system-node:focus-visible {
+  border-color: rgba(85, 109, 228, 0.18);
+  outline: none;
+}
+
+.cortex-ai-system-node.is-selected {
+  border-color: rgba(85, 109, 228, 0.27);
+  background: rgba(248, 249, 255, 0.98);
+  box-shadow: 0 7px 16px rgba(85, 109, 228, 0.09), inset 0 0 0 1px rgba(85, 109, 228, 0.04);
+  transform: translateY(-1px);
+}
+
+.cortex-ai-system-node__copy {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cortex-ai-system-node__detail {
+  display: block;
+  max-width: 100%;
+  overflow: visible;
+  color: #777d8c;
+  font-size: 5.2px;
+  font-weight: 520;
+  letter-spacing: -0.02em;
+  line-height: 1.22;
+  white-space: normal;
+}
+
+.cortex-ai-provider {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: color 420ms ease, opacity 420ms ease, transform 420ms ease;
+}
+
+.cortex-ai-provider:hover,
+.cortex-ai-provider:focus-visible {
+  color: var(--cortex-ink);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.cortex-ai-provider.is-selected {
+  color: var(--cortex-ink);
+  transform: translateY(-1px);
+}
+
+.cortex-ai-provider.is-selected .cortex-ai-provider__mark {
+  box-shadow: 0 0 0 1px rgba(85, 109, 228, 0.3), 0 5px 11px rgba(85, 109, 228, 0.13), inset 0 0 0 1px rgba(255, 255, 255, 0.38);
+}
+
+.cortex-ai-provider__name,
+.cortex-ai-role__name {
+  display: block;
+}
+
+.cortex-ai-role {
+  width: 100%;
+  appearance: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 420ms ease, box-shadow 420ms ease, transform 420ms ease;
+}
+
+.cortex-ai-role:hover,
+.cortex-ai-role:focus-visible {
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.cortex-ai-role.is-selected {
+  background: rgba(246, 247, 255, 0.98);
+  box-shadow: 0 0 0 1px rgba(85, 109, 228, 0.22), 0 5px 12px rgba(85, 109, 228, 0.09);
+  transform: translateY(-1px);
+}
+
+.cortex-ai-selection {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 7px;
+  padding: 6px 5px 1px;
+  border-top: 1px solid rgba(85, 109, 228, 0.12);
+}
+
+.cortex-ai-selection strong {
+  flex: 0 0 auto;
+  color: var(--cortex-blue);
+  font-size: 5.5px;
+  font-weight: 720;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.cortex-ai-selection p {
+  min-width: 0;
+  color: #777d8c;
+  font-size: 5.15px;
+  font-weight: 520;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
 }
 
 .cortex-media--revenue {
@@ -2226,14 +2494,14 @@
   }
 
   .cortex-command-rail {
-    height: 202px;
+    height: clamp(390px, 52vh, 520px);
     margin-top: clamp(48px, 7vh, 72px);
-    margin-bottom: -24px;
+    margin-bottom: -38px;
     padding: 14px 14px 0;
   }
 
   .cortex-command-rail__messages {
-    padding: 18px 0 30px;
+    padding: 22px 0 40px;
   }
 
   .cortex-command-rail__bubble--user {
@@ -2306,4 +2574,32 @@
     animation: none;
   }
 
+}
+
+@media (max-width: 760px) {
+  .cortex-ai-panel__header strong {
+    font-size: 16px;
+  }
+
+  .cortex-ai-system-node__detail {
+    font-size: 8.4px;
+    line-height: 1.28;
+  }
+
+  .cortex-ai-selection {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 9px;
+    padding: 8px 8px 2px;
+  }
+
+  .cortex-ai-selection strong {
+    font-size: 8.5px;
+  }
+
+  .cortex-ai-selection p {
+    font-size: 7.4px;
+    line-height: 1.3;
+  }
 }
