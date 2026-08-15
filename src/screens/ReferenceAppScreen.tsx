@@ -1,4 +1,4 @@
-import { useState, type PropsWithChildren, type ReactNode } from "react";
+import { useEffect, useState, type PropsWithChildren, type ReactNode } from "react";
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Brain, Check, ChevronRight, GitBranch, Menu, Radio, Search, UserRound } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -50,7 +50,52 @@ function PanelHeader() {
   );
 }
 
+const cortexCommands = [
+  "Research the market,\nthen brief me before morning.",
+  "Turn this brief into a launch plan with the right agents.",
+  "Compare the options and recommend the move with evidence.",
+] as const;
+
 function CortexCommandRail() {
+  const reducedMotion = useReducedMotion();
+  const [commandIndex, setCommandIndex] = useState(0);
+  const [displayedCommand, setDisplayedCommand] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    if (reducedMotion === null) return;
+
+    const command = cortexCommands[commandIndex] ?? cortexCommands[0] ?? "";
+
+    if (reducedMotion) {
+      setDisplayedCommand(command);
+      setIsDeleting(false);
+      return;
+    }
+
+    if (!isDeleting && displayedCommand === command) {
+      const holdTimer = window.setTimeout(() => setIsDeleting(true), 1900);
+      return () => window.clearTimeout(holdTimer);
+    }
+
+    if (isDeleting && displayedCommand.length === 0) {
+      const gapTimer = window.setTimeout(() => {
+        setCommandIndex((current) => (current + 1) % cortexCommands.length);
+        setIsDeleting(false);
+      }, 320);
+      return () => window.clearTimeout(gapTimer);
+    }
+
+    const typingTimer = window.setTimeout(() => {
+      setDisplayedCommand((current) => {
+        if (isDeleting) return Array.from(current).slice(0, -1).join("");
+        return command.slice(0, Array.from(current).length + 1);
+      });
+    }, isDeleting ? 30 : 48);
+
+    return () => window.clearTimeout(typingTimer);
+  }, [commandIndex, displayedCommand, isDeleting, reducedMotion]);
+
   return (
     <div className="cortex-command-rail" aria-label="Example Cortex commands">
       <div className="cortex-command-rail__header">
@@ -63,9 +108,10 @@ function CortexCommandRail() {
       <div className="cortex-command-rail__field" aria-hidden="true">
         <span className="cortex-command-rail__prompt-mark">›</span>
         <span className="cortex-command-rail__phrases">
-          <span className="cortex-command-rail__phrase">Map the signal across the market.</span>
-          <span className="cortex-command-rail__phrase">Turn this brief into a launch plan.</span>
-          <span className="cortex-command-rail__phrase">Research the field and show what changed.</span>
+          <span className="cortex-command-rail__phrase">
+            {displayedCommand}
+            <span className="cortex-command-rail__caret" />
+          </span>
         </span>
         <span className="cortex-command-rail__submit">↗</span>
       </div>
