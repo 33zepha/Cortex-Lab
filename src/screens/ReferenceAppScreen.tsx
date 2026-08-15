@@ -55,6 +55,7 @@ function CortexCommandRail() {
   const [commandIndex, setCommandIndex] = useState(0);
   const [displayedCommand, setDisplayedCommand] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
 
   useEffect(() => {
     if (reducedMotion === null) return;
@@ -64,18 +65,28 @@ function CortexCommandRail() {
     if (reducedMotion) {
       setDisplayedCommand(command);
       setIsDeleting(false);
+      setIsThinking(false);
       return;
     }
 
-    if (!isDeleting && displayedCommand === command) {
-      const holdTimer = window.setTimeout(() => setIsDeleting(true), 1900);
+    if (!isDeleting && !isThinking && displayedCommand === command) {
+      const holdTimer = window.setTimeout(() => setIsThinking(true), 1200);
       return () => window.clearTimeout(holdTimer);
+    }
+
+    if (isThinking) {
+      const thinkingTimer = window.setTimeout(() => {
+        setIsThinking(false);
+        setIsDeleting(true);
+      }, 1350);
+      return () => window.clearTimeout(thinkingTimer);
     }
 
     if (isDeleting && displayedCommand.length === 0) {
       const gapTimer = window.setTimeout(() => {
         setCommandIndex((current) => (current + 1) % cortexCommands.length);
         setIsDeleting(false);
+        setIsThinking(false);
       }, 320);
       return () => window.clearTimeout(gapTimer);
     }
@@ -88,7 +99,7 @@ function CortexCommandRail() {
     }, isDeleting ? 30 : 48);
 
     return () => window.clearTimeout(typingTimer);
-  }, [commandIndex, displayedCommand, isDeleting, reducedMotion]);
+  }, [commandIndex, displayedCommand, isDeleting, isThinking, reducedMotion]);
 
   return (
     <motion.div
@@ -102,13 +113,18 @@ function CortexCommandRail() {
           : { delay: 0.46, duration: 0.72, ease: [0.22, 1, 0.36, 1] }
       }
     >
-      <div className="cortex-command-rail__field" aria-hidden="true">
-        <span className="cortex-command-rail__phrases">
-          <span className="cortex-command-rail__phrase">
-            {displayedCommand}
-            <span className="cortex-command-rail__caret" />
+      <div className="cortex-command-rail__messages" aria-hidden="true">
+        <div className="cortex-command-rail__bubble cortex-command-rail__bubble--user">
+          <span className="cortex-command-rail__phrases">
+            <span className="cortex-command-rail__phrase">
+              {displayedCommand}
+              <span className="cortex-command-rail__caret" />
+            </span>
           </span>
-        </span>
+        </div>
+        <div className={`cortex-command-rail__bubble cortex-command-rail__bubble--thinking${isThinking ? " is-visible" : ""}`}>
+          <span className="cortex-command-rail__thinking-dots"><i /><i /><i /></span>
+        </div>
       </div>
       <span className="sr-only">Example commands: map the signal across the market; turn this brief into a launch plan; research the field and show what changed.</span>
     </motion.div>
@@ -185,13 +201,13 @@ function CortexSystemZone({ children, className, delay }: CortexSystemZoneProps)
   return (
     <motion.section
       className={className}
-      initial={reducedMotion ? false : { opacity: 0, x: 18 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true, amount: 0.25 }}
+      initial={reducedMotion ? false : { opacity: 0, x: 16, y: 12 }}
+      whileInView={{ opacity: 1, x: 0, y: 0 }}
+      viewport={{ once: true, amount: 0.72, margin: "-24% 0px -30% 0px" }}
       transition={
         reducedMotion
           ? { duration: 0 }
-          : { delay, duration: 0.78, ease: [0.16, 1, 0.3, 1] }
+          : { delay, duration: 0.95, ease: [0.16, 1, 0.3, 1] }
       }
     >
       {children}
@@ -479,10 +495,10 @@ export function ReferenceAppScreen() {
             <div className="cortex-media cortex-media--sessions">
               <motion.div
                 className="cortex-system-module"
-                initial={{ opacity: 0, x: 42, y: 22, scale: 0.95, rotate: 0.5 }}
+                initial={{ opacity: 0, x: 28, y: 18, scale: 0.97, rotate: 0.2 }}
                 whileInView={{ opacity: 1, x: 0, y: 0, scale: 1, rotate: 0 }}
-                viewport={{ once: true, amount: 0.28 }}
-                transition={{ delay: 0.08, duration: 1.18, ease: [0.16, 1, 0.3, 1] }}
+                viewport={{ once: true, amount: 0.18 }}
+                transition={{ delay: 0.12, duration: 1.35, ease: [0.16, 1, 0.3, 1] }}
               >
                 <AiAccessPanel />
               </motion.div>
