@@ -1,8 +1,11 @@
 import { useState, type PropsWithChildren } from "react";
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, ChevronRight, Menu, MoreHorizontal } from "lucide-react";
+import { ArrowLeft, ArrowRight, Brain, Check, ChevronRight, GitBranch, Menu, Radio, Search } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ClaudeMark } from "@/components/brand/ClaudeMark";
 import { CortexLogo } from "@/components/brand/CortexLogo";
+import { DeepSeekMark, GeminiMark, MistralMark } from "@/components/brand/ProviderMarks";
+import { OpenAiMark } from "@/components/brand/OpenAiMark";
 import "./ReferenceAppScreen.css";
 
 type ReferenceColumnProps = PropsWithChildren<{
@@ -50,37 +53,55 @@ function PanelHeader() {
   );
 }
 
-function SessionsChart() {
+const aiProviders = [
+  { name: "GPT", fullName: "OpenAI", Mark: OpenAiMark, tone: "cortex-ai-provider--openai" },
+  { name: "Claude", fullName: "Anthropic", Mark: ClaudeMark, tone: "cortex-ai-provider--claude" },
+  { name: "Gemini", fullName: "Google", Mark: GeminiMark, tone: "cortex-ai-provider--gemini" },
+  { name: "Mistral", fullName: "Mistral", Mark: MistralMark, tone: "cortex-ai-provider--mistral" },
+  { name: "DeepSeek", fullName: "DeepSeek", Mark: DeepSeekMark, tone: "cortex-ai-provider--deepseek" },
+] as const;
+
+const agentRoles = [
+  { label: "Manager", detail: "directs", Icon: Brain },
+  { label: "Runners", detail: "executes", Icon: GitBranch },
+  { label: "Research", detail: "grounds", Icon: Search },
+  { label: "RTC", detail: "syncs", Icon: Radio },
+] as const;
+
+function AiAccessPanel() {
   return (
-    <div className="cortex-chart">
-      <div className="cortex-chart__topline">
-        <strong>Mission activity</strong>
-        <MoreHorizontal aria-hidden="true" />
+    <div className="cortex-ai-panel">
+      <div className="cortex-ai-panel__header">
+        <div>
+          <small>Available intelligence</small>
+          <strong>Model layer</strong>
+        </div>
+        <span className="cortex-ai-panel__status"><i /> live</span>
       </div>
-      <div className="cortex-chart__legend">
-        <span><i className="cortex-chart__dot cortex-chart__dot--yellow" />Active agents</span>
-        <span><i className="cortex-chart__dot cortex-chart__dot--blue" />Completed runs</span>
+      <div className="cortex-ai-panel__providers" aria-label="Available AI providers">
+        {aiProviders.map(({ name, fullName, Mark, tone }) => (
+          <div className={`cortex-ai-provider ${tone}`} key={name} title={fullName}>
+            <span className="cortex-ai-provider__mark"><Mark title={fullName} /></span>
+            <span>{name}</span>
+          </div>
+        ))}
       </div>
-      <svg viewBox="0 0 300 138" role="img" aria-label="Mission activity trend chart">
-        <g className="cortex-chart__grid">
-          <path d="M29 15H289" />
-          <path d="M29 48H289" />
-          <path d="M29 81H289" />
-          <path d="M29 114H289" />
-        </g>
-        <path className="cortex-chart__line cortex-chart__line--yellow" d="M29 48C45 58 54 105 73 90S97 46 114 62s20 27 36 19 24 31 44 11 23-49 39-19 33 38 56 11" />
-        <path className="cortex-chart__line cortex-chart__line--blue" d="M29 28C43 50 52 75 69 82s28-17 43-8 19 16 31 14 21-15 36-14 23 29 38 17 27-34 40-20 21 25 32 19 26 18 40 36" />
-        <g className="cortex-chart__labels">
-          <text x="26" y="132">1 Sep</text>
-          <text x="103" y="132">7 Sep</text>
-          <text x="181" y="132">14 Sep</text>
-          <text x="261" y="132">21 Sep</text>
-          <text x="0" y="18">100</text>
-          <text x="2" y="51">75</text>
-          <text x="2" y="84">50</text>
-          <text x="2" y="117">0</text>
-        </g>
-      </svg>
+      <div className="cortex-ai-panel__route">
+        <span>Hermes agent</span>
+        <i aria-hidden="true" />
+        <strong>orchestrates</strong>
+        <i aria-hidden="true" />
+        <span>Cortex system</span>
+      </div>
+      <div className="cortex-ai-panel__roles" aria-label="Agent roles Cortex can spawn">
+        {agentRoles.map(({ label, detail, Icon }) => (
+          <div className="cortex-ai-role" key={label}>
+            <Icon aria-hidden="true" />
+            <span>{label}</span>
+            <small>{detail}</small>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -218,7 +239,6 @@ function PricingCard() {
 
   return (
     <section className="cortex-panel cortex-pricing-card" aria-labelledby="cortex-plan-title">
-      <PanelHeader />
       <div className="cortex-pricing-card__body">
         <h2 id="cortex-plan-title">Choose the right way to start.</h2>
         <p>Choose the access path that fits your work and gives every mission room to grow.</p>
@@ -278,9 +298,9 @@ export function ReferenceAppScreen() {
 
         <ReferenceColumn className="cortex-panel cortex-column cortex-column--metrics" delay={0.1}>
           <div className="cortex-column__body">
-            <div className="cortex-media cortex-media--sessions"><SessionsChart /></div>
-            <h2>Unlock coordinated execution</h2>
-            <p>Gain instant visibility into your agents’ work with live orchestration, empowering you to direct complex missions with clarity.</p>
+            <div className="cortex-media cortex-media--sessions"><AiAccessPanel /></div>
+            <h2>One model layer. Many specialized agents.</h2>
+            <p>Cortex gives Hermes access to a living pool of model families, then turns each one into the right specialist for the mission.</p>
             <div className="cortex-media cortex-media--revenue"><RevenueChart /></div>
             <h2>Increase output through orchestration</h2>
             <p>Give every agent a role, keep complex work moving, and return with a clear record of what was done.</p>
