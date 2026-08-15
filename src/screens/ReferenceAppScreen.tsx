@@ -50,6 +50,34 @@ function PanelHeader() {
   );
 }
 
+function CortexCommandRail() {
+  return (
+    <div className="cortex-command-rail" aria-label="Example Cortex commands">
+      <div className="cortex-command-rail__header">
+        <span className="cortex-command-rail__label">
+          <span className="cortex-command-rail__signal" aria-hidden="true" />
+          Try a brief
+        </span>
+        <span className="cortex-command-rail__status">orchestrated</span>
+      </div>
+      <div className="cortex-command-rail__field" aria-hidden="true">
+        <span className="cortex-command-rail__prompt-mark">›</span>
+        <span className="cortex-command-rail__phrases">
+          <span className="cortex-command-rail__phrase">Map the signal across the market.</span>
+          <span className="cortex-command-rail__phrase">Turn this brief into a launch plan.</span>
+          <span className="cortex-command-rail__phrase">Research the field and show what changed.</span>
+        </span>
+        <span className="cortex-command-rail__submit">↗</span>
+      </div>
+      <div className="cortex-command-rail__footer">
+        <span>Hermes routes the work</span>
+        <span>agents execute · Cortex returns</span>
+      </div>
+      <span className="sr-only">Example commands: map the signal across the market; turn this brief into a launch plan; research the field and show what changed.</span>
+    </div>
+  );
+}
+
 const aiProviders = [
   { name: "GPT", fullName: "OpenAI", Mark: OpenAiMark, tone: "cortex-ai-provider--openai" },
   { name: "Claude", fullName: "Anthropic", Mark: ClaudeMark, tone: "cortex-ai-provider--claude" },
@@ -373,6 +401,7 @@ export function ReferenceAppScreen() {
             <h1 id="cortex-page-title">Turn scattered intelligence into coordinated action</h1>
             <p>Coordinate your agents, direct complex work, and return each outcome with a reason you can trust.</p>
             <Link className="cortex-pill cortex-pill--dark cortex-intro__cta" to="/hero-lab#access">Join the waitlist</Link>
+            <CortexCommandRail />
           </div>
         </ReferenceColumn>
 
