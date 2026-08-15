@@ -164,9 +164,6 @@ export function HeroLabScreen() {
       <LandingSections />
 
       <section className="inside-closing" id="access">
-        <div className="inside-closing__pixel-plane" aria-hidden="true">
-          <img src={heroPixelCloud1920} alt="" draggable={false} />
-        </div>
         <div className="inside-closing__content">
           <div className="inside-closing__signal"><i /> Private access</div>
           <CortexLogo className="inside-closing__mark" />
