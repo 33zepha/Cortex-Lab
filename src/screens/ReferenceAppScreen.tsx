@@ -175,7 +175,7 @@ function Testimonial() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const reducedMotion = useReducedMotion();
-  const current = testimonialSlides[currentIndex];
+  const current = testimonialSlides[currentIndex]!;
 
   const move = (offset: number) => {
     setDirection(offset);
