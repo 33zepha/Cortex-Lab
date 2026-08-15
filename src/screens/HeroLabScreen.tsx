@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ArrowLeft, ArrowRight, Check, ChevronRight, Menu, MoreHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CortexLogo } from "@/components/brand/CortexLogo";
