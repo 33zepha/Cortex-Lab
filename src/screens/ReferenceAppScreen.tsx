@@ -39,7 +39,6 @@ function PanelHeader() {
     <header className="cortex-panel-header">
       <Link className="cortex-panel-header__brand" to="/" aria-label="Cortex home">
         <CortexLogo aria-hidden="true" />
-        <span>Cortex</span>
       </Link>
       <div className="cortex-panel-header__actions">
         <motion.button className="cortex-menu-button" type="button" aria-label="Open menu" whileTap={{ scale: 0.92 }}>
@@ -183,6 +182,31 @@ function CortexSystemNode({ className, context, detail, mark, title }: CortexSys
   );
 }
 
+type CortexSystemZoneProps = PropsWithChildren<{
+  className: string;
+  delay: number;
+}>;
+
+function CortexSystemZone({ children, className, delay }: CortexSystemZoneProps) {
+  const reducedMotion = useReducedMotion();
+
+  return (
+    <motion.section
+      className={className}
+      initial={reducedMotion ? false : { opacity: 0, x: 18 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, amount: 0.25 }}
+      transition={
+        reducedMotion
+          ? { duration: 0 }
+          : { delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+      }
+    >
+      {children}
+    </motion.section>
+  );
+}
+
 function AiAccessPanel() {
   return (
     <div className="cortex-ai-panel" aria-label="Cortex linked operating system">
@@ -195,7 +219,7 @@ function AiAccessPanel() {
       </div>
       <div className="cortex-ai-system-map">
         <span className="cortex-ai-system-map__thread" aria-hidden="true" />
-        <section className="cortex-ai-zone cortex-ai-zone--input">
+        <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--input" delay={0.08}>
           <CortexSystemZoneHeader index="01" label="Input state" detail="human intent" />
           <CortexSystemNode
             className="cortex-ai-system-node--human"
@@ -203,9 +227,9 @@ function AiAccessPanel() {
             mark={<UserRound aria-hidden="true" />}
             title="Human"
           />
-        </section>
+        </CortexSystemZone>
 
-        <section className="cortex-ai-zone cortex-ai-zone--control">
+        <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--control" delay={0.16}>
           <CortexSystemZoneHeader index="02" label="Control plane" detail="Cortex owns the mission" />
           <CortexSystemNode
             className="cortex-ai-system-node--cortex"
@@ -221,9 +245,9 @@ function AiAccessPanel() {
             mark={<img src="/hermes-logo.jpeg" alt="" />}
             title="Hermes"
           />
-        </section>
+        </CortexSystemZone>
 
-        <section className="cortex-ai-zone cortex-ai-zone--orchestration">
+        <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--orchestration" delay={0.24}>
           <CortexSystemZoneHeader index="03" label="Orchestration" detail="Hermes composes the run" />
           <div className="cortex-ai-branch-field">
             <div className="cortex-ai-branch cortex-ai-branch--models">
@@ -262,9 +286,9 @@ function AiAccessPanel() {
               </div>
             </div>
           </div>
-        </section>
+        </CortexSystemZone>
 
-        <section className="cortex-ai-zone cortex-ai-zone--synthesis">
+        <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--synthesis" delay={0.32}>
           <CortexSystemZoneHeader index="04" label="Synthesis state" detail="Cortex closes the loop" />
           <CortexSystemNode
             className="cortex-ai-system-node--cortex-return"
@@ -273,9 +297,9 @@ function AiAccessPanel() {
             mark={<CortexLogo aria-hidden="true" />}
             title="Cortex"
           />
-        </section>
+        </CortexSystemZone>
 
-        <section className="cortex-ai-zone cortex-ai-zone--output">
+        <CortexSystemZone className="cortex-ai-zone cortex-ai-zone--output" delay={0.4}>
           <CortexSystemZoneHeader index="05" label="Output state" detail="ready for the human" />
           <CortexSystemNode
             className="cortex-ai-system-node--result"
@@ -283,7 +307,7 @@ function AiAccessPanel() {
             mark={<Check aria-hidden="true" />}
             title="Result"
           />
-        </section>
+        </CortexSystemZone>
       </div>
     </div>
   );
@@ -365,7 +389,7 @@ function MenuCard() {
       </nav>
       <div className="cortex-menu-card__actions">
         <Link className="cortex-pill cortex-pill--lavender" to="/login">Log in</Link>
-        <Link className="cortex-pill cortex-pill--dark" to="/hero-lab#access">Join the waitlist</Link>
+        <Link className="cortex-pill cortex-pill--dark" to="/hero-lab#access">Request private access</Link>
       </div>
     </section>
   );
@@ -444,16 +468,24 @@ export function ReferenceAppScreen() {
         <ReferenceColumn className="cortex-panel cortex-column cortex-column--intro" delay={0.04}>
           <PanelHeader />
           <div className="cortex-column__body cortex-intro">
-            <h1 id="cortex-page-title">Turn scattered intelligence into coordinated action</h1>
+            <h1 id="cortex-page-title"><span className="cortex-intro__accent">Cortex</span> turns scattered intelligence into coordinated action</h1>
             <p>Coordinate your agents, direct complex work, and return each outcome with a reason you can trust.</p>
-            <Link className="cortex-pill cortex-pill--dark cortex-intro__cta" to="/hero-lab#access">Join the waitlist</Link>
+            <Link className="cortex-pill cortex-pill--dark cortex-intro__cta" to="/hero-lab#access">Request private access</Link>
             <CortexCommandRail />
           </div>
         </ReferenceColumn>
 
         <ReferenceColumn className="cortex-panel cortex-column cortex-column--metrics" delay={0.1}>
           <div className="cortex-column__body">
-            <div className="cortex-media cortex-media--sessions"><AiAccessPanel /></div>
+            <motion.div
+              className="cortex-media cortex-media--sessions"
+              initial={{ opacity: 0, x: 70, y: 18, rotate: 1.2 }}
+              whileInView={{ opacity: 1, x: 0, y: 0, rotate: 0 }}
+              viewport={{ once: true, amount: 0.28 }}
+              transition={{ type: "spring", stiffness: 88, damping: 18, mass: 0.78 }}
+            >
+              <AiAccessPanel />
+            </motion.div>
             <h2>A brief becomes a finished outcome.</h2>
             <p>Cortex frames the mission, Hermes coordinates the models and agents, then brings the work back for review and delivery.</p>
             <div className="cortex-media cortex-media--revenue"><RevenueChart /></div>

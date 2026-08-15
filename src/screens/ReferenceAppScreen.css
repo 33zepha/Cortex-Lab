@@ -307,6 +307,20 @@
   line-height: 1.05;
 }
 
+.cortex-intro h1 {
+  text-wrap: balance;
+}
+
+.cortex-intro__accent {
+  display: inline;
+  background: linear-gradient(112deg, #4d66dc 0%, #687ee9 54%, #9ba8f3 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-weight: 570;
+}
+
 .cortex-intro p,
 .cortex-column--metrics .cortex-column__body > p,
 .cortex-showcase__body > p,
