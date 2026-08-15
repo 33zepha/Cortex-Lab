@@ -76,20 +76,20 @@
   width: min(580px, 48vw);
   height: min(270px, 24vw);
   pointer-events: none;
-  filter: saturate(0.88) contrast(1.04);
+  filter: saturate(0.72) contrast(1.02);
   will-change: transform, opacity;
 }
 
 .cortex-thread__pixel {
   position: absolute;
   display: block;
-  background-color: rgba(88, 106, 242, 0.72);
+  background-color: rgba(88, 106, 242, 0.24);
   background-image: url("../assets/cortex-hero-pixel-cloud-1920.webp");
   background-repeat: no-repeat;
   background-size: 230% 230%;
   image-rendering: pixelated;
   mix-blend-mode: multiply;
-  opacity: 0.62;
+  opacity: 0.46;
 }
 
 .cortex-thread__pixel--a {
@@ -106,7 +106,7 @@
   width: 42%;
   height: 54%;
   background-position: 58% 38%;
-  opacity: 0.76;
+  opacity: 0.52;
   clip-path: polygon(0 42%, 14% 19%, 29% 25%, 43% 0, 61% 17%, 77% 8%, 100% 32%, 88% 75%, 70% 91%, 51% 78%, 34% 100%, 13% 82%);
 }
 
@@ -116,7 +116,7 @@
   width: 39%;
   height: 47%;
   background-position: 78% 60%;
-  opacity: 0.48;
+  opacity: 0.32;
   clip-path: polygon(0 30%, 17% 12%, 34% 26%, 51% 4%, 73% 18%, 100% 8%, 92% 67%, 77% 88%, 59% 76%, 44% 100%, 24% 80%, 7% 91%);
 }
 
@@ -126,7 +126,7 @@
   width: 25%;
   height: 31%;
   background-position: 46% 24%;
-  opacity: 0.4;
+  opacity: 0.24;
   clip-path: polygon(0 48%, 19% 12%, 44% 25%, 66% 0, 100% 22%, 88% 83%, 61% 100%, 34% 78%, 11% 94%);
 }
 
@@ -136,49 +136,57 @@
   width: 34%;
   height: 30%;
   background-position: 66% 76%;
-  opacity: 0.38;
+  opacity: 0.2;
   clip-path: polygon(0 25%, 20% 0, 42% 22%, 67% 8%, 100% 31%, 82% 88%, 58% 100%, 32% 81%, 8% 95%);
 }
 
 .cortex-thread--coordination {
-  top: 39%;
-  right: 7%;
+  top: 42%;
+  right: -2%;
+  width: min(460px, 38vw);
+  height: min(220px, 18vw);
   rotate: -7deg;
 }
 
+.cortex-thread--coordination .cortex-thread__pixel {
+  opacity: 0.28;
+}
+
 .cortex-thread--operating {
-  top: 52%;
-  left: calc(50% - 250px);
+  top: 54%;
+  left: calc(50% - 180px);
+  width: min(360px, 30vw);
+  height: min(180px, 15vw);
   opacity: 0.6;
   rotate: 4deg;
 }
 
 .cortex-thread--operating .cortex-thread__pixel {
-  opacity: 0.36;
+  opacity: 0.2;
 }
 
 .cortex-thread--sequence {
-  right: 9%;
-  bottom: 15%;
-  width: min(520px, 44vw);
-  height: min(240px, 21vw);
+  right: 5%;
+  bottom: 13%;
+  width: min(360px, 30vw);
+  height: min(170px, 15vw);
   rotate: 8deg;
 }
 
 .cortex-thread--sequence .cortex-thread__pixel {
-  opacity: 0.42;
+  opacity: 0.2;
 }
 
 .cortex-thread--proof {
-  top: 29%;
-  left: 7%;
-  width: min(430px, 34vw);
-  height: min(205px, 17vw);
+  top: 31%;
+  left: 4%;
+  width: min(300px, 25vw);
+  height: min(140px, 12vw);
   rotate: -12deg;
 }
 
 .cortex-thread--proof .cortex-thread__pixel {
-  opacity: 0.3;
+  opacity: 0.15;
 }
 
 
@@ -644,30 +652,30 @@
 
   .cortex-thread--coordination {
     top: 42%;
-    right: -22%;
-    width: 88vw;
-    height: 42vw;
+    right: -31%;
+    width: 72vw;
+    height: 34vw;
   }
 
   .cortex-thread--operating {
-    top: 52%;
-    left: -4%;
-    width: 108vw;
-    height: 48vw;
+    top: 54%;
+    left: 4%;
+    width: 78vw;
+    height: 36vw;
   }
 
   .cortex-thread--sequence {
-    right: -23%;
+    right: -27%;
     bottom: 17%;
-    width: 92vw;
-    height: 42vw;
+    width: 72vw;
+    height: 33vw;
   }
 
   .cortex-thread--proof {
-    top: 26%;
-    left: -25%;
-    width: 84vw;
-    height: 40vw;
+    top: 27%;
+    left: -20%;
+    width: 68vw;
+    height: 32vw;
   }
 
   .cortex-sequence__intro {
