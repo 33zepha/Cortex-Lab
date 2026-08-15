@@ -89,6 +89,7 @@
 .cortex-column--showcase {
   min-height: 1530px;
   overflow: hidden;
+  padding-top: 9px;
   background: var(--cortex-surface);
 }
 
@@ -645,7 +646,7 @@
 .cortex-testimonial {
   display: flex;
   min-height: 565px;
-  margin: 9px 15px 0;
+  margin: 0 15px;
   flex-direction: column;
   align-items: center;
   padding: 42px 21px 34px;
@@ -801,7 +802,7 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-top: 22px;
+  margin-top: 20px;
 }
 
 .cortex-menu-card__actions .cortex-pill {
