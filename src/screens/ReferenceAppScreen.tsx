@@ -68,6 +68,13 @@ const agentRoles = [
   { label: "RTC", detail: "syncs", Icon: Radio },
 ] as const;
 
+const capabilityGroups = [
+  { label: "Discover", detail: "research · analysis", Icon: Search },
+  { label: "Create", detail: "writing · code · design", Icon: Brain },
+  { label: "Coordinate", detail: "agents · workflows · RTC", Icon: GitBranch },
+  { label: "Verify", detail: "review · testing · trace", Icon: Check },
+] as const;
+
 function AiAccessPanel() {
   return (
     <div className="cortex-ai-panel" aria-label="Cortex agent system">
@@ -91,7 +98,9 @@ function AiAccessPanel() {
         ))}
       </div>
       <div className="cortex-ai-panel__hermes">
-        <span className="cortex-ai-panel__hermes-mark"><CortexLogo aria-hidden="true" /></span>
+        <span className="cortex-ai-panel__hermes-mark">
+          <img src="/hermes-logo.jpeg" alt="" />
+        </span>
         <div className="cortex-ai-panel__hermes-copy">
           <strong>Hermes</strong>
           <small>operator / orchestrator</small>
@@ -113,6 +122,21 @@ function AiAccessPanel() {
             <small>{detail}</small>
           </div>
         ))}
+      </div>
+      <div className="cortex-ai-panel__capabilities">
+        <div className="cortex-ai-panel__capabilities-heading">
+          <span>Capability set</span>
+          <small>what Cortex can orchestrate</small>
+        </div>
+        <div className="cortex-ai-panel__capabilities-list" aria-label="Cortex capabilities">
+          {capabilityGroups.map(({ label, detail, Icon }) => (
+            <div className="cortex-ai-capability" key={label}>
+              <Icon aria-hidden="true" />
+              <strong>{label}</strong>
+              <small>{detail}</small>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
