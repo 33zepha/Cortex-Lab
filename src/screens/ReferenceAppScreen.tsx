@@ -1,7 +1,35 @@
+import type { PropsWithChildren } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, ChevronRight, Menu, MoreHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CortexLogo } from "@/components/brand/CortexLogo";
 import "./ReferenceAppScreen.css";
+
+type ReferenceColumnProps = PropsWithChildren<{
+  className: string;
+  delay: number;
+  element?: "section" | "aside";
+}>;
+
+function ReferenceColumn({ children, className, delay, element = "section" }: ReferenceColumnProps) {
+  const reducedMotion = useReducedMotion();
+  const Surface = element === "aside" ? motion.aside : motion.section;
+
+  return (
+    <Surface
+      className={className}
+      initial={reducedMotion ? false : { opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={
+        reducedMotion
+          ? { duration: 0 }
+          : { delay, duration: 0.62, ease: [0.22, 1, 0.36, 1] }
+      }
+    >
+      {children}
+    </Surface>
+  );
+}
 
 function PanelHeader() {
   return (
@@ -140,8 +168,12 @@ function Testimonial() {
         <span>Operations team</span>
       </div>
       <div className="cortex-testimonial__controls">
-        <button type="button" aria-label="Previous testimonial"><ArrowLeft aria-hidden="true" /></button>
-        <button type="button" aria-label="Next testimonial"><ArrowRight aria-hidden="true" /></button>
+        <motion.button type="button" aria-label="Previous testimonial" whileTap={{ scale: 0.92 }}>
+          <ArrowLeft aria-hidden="true" />
+        </motion.button>
+        <motion.button type="button" aria-label="Next testimonial" whileTap={{ scale: 0.92 }}>
+          <ArrowRight aria-hidden="true" />
+        </motion.button>
       </div>
     </figure>
   );
@@ -198,7 +230,7 @@ export function ReferenceAppScreen() {
   return (
     <main className="cortex-reference" aria-labelledby="cortex-page-title">
       <div className="cortex-reference__stage">
-        <section className="cortex-panel cortex-column cortex-column--intro">
+        <ReferenceColumn className="cortex-panel cortex-column cortex-column--intro" delay={0.04}>
           <PanelHeader />
           <div className="cortex-column__body cortex-intro">
             <h1 id="cortex-page-title">Turn scattered intelligence into coordinated action</h1>
@@ -208,7 +240,7 @@ export function ReferenceAppScreen() {
           </div>
         </section>
 
-        <section className="cortex-panel cortex-column cortex-column--metrics">
+        <ReferenceColumn className="cortex-panel cortex-column cortex-column--metrics" delay={0.1}>
           <PanelHeader />
           <div className="cortex-column__body">
             <div className="cortex-media cortex-media--sessions"><SessionsChart /></div>
@@ -219,9 +251,9 @@ export function ReferenceAppScreen() {
             <p>Give every agent a role, keep complex work moving, and return with a clear record of what was done.</p>
             <div className="cortex-media cortex-media--ads"><AdsPreview /></div>
           </div>
-        </section>
+        </ReferenceColumn>
 
-        <section className="cortex-column cortex-column--showcase">
+        <ReferenceColumn className="cortex-column cortex-column--showcase" delay={0.16}>
           <Testimonial />
           <div className="cortex-showcase__body">
             <h2>Direct Your Agents. Transform Your Work.</h2>
@@ -232,12 +264,12 @@ export function ReferenceAppScreen() {
               {["Missions", "Agents", "Integrations", "Security & privacy", "Documentation"].map((item) => <span key={item}>{item}</span>)}
             </div>
           </div>
-        </section>
+        </ReferenceColumn>
 
-        <aside className="cortex-column cortex-column--utility">
+        <ReferenceColumn className="cortex-column cortex-column--utility" delay={0.22} element="aside">
           <MenuCard />
           <PricingCard />
-        </aside>
+        </ReferenceColumn>
       </div>
       <footer className="cortex-reference__footer">
         <span>© {new Date().getFullYear()} Cortex</span>
