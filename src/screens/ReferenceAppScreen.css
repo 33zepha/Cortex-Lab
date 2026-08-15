@@ -1009,6 +1009,20 @@
   transition: color 420ms ease, opacity 420ms ease, transform 420ms ease;
 }
 
+.cortex-reference .cortex-ai-provider {
+  font-size: 4.9px;
+  font-weight: 570;
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+
+.cortex-ai-provider__name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .cortex-ai-provider:hover,
 .cortex-ai-provider:focus-visible {
   color: var(--cortex-ink);
@@ -1037,6 +1051,13 @@
   color: inherit;
   cursor: pointer;
   transition: background-color 420ms ease, box-shadow 420ms ease, transform 420ms ease;
+}
+
+.cortex-reference .cortex-ai-role {
+  font-size: 5.4px;
+  font-weight: 680;
+  letter-spacing: -0.025em;
+  line-height: 1;
 }
 
 .cortex-ai-role:hover,
@@ -2577,6 +2598,16 @@
 }
 
 @media (max-width: 760px) {
+  .cortex-reference .cortex-ai-provider {
+    font-size: 7.4px;
+    line-height: 1;
+  }
+
+  .cortex-reference .cortex-ai-role {
+    font-size: 8px;
+    line-height: 1;
+  }
+
   .cortex-ai-panel__header strong {
     font-size: 16px;
   }
