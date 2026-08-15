@@ -257,160 +257,6 @@
   border-radius: 19px;
 }
 
-.cortex-media--dashboard {
-  height: 326px;
-  margin-top: 35px;
-  padding: 25px;
-  background: var(--cortex-soft-blue);
-}
-
-.cortex-dashboard-preview {
-  display: grid;
-  width: 100%;
-  height: 100%;
-  grid-template-columns: 30% 70%;
-  overflow: hidden;
-  border-radius: 7px;
-  background: #fbfcff;
-  box-shadow: 0 4px 12px rgba(20, 25, 33, 0.08);
-  font-size: 5px;
-}
-
-.cortex-dashboard-preview__sidebar {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px 7px;
-  background: #171b25;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.cortex-dashboard-preview__mini-brand {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  margin-bottom: 8px;
-  color: #ffffff;
-  font-size: 5px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-}
-
-.cortex-dashboard-preview__mini-brand .cortex-logo {
-  width: 9px;
-  height: 10px;
-}
-
-.cortex-dashboard-preview__nav {
-  display: block;
-  padding: 3px 4px;
-  border-radius: 3px;
-  white-space: nowrap;
-}
-
-.cortex-dashboard-preview__nav--active {
-  background: rgba(255, 255, 255, 0.11);
-  color: #ffffff;
-}
-
-.cortex-dashboard-preview__main {
-  min-width: 0;
-  padding: 10px 9px;
-  background: #fbfcff;
-  color: #202532;
-}
-
-.cortex-dashboard-preview__toolbar {
-  display: flex;
-  justify-content: space-between;
-  gap: 4px;
-  color: #8a8f9b;
-  font-size: 4.5px;
-}
-
-.cortex-dashboard-preview__toolbar span:first-child {
-  color: #202532;
-  font-size: 7px;
-  font-weight: 720;
-}
-
-.cortex-dashboard-preview__stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-  margin-top: 12px;
-}
-
-.cortex-dashboard-preview__stats div {
-  padding: 5px 4px;
-  border: 1px solid #eceef3;
-  border-radius: 3px;
-  background: #ffffff;
-}
-
-.cortex-dashboard-preview__stats small,
-.cortex-dashboard-preview__stats strong {
-  display: block;
-}
-
-.cortex-dashboard-preview__stats small {
-  color: #9097a5;
-  font-size: 4px;
-}
-
-.cortex-dashboard-preview__stats strong {
-  margin-top: 3px;
-  font-size: 8px;
-  font-weight: 720;
-}
-
-.cortex-dashboard-preview__graph {
-  margin-top: 12px;
-  padding: 7px;
-  border: 1px solid #eceef3;
-  border-radius: 4px;
-  background: #ffffff;
-}
-
-.cortex-dashboard-preview__graph-head {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #596071;
-  font-size: 5px;
-}
-
-.cortex-dashboard-preview__graph-head i {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #556de4;
-}
-
-.cortex-dashboard-preview__graph-head i:last-child {
-  background: #e5c965;
-}
-
-.cortex-dashboard-preview__graph svg {
-  display: block;
-  width: 100%;
-  height: auto;
-  margin-top: 8px;
-}
-
-.cortex-dashboard-preview__graph path {
-  fill: none;
-  stroke: #556de4;
-  stroke-linecap: round;
-  stroke-width: 2.4;
-}
-
-.cortex-dashboard-preview__graph path:last-child {
-  stroke: #e5c965;
-  stroke-width: 1.8;
-}
-
 .cortex-column--metrics .cortex-column__body > h2 {
   margin-top: 20px;
   color: var(--cortex-ink);
@@ -474,20 +320,11 @@
 .cortex-ai-panel__status {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: #6d8f51;
+  color: #8e929d;
   font-size: 6.5px;
-  font-weight: 650;
+  font-weight: 560;
+  letter-spacing: -0.02em;
   line-height: 1;
-  text-transform: uppercase;
-}
-
-.cortex-ai-panel__status i {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #84a965;
-  box-shadow: 0 0 0 2px rgba(132, 169, 101, 0.16);
 }
 
 .cortex-ai-panel__providers {
@@ -513,9 +350,10 @@
 
 .cortex-ai-provider__mark {
   display: grid;
-  width: 24px;
-  height: 24px;
+  width: 25px;
+  height: 25px;
   place-items: center;
+  border: 1px solid rgba(20, 25, 33, 0.045);
   border-radius: 8px;
   background: #f3f4f8;
 }
@@ -555,14 +393,30 @@
   min-width: 0;
   align-items: center;
   gap: 5px;
-  margin-top: 11px;
-  padding-top: 9px;
+  margin-top: 9px;
+  padding-top: 8px;
   border-top: 1px solid #eceef2;
   color: #7f838d;
   font-size: 6px;
   letter-spacing: -0.025em;
   line-height: 1;
   white-space: nowrap;
+}
+
+.cortex-ai-panel__route-node {
+  display: grid;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  place-items: center;
+  border-radius: 4px;
+  background: #eef0ff;
+  color: var(--cortex-blue);
+}
+
+.cortex-ai-panel__route-node .cortex-logo {
+  width: 9px;
+  height: 10px;
 }
 
 .cortex-ai-panel__route span,
@@ -597,21 +451,43 @@
   transform: rotate(45deg);
 }
 
+.cortex-ai-panel__roles-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-bottom: 5px;
+  color: #8e929d;
+  font-size: 5.5px;
+  line-height: 1;
+}
+
+.cortex-ai-panel__roles-heading span {
+  color: var(--cortex-ink);
+  font-weight: 680;
+  letter-spacing: -0.02em;
+}
+
+.cortex-ai-panel__roles-heading small {
+  font-size: inherit;
+  font-weight: 500;
+}
+
 .cortex-ai-panel__roles {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 4px;
-  margin-top: auto;
 }
 
 .cortex-ai-role {
   display: flex;
   min-width: 0;
-  min-height: 41px;
+  min-height: 36px;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  padding: 6px 6px 5px;
+  padding: 5px 6px 4px;
   border: 1px solid #ebedf1;
   border-radius: 8px;
   background: #fafbfc;
@@ -1242,12 +1118,6 @@
   .cortex-showcase__body h2,
   .cortex-pricing-card__body h2 {
     font-size: 30px;
-  }
-
-  .cortex-media--dashboard {
-    height: 310px;
-    padding: 21px;
-    margin-top: 31px;
   }
 
   .cortex-testimonial {

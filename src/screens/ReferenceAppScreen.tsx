@@ -74,9 +74,9 @@ function AiAccessPanel() {
       <div className="cortex-ai-panel__header">
         <div>
           <small>Available intelligence</small>
-          <strong>Model layer</strong>
+          <strong>Agent library</strong>
         </div>
-        <span className="cortex-ai-panel__status"><i /> live</span>
+        <span className="cortex-ai-panel__status">5 model families</span>
       </div>
       <div className="cortex-ai-panel__providers" aria-label="Available AI providers">
         {aiProviders.map(({ name, fullName, Mark, tone }) => (
@@ -87,11 +87,16 @@ function AiAccessPanel() {
         ))}
       </div>
       <div className="cortex-ai-panel__route">
-        <span>Hermes agent</span>
+        <span className="cortex-ai-panel__route-node"><CortexLogo aria-hidden="true" /></span>
+        <span>Hermes</span>
         <i aria-hidden="true" />
-        <strong>orchestrates</strong>
+        <strong>spawns</strong>
         <i aria-hidden="true" />
-        <span>Cortex system</span>
+        <span>agent roles</span>
+      </div>
+      <div className="cortex-ai-panel__roles-heading">
+        <span>Spawnable roles</span>
+        <small>per mission</small>
       </div>
       <div className="cortex-ai-panel__roles" aria-label="Agent roles Cortex can spawn">
         {agentRoles.map(({ label, detail, Icon }) => (
@@ -135,34 +140,6 @@ function RevenueChart() {
           <text x="0" y="86">$8k</text>
         </g>
       </svg>
-    </div>
-  );
-}
-
-function DashboardPreview() {
-  return (
-    <div className="cortex-dashboard-preview" aria-hidden="true">
-      <aside className="cortex-dashboard-preview__sidebar">
-        <div className="cortex-dashboard-preview__mini-brand"><CortexLogo /> <span>Cortex</span></div>
-        <span className="cortex-dashboard-preview__nav cortex-dashboard-preview__nav--active">Mission overview</span>
-        <span className="cortex-dashboard-preview__nav">Signals</span>
-        <span className="cortex-dashboard-preview__nav">Evidence</span>
-        <span className="cortex-dashboard-preview__nav">Collaborators</span>
-        <span className="cortex-dashboard-preview__nav">History</span>
-      </aside>
-      <div className="cortex-dashboard-preview__main">
-        <div className="cortex-dashboard-preview__toolbar"><span>Mission overview</span><span>Objective / Launch briefing</span></div>
-        <div className="cortex-dashboard-preview__stats">
-          <div><small>Agents</small><strong>06</strong></div>
-          <div><small>Elapsed</small><strong>00:13:52</strong></div>
-          <div><small>Runs</small><strong>17</strong></div>
-          <div><small>Proofs</small><strong>04</strong></div>
-        </div>
-        <div className="cortex-dashboard-preview__graph">
-          <div className="cortex-dashboard-preview__graph-head"><span>Mission activity</span><i /><i /></div>
-          <svg viewBox="0 0 240 90"><path d="M3 58c18-30 28-28 45-2s26 15 40-1 24-22 37-7 20 24 34 7 23-36 39-18 21 26 39 17" /><path d="M3 39c15 17 25 24 41 19s25-34 39-18 25 30 38 13 21-24 36-14 22 23 37 5 25-19 43 11" /></svg>
-        </div>
-      </div>
     </div>
   );
 }
@@ -292,7 +269,6 @@ export function ReferenceAppScreen() {
             <h1 id="cortex-page-title">Turn scattered intelligence into coordinated action</h1>
             <p>Coordinate your agents, direct complex work, and return each outcome with a reason you can trust.</p>
             <Link className="cortex-pill cortex-pill--dark cortex-intro__cta" to="/signup">Start a mission</Link>
-            <div className="cortex-media cortex-media--dashboard"><DashboardPreview /></div>
           </div>
         </ReferenceColumn>
 
