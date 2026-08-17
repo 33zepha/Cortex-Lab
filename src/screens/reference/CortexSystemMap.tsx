@@ -15,6 +15,7 @@ type SystemItem = {
 };
 
 type CoreSize = "human" | "cortex" | "hermes" | "return" | "result";
+type MeasureKey = "human" | "cortex" | "hermes" | "models" | "agents" | "cortex-return" | "result";
 
 type MeasuredBox = {
   left: number;
@@ -23,6 +24,11 @@ type MeasuredBox = {
   bottom: number;
   centerX: number;
   centerY: number;
+};
+
+type Point = {
+  x: number;
+  y: number;
 };
 
 type ConnectorPath = {
@@ -130,16 +136,6 @@ const roleItems: SystemItem[] = [
   },
 ];
 
-const connectorDefinitions = [
-  { id: "human-cortex", from: "human", to: "cortex", stage: 0 },
-  { id: "cortex-hermes", from: "cortex", to: "hermes", stage: 0 },
-  { id: "hermes-models", from: "hermes", to: "models", stage: 1 },
-  { id: "hermes-agents", from: "hermes", to: "agents", stage: 2 },
-  { id: "models-return", from: "models", to: "cortex-return", stage: 3 },
-  { id: "agents-return", from: "agents", to: "cortex-return", stage: 3 },
-  { id: "return-result", from: "cortex-return", to: "result", stage: 3 },
-] as const;
-
 function getMeasuredBox(element: HTMLElement, canvas: DOMRect): MeasuredBox {
   const rect = element.getBoundingClientRect();
   const left = rect.left - canvas.left;
@@ -155,25 +151,178 @@ function getMeasuredBox(element: HTMLElement, canvas: DOMRect): MeasuredBox {
   };
 }
 
-function connectBoxes(source: MeasuredBox, target: MeasuredBox): string {
-  const deltaX = target.centerX - source.centerX;
-  const deltaY = target.centerY - source.centerY;
-  const isMostlyVertical = Math.abs(deltaX) < 48;
+function edgePoint(box: MeasuredBox, toward: Point): Point {
+  const horizontalDistance = Math.abs(toward.x - box.centerX);
+  const verticalDistance = Math.abs(toward.y - box.centerY);
 
-  if (isMostlyVertical) {
-    const sourceY = deltaY >= 0 ? source.bottom : source.top;
-    const targetY = deltaY >= 0 ? target.top : target.bottom;
-    const curve = Math.max(30, Math.min(110, Math.abs(targetY - sourceY) * 0.42));
-
-    return `M ${source.centerX} ${sourceY} C ${source.centerX} ${sourceY + Math.sign(deltaY) * curve}, ${target.centerX} ${targetY - Math.sign(deltaY) * curve}, ${target.centerX} ${targetY}`;
+  if (verticalDistance > horizontalDistance) {
+    return toward.y >= box.centerY ? { x: box.centerX, y: box.bottom } : { x: box.centerX, y: box.top };
   }
 
-  const toRight = deltaX > 0;
-  const sourceX = toRight ? source.right : source.left;
-  const targetX = toRight ? target.left : target.right;
-  const curve = Math.max(34, Math.min(150, Math.abs(targetX - sourceX) * 0.48));
+  return toward.x >= box.centerX ? { x: box.right, y: box.centerY } : { x: box.left, y: box.centerY };
+}
 
-  return `M ${sourceX} ${source.centerY} C ${sourceX + (toRight ? curve : -curve)} ${source.centerY}, ${targetX - (toRight ? curve : -curve)} ${target.centerY}, ${targetX} ${target.centerY}`;
+function curveBetween(from: Point, to: Point): string {
+  return `M ${from.x} ${from.y} ${curveSegment(from, to)}`;
+}
+
+function curveSegment(from: Point, to: Point): string {
+  const deltaX = to.x - from.x;
+  const deltaY = to.y - from.y;
+  const horizontal = Math.abs(deltaX) >= Math.abs(deltaY);
+
+  if (horizontal) {
+    const curve = Math.max(28, Math.min(130, Math.abs(deltaX) * 0.46));
+    const direction = Math.sign(deltaX) || 1;
+    return `C ${from.x + direction * curve} ${from.y}, ${to.x - direction * curve} ${to.y}, ${to.x} ${to.y}`;
+  }
+
+  const curve = Math.max(30, Math.min(110, Math.abs(deltaY) * 0.42));
+  const direction = Math.sign(deltaY) || 1;
+  return `C ${from.x} ${from.y + direction * curve}, ${to.x} ${to.y - direction * curve}, ${to.x} ${to.y}`;
+}
+
+function routeThrough(source: Point, waypoints: Point[], target: Point): string {
+  let path = `M ${source.x} ${source.y}`;
+  let previous = source;
+
+  for (const point of [...waypoints, target]) {
+    path += ` ${curveSegment(previous, point)}`;
+    previous = point;
+  }
+
+  return path;
+}
+
+function connectBoxes(source: MeasuredBox, target: MeasuredBox): string {
+  const sourcePoint = edgePoint(source, { x: target.centerX, y: target.centerY });
+  const targetPoint = edgePoint(target, { x: source.centerX, y: source.centerY });
+  return curveBetween(sourcePoint, targetPoint);
+}
+
+function connectFromPoint(source: Point, target: MeasuredBox): string {
+  return curveBetween(source, edgePoint(target, source));
+}
+
+function makeWidePaths(boxes: Partial<Record<MeasureKey, MeasuredBox>>): ConnectorPath[] {
+  const human = boxes.human;
+  const cortex = boxes.cortex;
+  const hermes = boxes.hermes;
+  const models = boxes.models;
+  const agents = boxes.agents;
+  const returnNode = boxes["cortex-return"];
+  const result = boxes.result;
+
+  if (!human || !cortex || !hermes || !models || !agents || !returnNode || !result) return [];
+
+  const paths: ConnectorPath[] = [
+    { id: "human-cortex", d: connectBoxes(human, cortex), stage: 0 },
+    { id: "cortex-hermes", d: connectBoxes(cortex, hermes), stage: 0 },
+  ];
+
+  const fork = {
+    x: (models.right + agents.left) / 2,
+    y: Math.min(models.top, agents.top) - 18,
+  };
+  const hermesExit = { x: hermes.centerX, y: hermes.bottom };
+  const modelsEntry = { x: models.right, y: models.centerY };
+  const agentsEntry = { x: agents.centerX, y: agents.top };
+  paths.push(
+    { id: "hermes-fork", d: curveBetween(hermesExit, fork), stage: 1 },
+    {
+      id: "fork-models",
+      d: curveBetween(fork, modelsEntry),
+      stage: 1,
+    },
+    {
+      id: "fork-agents",
+      d: curveBetween(fork, agentsEntry),
+      stage: 2,
+    },
+  );
+
+  const recombine = {
+    x: returnNode.left - 20,
+    y: returnNode.centerY,
+  };
+  paths.push(
+    {
+      id: "models-recombine",
+      d: curveBetween(edgePoint(models, recombine), recombine),
+      stage: 3,
+    },
+    {
+      id: "agents-recombine",
+      d: curveBetween(edgePoint(agents, recombine), recombine),
+      stage: 3,
+    },
+    {
+      id: "recombine-return",
+      d: connectFromPoint(recombine, returnNode),
+      stage: 3,
+    },
+    { id: "return-result", d: connectBoxes(returnNode, result), stage: 3 },
+  );
+
+  return paths;
+}
+
+function makeStackedPaths(boxes: Partial<Record<MeasureKey, MeasuredBox>>): ConnectorPath[] {
+  const human = boxes.human;
+  const cortex = boxes.cortex;
+  const hermes = boxes.hermes;
+  const models = boxes.models;
+  const agents = boxes.agents;
+  const returnNode = boxes["cortex-return"];
+  const result = boxes.result;
+
+  if (!human || !cortex || !hermes || !models || !agents || !returnNode || !result) return [];
+
+  // Keep the two branches legible without tracing the outside of the fields. The
+  // collector stays near the right edge of the actual fields and is hidden under
+  // them, so only the useful links remain visible in the gaps between stages.
+  const sideX = Math.max(models.right, agents.right) - 22;
+  const modelEntry = { x: models.centerX, y: models.top };
+  const agentEntry = { x: agents.right - 24, y: agents.top };
+  const agentBranch = { x: sideX, y: agents.top - 18 };
+  const modelExit = { x: models.right - 24, y: models.bottom };
+  const agentExit = { x: agents.right - 24, y: agents.bottom };
+  const lowerCollector = { x: sideX, y: agents.bottom + 18 };
+
+  return [
+    { id: "human-cortex", d: connectBoxes(human, cortex), stage: 0 },
+    { id: "cortex-hermes", d: connectBoxes(cortex, hermes), stage: 0 },
+    {
+      id: "hermes-models",
+      d: curveBetween({ x: hermes.centerX - 16, y: hermes.bottom }, modelEntry),
+      stage: 1,
+    },
+    {
+      id: "hermes-agents",
+      d: routeThrough(
+        { x: hermes.right - 20, y: hermes.bottom },
+        [{ x: sideX, y: hermes.bottom + 18 }, agentBranch],
+        agentEntry,
+      ),
+      stage: 2,
+    },
+    {
+      id: "models-recombine",
+      d: routeThrough(modelExit, [{ x: sideX, y: models.bottom + 18 }], lowerCollector),
+      stage: 3,
+    },
+    {
+      id: "agents-recombine",
+      d: curveBetween(agentExit, lowerCollector),
+      stage: 3,
+    },
+    {
+      id: "recombine-return",
+      d: connectFromPoint(lowerCollector, returnNode),
+      stage: 3,
+    },
+    { id: "return-result", d: connectBoxes(returnNode, result), stage: 3 },
+  ];
 }
 
 function SelectableNode({
@@ -199,9 +348,7 @@ function SelectableNode({
       onClick={() => onSelect(item.id)}
       transition={{ layout: { duration: 0.72, ease: [0.16, 1, 0.3, 1] } }}
     >
-      <span className="cortex-system-map__node-mark" aria-hidden="true">
-        {item.mark}
-      </span>
+      <span className="cortex-system-map__node-mark" aria-hidden="true">{item.mark}</span>
       <span className="cortex-system-map__node-copy">
         <strong>{item.title}</strong>
         <AnimatePresence initial={false} mode="wait">
@@ -242,7 +389,7 @@ function RevealedStage({
     <motion.div
       className={`cortex-system-map__stage ${className}`}
       initial={false}
-      animate={visible ? { opacity: 1, clipPath: "inset(0% 0% 0% 0%)" } : { opacity: 0, clipPath: "inset(0% 0% 12% 0%)" }}
+      animate={visible ? { opacity: 1, clipPath: "inset(0% 0% 0% 0%)" } : { opacity: 0, clipPath: "inset(0% 0% 10% 0%)" }}
       transition={{ duration: reducedMotion ? 0 : 0.82, ease: [0.16, 1, 0.3, 1] }}
     >
       {children}
@@ -252,21 +399,22 @@ function RevealedStage({
 
 function FieldDetail({ item }: { item: SystemItem | undefined }) {
   return (
-    <AnimatePresence initial={false} mode="wait">
-      {item ? (
-        <motion.div
-          key={item.id}
-          className="cortex-system-map__field-detail"
-          initial={{ opacity: 0, height: 0, y: -5 }}
-          animate={{ opacity: 1, height: "auto", y: 0 }}
-          exit={{ opacity: 0, height: 0, y: -5 }}
-          transition={{ duration: 0.58, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <strong>{item.title}</strong>
-          <span>{item.detail}</span>
-        </motion.div>
-      ) : null}
-    </AnimatePresence>
+    <div className={`cortex-system-map__field-detail${item ? " is-filled" : ""}`} aria-live="polite">
+      <AnimatePresence initial={false} mode="wait">
+        {item ? (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <strong>{item.title}</strong>
+            <span>{item.detail}</span>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -298,7 +446,7 @@ function ConnectorLayer({
 
 export function CortexSystemMap() {
   const canvasRef = useRef<HTMLDivElement | null>(null);
-  const measuredRefs = useRef<Record<string, HTMLElement | null>>({});
+  const measuredRefs = useRef<Partial<Record<MeasureKey, HTMLElement | null>>>({});
   const isInView = useInView(canvasRef, {
     amount: 0.2,
     margin: "-10% 0px -10% 0px",
@@ -311,7 +459,7 @@ export function CortexSystemMap() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [paths, setPaths] = useState<ConnectorPath[]>([]);
 
-  const registerRef = (id: string) => (element: HTMLElement | null) => {
+  const registerRef = (id: MeasureKey) => (element: HTMLElement | null) => {
     measuredRefs.current[id] = element;
   };
 
@@ -339,9 +487,7 @@ export function CortexSystemMap() {
       }, 160 + stage * 760),
     );
 
-    return () => {
-      timers.forEach((timer) => window.clearTimeout(timer));
-    };
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [isInView, reducedMotion, reducedMotionPreference]);
 
   useLayoutEffect(() => {
@@ -349,23 +495,16 @@ export function CortexSystemMap() {
     if (!canvas) return;
 
     let frame = 0;
-
     const measure = () => {
       window.cancelAnimationFrame(frame);
       frame = window.requestAnimationFrame(() => {
         const canvasRect = canvas.getBoundingClientRect();
-        const boxes = Object.entries(measuredRefs.current).reduce<Record<string, MeasuredBox>>((result, [id, element]) => {
-          if (element) result[id] = getMeasuredBox(element, canvasRect);
+        const boxes = Object.entries(measuredRefs.current).reduce<Partial<Record<MeasureKey, MeasuredBox>>>((result, [id, element]) => {
+          if (element) result[id as MeasureKey] = getMeasuredBox(element, canvasRect);
           return result;
         }, {});
 
-        const nextPaths = connectorDefinitions.flatMap(({ from, id, stage, to }) => {
-          const source = boxes[from];
-          const target = boxes[to];
-          if (!source || !target) return [];
-          return [{ id, d: connectBoxes(source, target), stage }];
-        });
-
+        const nextPaths = canvas.clientWidth >= 680 ? makeWidePaths(boxes) : makeStackedPaths(boxes);
         setPaths(nextPaths);
       });
     };
@@ -429,7 +568,8 @@ export function CortexSystemMap() {
         </RevealedStage>
 
         <RevealedStage index={1} reducedMotion={reducedMotion} revealedThrough={revealedThrough} className="cortex-system-map__stage--models">
-          <div ref={registerRef("models")} className="cortex-system-map__field cortex-system-map__field--models" aria-label="AI models">
+          <div ref={registerRef("models")} className="cortex-system-map__field cortex-system-map__field--models" aria-labelledby="cortex-system-map-models-title">
+            <h3 id="cortex-system-map-models-title" className="cortex-system-map__field-title">Models</h3>
             <div className="cortex-system-map__model-list">
               {modelItems.map((item) => (
                 <motion.button
@@ -451,7 +591,8 @@ export function CortexSystemMap() {
         </RevealedStage>
 
         <RevealedStage index={2} reducedMotion={reducedMotion} revealedThrough={revealedThrough} className="cortex-system-map__stage--agents">
-          <div ref={registerRef("agents")} className="cortex-system-map__field cortex-system-map__field--agents" aria-label="Agent roles">
+          <div ref={registerRef("agents")} className="cortex-system-map__field cortex-system-map__field--agents" aria-labelledby="cortex-system-map-agents-title">
+            <h3 id="cortex-system-map-agents-title" className="cortex-system-map__field-title">Agents</h3>
             <div className="cortex-system-map__role-list">
               {roleItems.map((item) => (
                 <motion.button
