@@ -1,5 +1,4 @@
 @import "@fontsource-variable/plus-jakarta-sans/wght.css";
-@import "@fontsource-variable/bricolage-grotesque/wght.css";
 
 @font-face {
   font-family: "Cortex Inter";
@@ -10,21 +9,15 @@
 }
 
 .cortex-reference {
-  --cortex-canvas: #eceef2;
+  --cortex-canvas: #fbfcff;
   --cortex-surface: #ffffff;
-  --cortex-ink: #141921;
-  --cortex-muted: #4f5159;
-  --cortex-line: #e5e7ea;
-  --cortex-blue: #556de4;
-  --cortex-soft-blue: #dde2fb;
-  --cortex-soft-yellow: #fcf2d1;
-  --cortex-soft-lavender: #f7ebff;
-  --cortex-soft-auth: #e6eafd;
-  --cortex-dark: #222222;
+  --cortex-ink: #151a2b;
+  --cortex-muted: #5f6575;
+  --cortex-blue: #586af2;
   --cortex-ui: "Plus Jakarta Sans Variable", "Avenir Next", "Helvetica Neue", Inter, ui-sans-serif, system-ui, sans-serif;
-  --cortex-display: "Bricolage Grotesque Variable", "Avenir Next", "Helvetica Neue", Inter, ui-sans-serif, system-ui, sans-serif;
+  --cortex-display: "Cortex Inter", "Plus Jakarta Sans Variable", "Avenir Next", "Helvetica Neue", Inter, ui-sans-serif, system-ui, sans-serif;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
   background: var(--cortex-canvas);
   color: var(--cortex-ink);
   color-scheme: light;
@@ -40,2732 +33,568 @@
   box-sizing: border-box;
 }
 
-.cortex-reference a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.cortex-reference button,
 .cortex-reference h1,
 .cortex-reference h2,
 .cortex-reference h3,
-.cortex-reference h4,
-.cortex-reference p,
-.cortex-reference figure,
-.cortex-reference blockquote,
-.cortex-reference ul {
+.cortex-reference p {
   margin: 0;
 }
 
-.cortex-reference button {
-  border: 0;
-  font: inherit;
+.cortex-reference a {
+  color: inherit;
 }
 
-.cortex-reference__stage {
-  display: grid;
-  width: 100%;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-items: start;
-  gap: clamp(28px, 2.4vw, 40px);
-  padding: 0 clamp(20px, 3.45vw, 56px) 74px;
+.cortex-reference__story {
+  width: min(100%, 1320px);
+  margin: 0 auto;
+  padding: clamp(112px, 13vw, 184px) clamp(20px, 4vw, 60px) 120px;
 }
 
-.cortex-panel,
-.cortex-column--utility > section {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  background: var(--cortex-surface);
-  border: 1px solid rgba(35, 40, 51, 0.045);
-  border-radius: 22px;
-  box-shadow: 0 14px 30px rgba(35, 40, 51, 0.055);
-}
-
-.cortex-panel,
-.cortex-column {
-  min-width: 0;
-}
-
-.cortex-column--intro {
-  margin-top: clamp(156px, 16vw, 194px);
-}
-
-.cortex-column--intro::before,
-.cortex-column--intro::after {
-  position: absolute;
-  z-index: 0;
-  pointer-events: none;
-  content: "";
-}
-
-/* A quiet Cortex signature: an orbit-like trace that gives the empty field a sense of motion. */
-.cortex-column--intro::before {
-  right: -238px;
-  bottom: -184px;
-  width: 438px;
-  height: 438px;
-  border-radius: 50%;
-  background:
-    radial-gradient(
-      ellipse at center,
-      transparent 0 47%,
-      rgba(85, 109, 228, 0.12) 47.35% 47.7%,
-      transparent 48.05% 61%,
-      rgba(85, 109, 228, 0.085) 61.35% 61.7%,
-      transparent 62.05% 75.5%,
-      rgba(85, 109, 228, 0.06) 75.85% 76.2%,
-      transparent 76.55%
-    );
-  opacity: 0.78;
-  transform: rotate(-14deg);
-  animation: cortex-trace-drift 18s ease-in-out infinite alternate;
-}
-
-.cortex-column--intro::after {
-  right: 43px;
-  bottom: 103px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--cortex-blue);
-  box-shadow: 0 0 0 7px rgba(85, 109, 228, 0.08), 0 0 24px rgba(85, 109, 228, 0.12);
-  opacity: 0.56;
-  animation: cortex-trace-pulse 4.8s ease-in-out infinite;
-}
-
-.cortex-column--intro .cortex-panel-header,
-.cortex-column--intro .cortex-column__body {
-  position: relative;
-  z-index: 1;
-}
-
-@keyframes cortex-trace-drift {
-  from {
-    transform: rotate(-14deg) translate3d(0, 0, 0) scale(0.98);
-  }
-
-  to {
-    transform: rotate(-9deg) translate3d(-10px, -8px, 0) scale(1.02);
-  }
-}
-
-@keyframes cortex-trace-pulse {
-  0%,
-  100% {
-    opacity: 0.38;
-    transform: scale(0.9);
-  }
-
-  50% {
-    opacity: 0.72;
-    transform: scale(1.12);
-  }
-}
-
-.cortex-column--metrics {
-  margin-top: clamp(52px, 6vw, 72px);
-}
-
-.cortex-column--showcase {
-  position: relative;
-  isolation: isolate;
-  min-height: 1530px;
-  overflow: hidden;
-  padding-top: 9px;
-  background: var(--cortex-surface);
-}
-
-.cortex-column--utility {
-  min-width: 0;
-}
-
-.cortex-panel-header {
-  display: flex;
-  min-height: 71px;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 0 13px 0 14px;
-  border-bottom: 0;
-  background: var(--cortex-surface);
-}
-
-.cortex-panel-header__brand {
-  display: inline-flex;
-  width: 36px;
-  min-width: 36px;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  color: var(--cortex-ink);
-  font-size: 19px;
-  font-weight: 720;
-  letter-spacing: -0.055em;
-  line-height: 1;
-}
-
-.cortex-panel-header__brand .cortex-logo {
-  width: 30px;
-  height: 33px;
-  flex: 0 0 auto;
-}
-
-.cortex-panel-header__actions {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 5px;
-}
-
-.cortex-pill {
-  display: inline-flex;
-  min-height: 48px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  font-size: 15px;
-  font-weight: 560;
-  letter-spacing: -0.025em;
-  line-height: 1;
-  transition: transform 160ms ease, background-color 160ms ease, color 160ms ease;
-}
-
-.cortex-pill:hover,
-.cortex-pill:focus-visible {
-  transform: translateY(-1px);
-}
-
-.cortex-pill--dark {
-  background: var(--cortex-ink);
-  color: #ffffff;
-}
-
-.cortex-reference a.cortex-pill--dark {
-  color: #ffffff;
-}
-
-.cortex-reference a.cortex-pill--lavender {
-  color: var(--cortex-blue);
-}
-
-.cortex-pill--dark:hover,
-.cortex-pill--dark:focus-visible {
-  background: #303641;
-}
-
-.cortex-pill--lavender {
-  background: var(--cortex-soft-auth);
-  color: var(--cortex-blue);
-}
-
-.cortex-panel-header__cta {
-  width: 119px;
-  min-height: 42px;
-  font-size: 14px;
-}
-
-.cortex-menu-button {
-  display: inline-grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border: 1px solid rgba(20, 25, 33, 0.11);
-  border-radius: 50%;
-  background: #ffffff;
-  color: var(--cortex-ink);
-  cursor: pointer;
-}
-
-.cortex-menu-button svg {
-  width: 17px;
-  height: 17px;
-  stroke-width: 1.8;
-}
-
-.cortex-menu-button:hover,
-.cortex-menu-button:focus-visible {
-  background: #f6f7f9;
-}
-
-.cortex-column__body {
-  position: relative;
-  z-index: 1;
-  padding: 15px;
-}
-
-.cortex-intro {
-  padding-top: 36px;
+.cortex-reference__intro {
+  width: min(100%, 680px);
+  margin: 0 auto clamp(64px, 8vw, 112px);
   text-align: center;
 }
 
-.cortex-intro h1,
-.cortex-showcase__body h2,
-.cortex-pricing-card__body h2 {
-  color: var(--cortex-ink);
+.cortex-reference__intro h2,
+.cortex-reference__closing h3,
+.cortex-reference__result h3 {
   font-family: var(--cortex-display);
-  font-size: clamp(29px, 2.05vw, 33px);
-  font-weight: 520;
-  letter-spacing: -0.048em;
-  line-height: 1.05;
-}
-
-.cortex-intro h1 {
-  max-width: 100%;
-  margin-inline: auto;
+  font-weight: 540;
+  letter-spacing: -0.06em;
   text-wrap: balance;
 }
 
-.cortex-intro__accent {
-  display: inline;
-  background: linear-gradient(112deg, #4d66dc 0%, #687ee9 54%, #9ba8f3 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  font-weight: 570;
+.cortex-reference__intro h2 {
+  font-size: clamp(42px, 5.2vw, 70px);
+  line-height: 0.98;
 }
 
-.cortex-intro p,
-.cortex-column--metrics .cortex-column__body > p,
-.cortex-showcase__body > p,
-.cortex-pricing-card__body > p {
-  color: var(--cortex-ink);
-  font-size: 16px;
-  font-weight: 430;
-  letter-spacing: -0.028em;
+.cortex-reference__intro p {
+  width: min(100%, 560px);
+  margin: 28px auto 0;
+  color: var(--cortex-muted);
+  font-size: clamp(16px, 1.35vw, 18px);
+  font-weight: 440;
+  letter-spacing: -0.025em;
   line-height: 1.52;
 }
 
-.cortex-intro p {
-  margin: 17px auto 0;
+.cortex-reference__grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: start;
+  gap: clamp(24px, 2.4vw, 36px);
 }
 
-.cortex-intro__cta,
-.cortex-showcase__cta {
-  width: 171px;
-  margin-top: 21px;
+.cortex-reference__system,
+.cortex-reference__brief,
+.cortex-reference__result {
+  min-width: 0;
 }
 
-.cortex-intro__cta {
-  width: auto;
-  min-width: 184px;
-  min-height: 52px;
-  margin-inline: auto;
-  padding-inline: 23px;
-  border: 1px solid rgba(20, 25, 33, 0.08);
-  border-radius: 14px;
-  box-shadow: 0 9px 18px rgba(20, 25, 33, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  font-size: 14px;
-  font-weight: 640;
+.cortex-reference__system {
+  grid-column: 1 / span 8;
+  min-height: clamp(700px, 55vw, 780px);
+  padding: clamp(20px, 3vw, 44px) clamp(16px, 2.4vw, 34px);
+  overflow: hidden;
+  border: 1px solid rgba(57, 67, 105, 0.1);
+  border-radius: 30px;
+  background: var(--cortex-surface);
+  box-shadow: 0 22px 60px rgba(44, 54, 93, 0.07);
+}
+
+.cortex-reference__system .cortex-system-map {
+  min-height: 100%;
+}
+
+.cortex-reference__brief {
+  grid-column: 10 / -1;
+  min-height: clamp(220px, 20vw, 280px);
+  margin-top: clamp(48px, 6vw, 88px);
+  padding: clamp(24px, 3vw, 36px);
+  border: 1px solid rgba(57, 67, 105, 0.1);
+  border-radius: 24px;
+  background: #f1f3ff;
+  box-shadow: 0 18px 44px rgba(62, 72, 136, 0.07);
+}
+
+.cortex-reference__brief p {
+  max-width: 280px;
+  color: var(--cortex-ink);
+  font-size: clamp(20px, 2vw, 27px);
+  font-weight: 520;
+  letter-spacing: -0.045em;
+  line-height: 1.13;
+}
+
+.cortex-reference__result {
+  grid-column: 9 / -1;
+  min-height: clamp(300px, 27vw, 380px);
+  padding: clamp(28px, 3.5vw, 48px);
+  border: 1px solid rgba(57, 67, 105, 0.1);
+  border-radius: 26px;
+  background: var(--cortex-surface);
+  box-shadow: 0 18px 44px rgba(44, 54, 93, 0.055);
+}
+
+.cortex-reference__result h3 {
+  max-width: 390px;
+  font-size: clamp(31px, 3.5vw, 48px);
+  line-height: 1;
+}
+
+.cortex-reference__result p {
+  max-width: 340px;
+  margin-top: 28px;
+  color: var(--cortex-muted);
+  font-size: clamp(16px, 1.4vw, 18px);
+  font-weight: 440;
   letter-spacing: -0.025em;
+  line-height: 1.5;
 }
 
-.cortex-intro__cta:hover,
-.cortex-intro__cta:focus-visible {
-  box-shadow: 0 12px 22px rgba(20, 25, 33, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+.cortex-reference__closing {
+  grid-column: 2 / span 5;
+  margin-top: clamp(28px, 4vw, 64px);
+  padding-top: clamp(40px, 5vw, 72px);
 }
 
-.cortex-intro__cta:focus-visible {
-  outline: 3px solid rgba(85, 109, 228, 0.24);
-  outline-offset: 3px;
+.cortex-reference__closing h3 {
+  max-width: 520px;
+  font-size: clamp(30px, 3.6vw, 50px);
+  line-height: 1.02;
 }
 
-.cortex-command-rail {
-  position: relative;
-  isolation: isolate;
-  width: 100%;
-  height: 304px;
-  margin-top: clamp(42px, 6vh, 68px);
-  margin-bottom: -44px;
-  padding: 12px 13px 0;
-  overflow: hidden;
-  border: 1px solid rgba(20, 25, 33, 0.1);
-  border-bottom-color: rgba(20, 25, 33, 0.045);
-  border-radius: 26px 26px 0 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 249, 253, 0.82));
-  box-shadow: 0 20px 38px rgba(35, 40, 51, 0.1), 0 2px 8px rgba(35, 40, 51, 0.04);
-  backdrop-filter: blur(10px);
+.cortex-reference__closing a {
+  display: inline-flex;
+  margin-top: 32px;
+  color: var(--cortex-blue);
+  font-size: 16px;
+  font-weight: 620;
+  letter-spacing: -0.025em;
+  text-decoration: underline;
+  text-decoration-color: rgba(88, 106, 242, 0.38);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 6px;
+  transition: color 240ms ease, text-decoration-color 240ms ease;
 }
 
-.cortex-command-rail::before,
-.cortex-command-rail::after {
-  position: absolute;
-  z-index: 2;
-  pointer-events: none;
-  content: "";
+.cortex-reference__closing a:hover,
+.cortex-reference__closing a:focus-visible {
+  color: #3649c8;
+  text-decoration-color: currentColor;
 }
 
-.cortex-command-rail::before {
-  inset: 0;
-  border-radius: inherit;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+.cortex-reference__closing a:focus-visible {
+  outline: 3px solid rgba(88, 106, 242, 0.24);
+  outline-offset: 5px;
 }
 
-.cortex-command-rail::after {
-  z-index: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 28px;
-  background: linear-gradient(180deg, rgba(248, 249, 253, 0), rgba(248, 249, 253, 0.98));
+/* The system map is a real architecture, so its branch surfaces remain legible without becoming a card grid. */
+.cortex-reference .cortex-system-map__node {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
-.cortex-command-rail__viewport {
-  position: relative;
-  z-index: 1;
-  height: 100%;
-  overflow: hidden;
+.cortex-reference .cortex-system-map__node:hover,
+.cortex-reference .cortex-system-map__node:focus-visible,
+.cortex-reference .cortex-system-map__node.is-selected {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
-.cortex-command-rail__chat-space {
-  position: relative;
-  height: 100%;
-  overflow: hidden;
-  border: 1px solid rgba(20, 25, 33, 0.055);
-  border-radius: 20px 20px 0 0;
-  background: linear-gradient(180deg, rgba(249, 250, 253, 0.86), rgba(255, 255, 255, 0.7));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+.cortex-reference .cortex-system-map__node-mark,
+.cortex-reference .cortex-system-map__model-mark,
+.cortex-reference .cortex-system-map__role-mark {
+  flex-shrink: 0;
 }
 
-.cortex-command-rail__empty-state {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding-bottom: 86px;
-}
-
-.cortex-command-rail__chat-mark {
-  z-index: 1;
-  display: grid;
-  width: 56px;
-  height: 56px;
-  place-items: center;
-  border: 1px solid rgba(85, 109, 228, 0.12);
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.96), rgba(223, 228, 255, 0.8) 55%, rgba(222, 226, 251, 0.24) 100%);
-  box-shadow: 0 0 0 10px rgba(85, 109, 228, 0.035), 0 14px 34px rgba(85, 109, 228, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.92);
-  opacity: 0.88;
-}
-
-.cortex-command-rail__chat-mark .cortex-logo {
-  width: 29px;
-  height: 33px;
-}
-
-.cortex-command-rail__messages {
-  display: flex;
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 1;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 70px 13px 20px;
-}
-
-.cortex-command-rail__composer {
-  display: flex;
-  width: 100%;
-  min-height: 108px;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 9px;
-  border: 1px solid rgba(20, 25, 33, 0.06);
+.cortex-reference .cortex-system-map__branch-frame {
+  border-color: rgba(88, 106, 242, 0.11);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 10px 24px rgba(35, 40, 51, 0.075), 0 2px 5px rgba(35, 40, 51, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  padding: 15px 14px 12px 16px;
+  background: #f8f9ff;
+  box-shadow: none;
+}
+
+.cortex-reference .cortex-system-map__model-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 22px 28px;
+}
+
+.cortex-reference .cortex-system-map__model {
+  flex: 0 1 74px;
+  min-height: 0;
+  padding: 8px 0;
+  border-radius: 0;
+}
+
+.cortex-reference .cortex-system-map__model:hover,
+.cortex-reference .cortex-system-map__model.is-selected,
+.cortex-reference .cortex-system-map__role:hover,
+.cortex-reference .cortex-system-map__role.is-selected {
+  background: transparent;
+}
+
+.cortex-reference .cortex-system-map__model-name,
+.cortex-reference .cortex-system-map__role-name,
+.cortex-reference .cortex-system-map__node-detail,
+.cortex-reference .cortex-system-map__inline-detail {
+  font-size: 14px;
+}
+
+.cortex-reference .cortex-system-map__role-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 20px 30px;
+}
+
+.cortex-reference .cortex-system-map__role {
+  flex: 0 1 84px;
+  min-height: 0;
+  padding: 8px 0;
+  border-radius: 0;
+}
+
+/* The owned map component exposes a measured layout. Keep the geometry here so the
+   connectors follow the actual nodes instead of becoming a decorative timeline. */
+.cortex-reference .cortex-system-map {
+  position: relative;
+  min-height: 700px;
+}
+
+.cortex-reference .cortex-system-map__connector-layer {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.cortex-reference .cortex-system-map__connector {
+  fill: none;
+  stroke: rgba(88, 106, 242, 0.28);
+  stroke-linecap: round;
+  stroke-width: 1.25;
+}
+
+.cortex-reference .cortex-system-map__layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  min-height: 700px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: repeat(5, minmax(0, auto));
+  align-items: center;
+  column-gap: 18px;
+  row-gap: 34px;
+  padding: 24px 14px 30px;
+}
+
+.cortex-reference .cortex-system-map__stage {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+}
+
+.cortex-reference .cortex-system-map__stage--human {
+  grid-column: 1 / span 4;
+  grid-row: 1;
+}
+
+.cortex-reference .cortex-system-map__stage--cortex {
+  grid-column: 1 / span 4;
+  grid-row: 2;
+}
+
+.cortex-reference .cortex-system-map__stage--hermes {
+  grid-column: 1 / span 4;
+  grid-row: 3;
+}
+
+.cortex-reference .cortex-system-map__stage--models {
+  grid-column: 5 / -1;
+  grid-row: 2;
+}
+
+.cortex-reference .cortex-system-map__stage--agents {
+  grid-column: 5 / -1;
+  grid-row: 4;
+}
+
+.cortex-reference .cortex-system-map__stage--return {
+  grid-column: 2 / span 4;
+  grid-row: 5;
+}
+
+.cortex-reference .cortex-system-map__stage--result {
+  grid-column: 8 / span 4;
+  grid-row: 5;
+}
+
+.cortex-reference .cortex-system-map__node {
+  width: 100%;
+  min-height: 0;
+  justify-content: center;
+  gap: 14px;
+  padding: 14px 8px;
   text-align: left;
 }
 
-.cortex-command-rail__composer-copy {
-  display: flex;
-  min-width: 0;
-  min-height: 31px;
-  align-items: flex-start;
+.cortex-reference .cortex-system-map__node--human {
+  max-width: 230px;
+  margin-inline: auto;
 }
 
-.cortex-command-rail__composer-toolbar,
-.cortex-command-rail__tools,
-.cortex-command-rail__actions {
-  display: flex;
-  align-items: center;
+.cortex-reference .cortex-system-map__node--cortex {
+  max-width: 248px;
+  margin-inline: auto;
 }
 
-.cortex-command-rail__composer-toolbar {
-  justify-content: space-between;
-  gap: 10px;
+.cortex-reference .cortex-system-map__node--hermes {
+  max-width: 270px;
+  margin-inline: auto;
 }
 
-.cortex-command-rail__tools,
-.cortex-command-rail__actions {
-  gap: 5px;
+.cortex-reference .cortex-system-map__node--return,
+.cortex-reference .cortex-system-map__node--result {
+  max-width: 230px;
+  margin-inline: auto;
 }
 
-.cortex-command-rail__tool {
-  display: grid;
-  width: 22px;
-  height: 22px;
-  place-items: center;
+.cortex-reference .cortex-system-map__node-mark {
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.cortex-reference .cortex-system-map__node--human .cortex-system-map__node-mark {
+  width: 34px;
+  height: 34px;
+}
+
+.cortex-reference .cortex-system-map__node--hermes .cortex-system-map__node-mark {
+  width: 48px;
+  height: 52px;
+  border-radius: 12px;
+}
+
+.cortex-reference .cortex-system-map__node--result .cortex-system-map__node-mark {
   border-radius: 50%;
-  color: #8a909d;
+  background: var(--cortex-blue);
+  box-shadow: none;
 }
 
-.cortex-command-rail__tool svg {
-  width: 13px;
-  height: 13px;
-  stroke-width: 1.8;
-}
-
-.cortex-command-rail__sent-mark {
-  display: grid;
-  width: 29px;
-  height: 29px;
-  flex: 0 0 29px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #7183f4, #5364dc);
-  box-shadow: 0 5px 12px rgba(83, 100, 220, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  color: #ffffff;
-}
-
-.cortex-command-rail__sent-mark svg {
-  width: 15px;
-  height: 15px;
-  stroke-width: 2.2;
-}
-
-.cortex-command-rail__phrases {
-  position: relative;
-  display: block;
+.cortex-reference .cortex-system-map__node-copy {
   min-width: 0;
-  min-height: 1.45em;
-  overflow: visible;
-  color: var(--cortex-ink);
-  font-size: 13px;
-  font-weight: 540;
-  letter-spacing: -0.03em;
+}
+
+.cortex-reference .cortex-system-map__field {
+  min-width: 0;
+  padding: 24px 26px;
+  border: 1px solid rgba(88, 106, 242, 0.12);
+  border-radius: 22px;
+  background: #f8f9ff;
+}
+
+.cortex-reference .cortex-system-map__field--models {
+  min-height: 176px;
+}
+
+.cortex-reference .cortex-system-map__field--agents {
+  min-height: 154px;
+}
+
+.cortex-reference .cortex-system-map__model-list {
+  gap: 18px 28px;
+}
+
+.cortex-reference .cortex-system-map__model {
+  flex-basis: 72px;
+}
+
+.cortex-reference .cortex-system-map__model-mark {
+  width: 34px;
+  height: 34px;
+}
+
+.cortex-reference .cortex-system-map__model-mark svg {
+  width: 25px;
+  height: 25px;
+}
+
+.cortex-reference .cortex-system-map__model-name,
+.cortex-reference .cortex-system-map__role-name {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.cortex-reference .cortex-system-map__role-list {
+  gap: 18px 32px;
+}
+
+.cortex-reference .cortex-system-map__role {
+  flex-basis: 82px;
+}
+
+.cortex-reference .cortex-system-map__role-mark {
+  width: 24px;
+  height: 24px;
+}
+
+.cortex-reference .cortex-system-map__field-detail {
+  display: flex;
+  max-width: 520px;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 22px;
+  padding-top: 20px;
+  color: var(--cortex-muted);
+  font-size: 14px;
   line-height: 1.42;
 }
 
-.cortex-command-rail__phrase {
-  display: block;
-  width: auto;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.cortex-command-rail__caret {
-  display: inline-block;
-  width: 1px;
-  height: 1.05em;
-  margin-left: 5px;
-  background: var(--cortex-blue);
-  content: "";
-  vertical-align: -0.12em;
-  animation: cortex-command-caret 820ms steps(1, end) infinite;
-}
-
-@keyframes cortex-command-caret {
-  0%,
-  48% {
-    opacity: 1;
-  }
-
-  49%,
-  100% {
-    opacity: 0;
-  }
-}
-
-.cortex-media {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  border-radius: 19px;
-}
-
-.cortex-system-lede {
-  padding: 0 1px 23px;
-}
-
-.cortex-system-lede h2 {
-  max-width: 285px;
+.cortex-reference .cortex-system-map__field-detail strong {
   color: var(--cortex-ink);
-  font-family: var(--cortex-display);
-  font-size: 26px;
-  font-weight: 570;
-  letter-spacing: -0.055em;
-  line-height: 1.06;
-}
-
-.cortex-system-lede p {
-  max-width: 300px;
-  margin-top: 11px;
-  color: var(--cortex-muted);
-  font-size: 13px;
-  font-weight: 430;
-  letter-spacing: -0.024em;
-  line-height: 1.48;
-}
-
-.cortex-column--metrics .cortex-column__body > h2 {
-  margin-top: 20px;
-  color: var(--cortex-ink);
-  font-family: var(--cortex-display);
-  font-size: 22px;
+  font-size: 16px;
   font-weight: 620;
-  letter-spacing: -0.07em;
-  line-height: 1.22;
 }
 
-.cortex-column--metrics .cortex-column__body > p {
-  margin-top: 9px;
-}
-
-.cortex-media--sessions {
-  height: 610px;
-  overflow: visible;
-  border-radius: 0;
-  background: transparent;
-}
-
-.cortex-system-module {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.cortex-ai-panel {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  flex-direction: column;
-  padding: 14px 15px 12px;
-  overflow: hidden;
-  border: 1px solid rgba(20, 25, 33, 0.055);
-  border-radius: 16px;
-  background: #ffffff;
-  color: var(--cortex-ink);
-}
-
-.cortex-ai-panel__header {
-  display: flex;
-  min-height: 26px;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.cortex-ai-panel__header small,
-.cortex-ai-panel__header strong {
-  display: block;
-}
-
-.cortex-ai-panel__header small {
-  color: #8e929d;
-  font-size: 6.8px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  line-height: 1;
-}
-
-.cortex-ai-panel__header strong {
-  margin-top: 3px;
-  font-size: 12.5px;
-  font-weight: 720;
-  letter-spacing: -0.045em;
-  line-height: 1;
-}
-
-.cortex-ai-panel__status {
-  display: inline-flex;
-  align-items: center;
-  color: #8e929d;
-  font-size: 6.8px;
-  font-weight: 560;
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
-
-.cortex-ai-system-map {
-  position: relative;
-  display: flex;
-  min-height: 0;
-  flex: 1;
-  padding: 6px 0 5px 9px;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 5px;
-}
-
-.cortex-ai-system-map__thread {
-  position: absolute;
-  z-index: 0;
-  top: 12px;
-  bottom: 12px;
-  left: 3px;
-  width: 1px;
-  background: linear-gradient(to bottom, transparent, #b2bde5 8%, #9eabe0 50%, #b2bde5 92%, transparent);
-  opacity: 0.95;
-}
-
-.cortex-ai-zone {
-  position: relative;
-  z-index: 1;
-  min-width: 0;
-  flex: 0 0 auto;
-  padding: 6px 7px 7px 9px;
-  border-radius: 12px;
-  background: #fafbfc;
-  box-shadow: inset 0 0 0 1px rgba(20, 25, 33, 0.018);
-}
-
-.cortex-ai-zone::before {
-  position: absolute;
-  top: 11px;
-  left: -9px;
-  width: 6px;
-  height: 6px;
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-  background: #9eabe0;
-  box-shadow: 0 0 0 1px rgba(85, 109, 228, 0.15);
-  content: "";
-}
-
-.cortex-ai-zone--control {
-  background: #eef0ff;
-}
-
-.cortex-ai-zone--control::before,
-.cortex-ai-zone--synthesis::before,
-.cortex-ai-zone--output::before {
-  background: var(--cortex-blue);
-}
-
-.cortex-ai-zone--orchestration {
-  background: #f5f2ff;
-}
-
-.cortex-ai-zone--synthesis {
-  background: #f5f6fb;
-}
-
-.cortex-ai-zone--output {
-  background: #edf0ff;
-}
-
-.cortex-ai-zone__header,
-.cortex-ai-subzone__header {
-  display: flex;
-  min-width: 0;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  line-height: 1;
-}
-
-.cortex-ai-zone__header {
-  margin-bottom: 5px;
-  color: #5c6578;
-  font-size: 5.3px;
-  letter-spacing: 0.025em;
-  text-transform: uppercase;
-}
-
-.cortex-ai-zone__header span,
-.cortex-ai-subzone__header span {
-  color: var(--cortex-ink);
-  font-weight: 720;
-}
-
-.cortex-ai-zone__header small,
-.cortex-ai-subzone__header small {
-  min-width: 0;
-  overflow: hidden;
-  color: #8a909d;
-  font-size: 5.15px;
-  font-weight: 520;
-  letter-spacing: -0.015em;
-  text-overflow: ellipsis;
-  text-transform: none;
-  white-space: nowrap;
-}
-
-.cortex-ai-system-node {
-  display: flex;
-  min-width: 0;
-  min-height: 28px;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 7px;
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: inset 0 0 0 1px rgba(20, 25, 33, 0.018);
-}
-
-.cortex-ai-system-node + .cortex-ai-system-node {
-  margin-top: 4px;
-}
-
-.cortex-ai-system-node__mark {
-  display: grid;
-  width: 22px;
-  height: 22px;
-  flex: 0 0 22px;
-  place-items: center;
-  border-radius: 7px;
-  background: #eef0f4;
-  color: var(--cortex-blue);
-}
-
-.cortex-ai-system-node__mark svg {
-  width: 13px;
-  height: 13px;
-  stroke-width: 1.9;
-}
-
-.cortex-ai-system-node__mark .cortex-logo {
-  width: 12px;
-  height: 14px;
-}
-
-.cortex-ai-system-node--cortex .cortex-ai-system-node__mark,
-.cortex-ai-system-node--cortex-return .cortex-ai-system-node__mark {
-  background: #ffffff;
-}
-
-.cortex-ai-system-node--hermes .cortex-ai-system-node__mark {
-  width: 27px;
-  height: 27px;
-  flex-basis: 27px;
-  border-radius: 6px;
-  background: #ffffff;
-  box-shadow: 0 1px 2px rgba(20, 25, 33, 0.06);
-}
-
-.cortex-ai-system-node--hermes .cortex-ai-system-node__mark img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: 5px;
-  object-fit: cover;
-  object-position: center 42%;
-}
-
-.cortex-ai-system-node--result .cortex-ai-system-node__mark {
-  background: var(--cortex-blue);
-  color: #ffffff;
-}
-
-.cortex-ai-system-node > div {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.cortex-ai-system-node strong {
-  color: var(--cortex-ink);
-  font-size: 7.8px;
-  font-weight: 720;
-  letter-spacing: -0.035em;
-  line-height: 1;
-}
-
-.cortex-ai-system-node small,
-.cortex-ai-system-node__context {
-  min-width: 0;
-  overflow: hidden;
-  color: #777d8c;
-  font-size: 5.35px;
-  font-weight: 520;
-  letter-spacing: -0.02em;
-  line-height: 1;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cortex-ai-system-node__context {
-  margin-left: auto;
-  color: #8e929d;
-}
-
-.cortex-ai-subzone {
-  min-width: 0;
-  padding: 5px 5px 6px;
-  border: 1px solid rgba(20, 25, 33, 0.055);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.66);
-}
-
-.cortex-ai-subzone + .cortex-ai-subzone {
-  margin-top: 5px;
-}
-
-.cortex-ai-subzone__header {
-  color: #646d7d;
-  font-size: 5.3px;
-}
-
-.cortex-ai-panel__providers {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 3px;
-  margin-top: 5px;
-}
-
-.cortex-ai-provider {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  color: #6f737c;
-  font-size: 5.2px;
-  font-weight: 570;
-  letter-spacing: -0.025em;
-  line-height: 1;
-  text-align: center;
-}
-
-.cortex-ai-provider__mark {
-  display: grid;
-  width: 24px;
-  height: 24px;
-  place-items: center;
-  border: 1px solid rgba(20, 25, 33, 0.045);
-  border-radius: 7px;
-  background: #f3f4f8;
-}
-
-.cortex-ai-provider__mark svg {
-  width: 12px;
-  height: 12px;
-}
-
-.cortex-grok-mark {
-  display: grid;
-  width: 100%;
-  height: 100%;
-  place-items: center;
-  color: currentColor;
-  font-family: "Cortex Inter", Inter, ui-sans-serif, system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 740;
-  letter-spacing: -0.12em;
-  line-height: 1;
-}
-
-.cortex-ai-provider--openai .cortex-ai-provider__mark {
-  background: #eef0f4;
-  color: #222832;
-}
-
-.cortex-ai-provider--claude .cortex-ai-provider__mark {
-  background: #fbebe4;
-  color: #cb765a;
-}
-
-.cortex-ai-provider--gemini .cortex-ai-provider__mark {
-  background: #edf0ff;
-  color: #5369db;
-}
-
-.cortex-ai-provider--mistral .cortex-ai-provider__mark {
-  background: #fff2cf;
-  color: #a7831f;
-}
-
-.cortex-ai-provider--deepseek .cortex-ai-provider__mark {
-  background: #e9f4f8;
-  color: #427f98;
-}
-
-.cortex-ai-panel__roles {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 4px;
-  margin-top: 5px;
-}
-
-.cortex-ai-role {
-  display: flex;
-  min-width: 0;
-  min-height: 34px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 5px 6px 4px;
-  border: 1px solid #ebedf1;
-  border-radius: 8px;
-  background: #fafbfc;
-}
-
-.cortex-ai-role svg {
-  width: 11px;
-  height: 11px;
-  color: var(--cortex-blue);
-  stroke-width: 2;
-}
-
-.cortex-ai-role span,
-.cortex-ai-role small {
-  display: block;
-  overflow: hidden;
-  max-width: 100%;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cortex-ai-role span {
-  margin-top: 3px;
-  color: var(--cortex-ink);
-  font-size: 6px;
-  font-weight: 680;
-  letter-spacing: -0.025em;
-  line-height: 1;
-}
-
-.cortex-ai-role small {
-  margin-top: 2px;
-  color: #989ca5;
-  font-size: 5px;
-  font-weight: 500;
-  line-height: 1;
-}
-
-/* The map carries the hierarchy through its surfaces and links. Labels stay
-   quiet until a user asks one node to explain itself. */
-.cortex-ai-panel__header {
-  min-height: 18px;
-  align-items: center;
-}
-
-.cortex-ai-panel__header strong {
-  margin-top: 0;
-  color: var(--cortex-ink);
-  font-size: 12px;
-  letter-spacing: -0.055em;
-}
-
-.cortex-ai-system-node {
-  width: 100%;
-  appearance: none;
-  border: 1px solid transparent;
-  color: inherit;
-  cursor: pointer;
-  text-align: left;
-  transition: background-color 420ms ease, border-color 420ms ease, box-shadow 420ms ease, transform 420ms ease;
-}
-
-.cortex-ai-system-node:hover,
-.cortex-ai-system-node:focus-visible {
-  border-color: rgba(85, 109, 228, 0.18);
-  outline: none;
-}
-
-.cortex-ai-system-node.is-selected {
-  border-color: rgba(85, 109, 228, 0.27);
-  background: rgba(248, 249, 255, 0.98);
-  box-shadow: 0 7px 16px rgba(85, 109, 228, 0.09), inset 0 0 0 1px rgba(85, 109, 228, 0.04);
-  transform: translateY(-1px);
-}
-
-.cortex-ai-system-node__copy {
-  display: flex;
-  min-width: 0;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.cortex-ai-system-node__detail {
-  display: block;
-  max-width: 100%;
-  overflow: visible;
-  color: #777d8c;
-  font-size: 5.2px;
-  font-weight: 520;
-  letter-spacing: -0.02em;
-  line-height: 1.22;
-  white-space: normal;
-}
-
-.cortex-ai-provider {
-  appearance: none;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  cursor: pointer;
-  transition: color 420ms ease, opacity 420ms ease, transform 420ms ease;
-}
-
-.cortex-reference .cortex-ai-provider {
-  font-size: 4.9px;
-  font-weight: 570;
-  letter-spacing: -0.025em;
-  line-height: 1;
-}
-
-.cortex-ai-provider__name {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cortex-ai-provider:hover,
-.cortex-ai-provider:focus-visible {
-  color: var(--cortex-ink);
-  outline: none;
-  transform: translateY(-1px);
-}
-
-.cortex-ai-provider.is-selected {
-  color: var(--cortex-ink);
-  transform: translateY(-1px);
-}
-
-.cortex-ai-provider.is-selected .cortex-ai-provider__mark {
-  box-shadow: 0 0 0 1px rgba(85, 109, 228, 0.3), 0 5px 11px rgba(85, 109, 228, 0.13), inset 0 0 0 1px rgba(255, 255, 255, 0.38);
-}
-
-.cortex-ai-provider__name,
-.cortex-ai-role__name {
-  display: block;
-}
-
-.cortex-ai-role {
-  width: 100%;
-  appearance: none;
-  border: 0;
-  color: inherit;
-  cursor: pointer;
-  transition: background-color 420ms ease, box-shadow 420ms ease, transform 420ms ease;
-}
-
-.cortex-reference .cortex-ai-role {
-  font-size: 5.4px;
-  font-weight: 680;
-  letter-spacing: -0.025em;
-  line-height: 1;
-}
-
-.cortex-ai-role:hover,
-.cortex-ai-role:focus-visible {
-  outline: none;
-  transform: translateY(-1px);
-}
-
-.cortex-ai-role.is-selected {
-  background: rgba(246, 247, 255, 0.98);
-  box-shadow: 0 0 0 1px rgba(85, 109, 228, 0.22), 0 5px 12px rgba(85, 109, 228, 0.09);
-  transform: translateY(-1px);
-}
-
-.cortex-ai-selection {
-  display: flex;
-  min-width: 0;
-  align-items: baseline;
-  gap: 6px;
-  margin-top: 7px;
-  padding: 6px 5px 1px;
-  border-top: 1px solid rgba(85, 109, 228, 0.12);
-}
-
-.cortex-ai-selection strong {
-  flex: 0 0 auto;
-  color: var(--cortex-blue);
-  font-size: 5.5px;
-  font-weight: 720;
-  letter-spacing: -0.025em;
-  line-height: 1.15;
-}
-
-.cortex-ai-selection p {
-  min-width: 0;
-  color: #777d8c;
-  font-size: 5.15px;
-  font-weight: 520;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-}
-
-/* The system map is deliberately asymmetrical: a compact core feeds a wider
-   orchestration field, so the interface reads like a living system rather
-   than a stack of presentation cards. */
-.cortex-media--sessions {
-  height: 610px;
-}
-
-.cortex-ai-panel {
-  padding: 18px 17px 14px;
-  border-radius: 24px;
-  box-shadow: 0 18px 34px rgba(35, 40, 51, 0.1), inset 0 0 0 1px rgba(20, 25, 33, 0.025);
-}
-
-.cortex-ai-system-map {
-  --cortex-core-offset: 11%;
-  --cortex-core-width: 78%;
-  padding: 6px 0 5px;
-  justify-content: flex-start;
-  gap: 0;
-}
-
-.cortex-ai-system-map__thread {
-  display: none;
-}
-
-.cortex-ai-zone {
-  padding: 6px 7px 7px 9px;
-  border: 1px solid rgba(20, 25, 33, 0.07);
-  border-radius: 11px;
-  background: #ffffff;
-  box-shadow: 0 5px 13px rgba(35, 40, 51, 0.035), inset 0 0 0 1px rgba(255, 255, 255, 0.68);
-}
-
-.cortex-ai-link {
-  position: relative;
-  display: flex;
-  width: var(--cortex-core-width);
-  min-height: 16px;
-  margin-left: var(--cortex-core-offset);
-  align-items: center;
-  justify-content: center;
-  flex: 1 1 16px;
-}
-
-.cortex-ai-link::before {
-  width: 1px;
-  height: 100%;
-  background: linear-gradient(to bottom, rgba(154, 169, 224, 0), rgba(126, 143, 209, 0.78) 26%, rgba(126, 143, 209, 0.78) 74%, rgba(154, 169, 224, 0));
-  content: "";
-}
-
-.cortex-ai-link__port {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  border: 1px solid #ffffff;
-  border-radius: 50%;
-  background: var(--cortex-blue);
-  box-shadow: 0 0 0 1px rgba(85, 109, 228, 0.22), 0 3px 7px rgba(85, 109, 228, 0.14);
-  transform: translate(-50%, -50%);
-}
-
-.cortex-ai-zone--input,
-.cortex-ai-zone--control,
-.cortex-ai-zone--synthesis,
-.cortex-ai-zone--output {
-  width: var(--cortex-core-width);
-  margin-right: auto;
-  margin-left: var(--cortex-core-offset);
-}
-
-.cortex-ai-zone--input {
-  background: #ffffff;
-}
-
-.cortex-ai-zone--control {
-  background: linear-gradient(102deg, rgba(238, 240, 255, 0.95), rgba(234, 237, 255, 0.72));
-  box-shadow: 0 5px 12px rgba(85, 109, 228, 0.055), inset 0 0 0 1px rgba(85, 109, 228, 0.045);
-}
-
-.cortex-ai-zone--orchestration {
-  width: 100%;
-  margin-left: 0;
-  padding-right: 7px;
-  padding-left: var(--cortex-core-offset);
-  background: linear-gradient(100deg, rgba(246, 243, 255, 0.95), rgba(248, 246, 255, 0.72) 74%, rgba(241, 238, 252, 0.82));
-  box-shadow: 0 6px 14px rgba(116, 91, 170, 0.045), inset 0 0 0 1px rgba(116, 91, 170, 0.035);
-}
-
-.cortex-ai-zone--synthesis {
-  background: #ffffff;
-  box-shadow: 0 5px 13px rgba(35, 40, 51, 0.025), inset 0 0 0 1px rgba(255, 255, 255, 0.68);
-}
-
-.cortex-ai-zone--output {
-  background: rgba(237, 240, 255, 0.72);
-  box-shadow: 0 4px 10px rgba(85, 109, 228, 0.035), inset 0 0 0 1px rgba(85, 109, 228, 0.035);
-}
-
-.cortex-ai-zone::before {
-  display: none;
-}
-
-.cortex-ai-zone--control::before,
-.cortex-ai-zone--synthesis::before,
-.cortex-ai-zone--output::before {
-  display: none;
-}
-
-.cortex-ai-zone--orchestration::before {
-  display: none;
-}
-
-.cortex-ai-zone__header {
-  margin-bottom: 5px;
-  font-size: 5.5px;
-}
-
-.cortex-ai-zone__header > span {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
-.cortex-ai-zone__header > span em {
-  color: var(--cortex-blue);
-  font-size: 4.6px;
-  font-style: normal;
-  font-weight: 650;
-  letter-spacing: 0;
-}
-
-.cortex-ai-system-node {
-  min-height: 27px;
-  gap: 6px;
-  padding: 4px 6px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.84);
-  box-shadow: 0 3px 8px rgba(35, 40, 51, 0.035), inset 0 0 0 1px rgba(20, 25, 33, 0.018);
-}
-
-.cortex-ai-system-node + .cortex-ai-system-node {
-  margin-top: 4px;
-}
-
-.cortex-ai-system-node__mark {
-  width: 20px;
-  height: 20px;
-  flex-basis: 20px;
-  border-radius: 6px;
-}
-
-.cortex-ai-system-node__mark svg {
-  width: 11px;
-  height: 11px;
-}
-
-.cortex-ai-system-node__mark .cortex-logo {
-  width: 11px;
-  height: 13px;
-}
-
-.cortex-ai-system-node--human .cortex-ai-system-node__mark {
-  width: 17px;
-  height: 17px;
-  flex-basis: 17px;
-  border-radius: 6px;
-}
-
-.cortex-ai-system-node--human .cortex-ai-system-node__mark svg {
-  width: 10px;
-  height: 10px;
-}
-
-.cortex-ai-system-node--hermes .cortex-ai-system-node__mark {
-  width: 25px;
-  height: 25px;
-  flex-basis: 25px;
-  border-radius: 6px;
-}
-
-.cortex-ai-system-node--hermes .cortex-ai-system-node__mark img {
-  border-radius: 5px;
-}
-
-.cortex-ai-system-node--result .cortex-ai-system-node__mark {
-  width: 18px;
-  height: 18px;
-  flex-basis: 18px;
-  border-radius: 6px;
-}
-
-.cortex-ai-system-node--result .cortex-ai-system-node__mark svg {
-  width: 10px;
-  height: 10px;
-}
-
-.cortex-ai-system-node strong {
-  font-size: 8px;
-}
-
-.cortex-ai-system-node small,
-.cortex-ai-system-node__context {
-  font-size: 5.2px;
-}
-
-.cortex-ai-branch-field {
-  position: relative;
-  display: flex;
-  padding: 2px 0 1px 7px;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.cortex-ai-branch-field::before {
-  position: absolute;
-  top: 16px;
-  bottom: 16px;
-  left: 3px;
-  width: 1px;
-  background: linear-gradient(to bottom, transparent, rgba(164, 146, 208, 0.68) 16%, rgba(164, 146, 208, 0.68) 84%, transparent);
-  content: "";
-}
-
-.cortex-ai-branch {
-  position: relative;
-  min-width: 0;
-  margin-left: 13px;
-  padding: 6px 7px 7px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.66);
-  box-shadow: 0 4px 10px rgba(74, 59, 111, 0.035), inset 0 0 0 1px rgba(92, 75, 136, 0.035);
-}
-
-.cortex-ai-branch::before {
-  position: absolute;
-  top: 21px;
-  left: -13px;
-  width: 13px;
-  height: 1px;
-  background: rgba(164, 146, 208, 0.68);
-  content: "";
-}
-
-.cortex-ai-branch::after {
-  position: absolute;
-  top: 18px;
-  left: -16px;
-  width: 5px;
-  height: 5px;
-  border: 1px solid #ffffff;
-  border-radius: 50%;
-  background: #a494d0;
-  content: "";
-}
-
-.cortex-ai-branch--agents {
-  margin-left: 27px;
-  background: rgba(248, 250, 255, 0.74);
-}
-
-.cortex-ai-branch__header {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 5px;
-  margin-bottom: 5px;
-}
-
-.cortex-ai-branch__header > div {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.cortex-ai-branch__header span:not(.cortex-ai-branch__signal) {
-  color: var(--cortex-ink);
-  font-size: 6.3px;
-  font-weight: 720;
-  letter-spacing: -0.025em;
-  line-height: 1;
-}
-
-.cortex-ai-branch__header small {
-  overflow: hidden;
-  color: #8a909d;
-  font-size: 5px;
-  font-weight: 520;
-  letter-spacing: -0.015em;
-  line-height: 1;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cortex-ai-branch__signal {
-  display: block;
-  width: 5px;
-  height: 5px;
-  flex: 0 0 5px;
-  border-radius: 50%;
-  background: #9c8bcf;
-  box-shadow: 0 0 0 2px rgba(156, 139, 207, 0.1);
-}
-
-.cortex-ai-panel__providers {
-  gap: 4px;
-  margin-top: 1px;
-}
-
-.cortex-ai-provider {
-  gap: 2px;
-  font-size: 4.9px;
-}
-
-.cortex-ai-provider__mark {
-  width: 18px;
-  height: 18px;
-  border: 0;
-  border-radius: 6px;
-  box-shadow: 0 2px 5px rgba(35, 40, 51, 0.045), inset 0 0 0 1px rgba(20, 25, 33, 0.025);
-}
-
-.cortex-ai-provider__mark svg {
-  width: 9px;
-  height: 9px;
-}
-
-.cortex-grok-mark {
-  font-size: 9px;
-}
-
-.cortex-ai-panel__roles {
-  gap: 3px;
-  margin-top: 1px;
-}
-
-.cortex-ai-role {
-  min-height: 27px;
-  align-items: center;
-  padding: 4px 3px 3px;
-  border: 0;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.68);
-  box-shadow: inset 0 0 0 1px rgba(20, 25, 33, 0.025);
-  text-align: center;
-}
-
-.cortex-ai-role svg {
-  width: 9px;
-  height: 9px;
-  stroke-width: 1.8;
-}
-
-.cortex-ai-role span {
-  margin-top: 2px;
-  font-size: 5.4px;
-}
-
-.cortex-ai-role small {
-  margin-top: 2px;
-  font-size: 4.6px;
-}
-
-.cortex-ai-panel__header {
-  min-height: 18px;
-  align-items: center;
-}
-
-.cortex-ai-panel__header strong {
-  margin-top: 0;
-  font-size: 12px;
-}
-
-.cortex-ai-system-node {
-  width: 100%;
-  appearance: none;
-  border: 1px solid transparent;
-  color: inherit;
-  cursor: pointer;
-  text-align: left;
-  transition: background-color 420ms ease, border-color 420ms ease, box-shadow 420ms ease, transform 420ms ease;
-}
-
-.cortex-ai-system-node:hover,
-.cortex-ai-system-node:focus-visible {
-  border-color: rgba(85, 109, 228, 0.18);
-  outline: none;
-}
-
-.cortex-ai-system-node.is-selected {
-  border-color: rgba(85, 109, 228, 0.27);
-  background: rgba(248, 249, 255, 0.98);
-  box-shadow: 0 7px 16px rgba(85, 109, 228, 0.09), inset 0 0 0 1px rgba(85, 109, 228, 0.04);
-  transform: translateY(-1px);
-}
-
-.cortex-ai-system-node__copy {
-  display: flex;
-  min-width: 0;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.cortex-ai-system-node__detail {
-  display: block;
-  max-width: 100%;
-  overflow: visible;
-  color: #777d8c;
-  font-size: 5.2px;
-  font-weight: 520;
-  letter-spacing: -0.02em;
-  line-height: 1.22;
-  white-space: normal;
-}
-
-.cortex-ai-provider {
-  appearance: none;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  cursor: pointer;
-  transition: color 420ms ease, opacity 420ms ease, transform 420ms ease;
-}
-
-.cortex-ai-provider:hover,
-.cortex-ai-provider:focus-visible {
-  color: var(--cortex-ink);
-  outline: none;
-  transform: translateY(-1px);
-}
-
-.cortex-ai-provider.is-selected {
-  color: var(--cortex-ink);
-  transform: translateY(-1px);
-}
-
-.cortex-ai-provider.is-selected .cortex-ai-provider__mark {
-  box-shadow: 0 0 0 1px rgba(85, 109, 228, 0.3), 0 5px 11px rgba(85, 109, 228, 0.13), inset 0 0 0 1px rgba(255, 255, 255, 0.38);
-}
-
-.cortex-ai-provider__name,
-.cortex-ai-role__name {
-  display: block;
-}
-
-.cortex-ai-role {
-  width: 100%;
-  appearance: none;
-  border: 0;
-  color: inherit;
-  cursor: pointer;
-  transition: background-color 420ms ease, box-shadow 420ms ease, transform 420ms ease;
-}
-
-.cortex-ai-role:hover,
-.cortex-ai-role:focus-visible {
-  outline: none;
-  transform: translateY(-1px);
-}
-
-.cortex-ai-role.is-selected {
-  background: rgba(246, 247, 255, 0.98);
-  box-shadow: 0 0 0 1px rgba(85, 109, 228, 0.22), 0 5px 12px rgba(85, 109, 228, 0.09);
-  transform: translateY(-1px);
-}
-
-.cortex-ai-selection {
-  display: flex;
-  min-width: 0;
-  align-items: baseline;
-  gap: 6px;
-  margin-top: 7px;
-  padding: 6px 5px 1px;
-  border-top: 1px solid rgba(85, 109, 228, 0.12);
-}
-
-.cortex-ai-selection strong {
-  flex: 0 0 auto;
-  color: var(--cortex-blue);
-  font-size: 5.5px;
-  font-weight: 720;
-  letter-spacing: -0.025em;
-  line-height: 1.15;
-}
-
-.cortex-ai-selection p {
-  min-width: 0;
-  color: #777d8c;
-  font-size: 5.15px;
-  font-weight: 520;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-}
-
-.cortex-media--revenue {
-  height: 218px;
-  margin-top: 27px;
-  padding: 20px;
-  background: var(--cortex-soft-yellow);
-}
-
-.cortex-media--ads {
-  height: 218px;
-  margin-top: 28px;
-  padding: 20px;
-  background: var(--cortex-soft-blue);
-}
-
-.cortex-chart {
-  width: 100%;
-  height: 100%;
-  padding: 16px 17px 9px;
-  overflow: hidden;
-  border-radius: 16px;
-  background: #ffffff;
-}
-
-.cortex-chart__topline {
-  display: flex;
-  min-height: 18px;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  color: var(--cortex-ink);
-}
-
-.cortex-chart__topline strong {
-  font-size: 11px;
-  font-weight: 720;
-  letter-spacing: -0.035em;
-}
-
-.cortex-chart__topline svg {
-  width: 14px;
-  height: 14px;
-  color: #262a32;
-}
-
-.cortex-chart__legend {
-  display: flex;
-  gap: 10px;
-  margin-top: 7px;
-  color: #989da8;
-  font-size: 6.5px;
-  white-space: nowrap;
-}
-
-.cortex-chart__legend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.cortex-chart__dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 2px;
-}
-
-.cortex-chart__dot--yellow {
-  background: #e5c965;
-}
-
-.cortex-chart__dot--blue {
-  background: #556de4;
-}
-
-.cortex-chart > svg {
-  display: block;
-  width: 100%;
-  height: calc(100% - 32px);
-  margin-top: 3px;
-}
-
-.cortex-chart__grid path {
-  fill: none;
-  stroke: #ececf0;
-  stroke-dasharray: 4 5;
-  stroke-width: 1;
-}
-
-.cortex-chart__line {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 2;
-}
-
-.cortex-chart__line--yellow {
-  stroke: #e5c965;
-}
-
-.cortex-chart__line--blue,
-.cortex-chart__line--violet {
-  stroke: #556de4;
-}
-
-.cortex-chart__labels {
-  fill: #b0b3bb;
-  font-family: "Cortex Inter", Inter, sans-serif;
-  font-size: 7px;
-}
-
-.cortex-chart--revenue {
-  padding-top: 14px;
-}
-
-.cortex-chart--revenue .cortex-chart__topline {
-  align-items: center;
-}
-
-.cortex-chart--revenue .cortex-chart__topline small,
-.cortex-chart--revenue .cortex-chart__topline strong {
-  display: block;
-}
-
-.cortex-chart--revenue .cortex-chart__topline small {
-  color: #8d919b;
-  font-size: 7px;
-  font-weight: 500;
-}
-
-.cortex-chart--revenue .cortex-chart__topline strong {
-  margin-top: 2px;
-  font-size: 17px;
-}
-
-.cortex-growth {
-  align-self: center;
-  padding: 3px 5px;
-  border-radius: 999px;
-  background: #e9f4df;
-  color: #698f4f;
-  font-size: 5.5px;
-  white-space: nowrap;
-}
-
-.cortex-chart__area {
-  fill: #edf0ff;
-  stroke: none;
-}
-
-.cortex-chart--revenue > svg {
-  height: calc(100% - 33px);
-  margin-top: 2px;
-}
-
-.cortex-ads-preview {
-  height: 100%;
-  padding: 30px 17px 20px;
-  border-radius: 16px;
-  background: #ffffff;
-}
-
-.cortex-ads-preview__title {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--cortex-ink);
-  font-size: 8px;
-}
-
-.cortex-meta-icon {
-  display: inline-grid;
-  width: 13px;
-  height: 13px;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--cortex-ink);
-  color: #ffffff;
-  font-size: 7px;
-}
-
-.cortex-ads-preview__metrics {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-  margin-top: 22px;
-}
-
-.cortex-ads-preview__metrics small,
-.cortex-ads-preview__metrics strong {
-  display: block;
-}
-
-.cortex-ads-preview__metrics small {
-  color: #898e9a;
-  font-size: 7px;
-}
-
-.cortex-ads-preview__metrics strong {
-  margin-top: 4px;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.05em;
-}
-
-.cortex-metric-chip {
-  display: inline-block;
-  margin-top: 6px;
-  padding: 4px 5px;
-  border-radius: 999px;
-  font-size: 5.5px;
-  white-space: nowrap;
-}
-
-.cortex-metric-chip--green {
-  background: #e8f3dd;
-  color: #658c4b;
-}
-
-.cortex-metric-chip--red {
-  background: #f9e2e3;
-  color: #c1747a;
-}
-
-.cortex-testimonial {
-  display: flex;
-  min-height: 565px;
-  margin: 0 15px;
-  flex-direction: column;
-  align-items: center;
-  padding: 42px 21px 34px;
-  border-radius: 20px;
-  background: var(--cortex-soft-lavender);
-  color: #4e3154;
-  text-align: center;
-}
-
-.cortex-testimonial blockquote {
-  max-width: 275px;
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: -0.045em;
-  line-height: 1.43;
-}
-
-.cortex-testimonial__person {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: auto;
-}
-
-.cortex-avatar {
-  display: grid;
-  width: 50px;
-  height: 50px;
-  place-items: center;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #988c75, #45423a 52%, #211f22);
-  color: #f8f1e7;
-  font-size: 17px;
-  font-weight: 650;
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
-}
-
-.cortex-testimonial__person strong {
-  margin-top: 13px;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.cortex-testimonial__person span {
-  margin-top: 5px;
-  font-size: 13px;
-  font-weight: 430;
-}
-
-.cortex-testimonial__controls {
-  display: flex;
-  gap: 11px;
-  margin-top: 32px;
-}
-
-.cortex-testimonial__controls span {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border-radius: 50%;
-  background: rgba(125, 89, 143, 0.13);
-  color: #4e3154;
-}
-
-.cortex-testimonial__controls svg {
-  width: 17px;
-  height: 17px;
-  stroke-width: 1.7;
-}
-
-.cortex-showcase__body {
-  padding: 43px 15px 60px;
-}
-
-.cortex-showcase__body h2 {
-  font-size: 31px;
-  line-height: 1.27;
-}
-
-.cortex-showcase__body > p {
-  margin-top: 17px;
-}
-
-.cortex-showcase__cta {
-  margin-top: 25px;
-}
-
-.cortex-product-menu {
-  margin-top: 42px;
-  padding: 28px 21px 36px;
-  border-radius: 18px 18px 0 0;
-  background: var(--cortex-dark);
-  color: #ffffff;
-}
-
-.cortex-product-menu h3 {
-  padding-bottom: 13px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.17);
-  font-size: 18px;
-  font-weight: 680;
-  letter-spacing: -0.035em;
-}
-
-.cortex-product-menu span {
-  display: block;
-  margin-top: 15px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
-  line-height: 1.2;
-}
-
-.cortex-menu-card {
-  min-height: 448px;
-  padding: 30px 21px 30px;
-  border-radius: 0 0 22px 22px;
-  background: var(--cortex-surface);
-  box-shadow: 0 14px 30px rgba(35, 40, 51, 0.055);
-}
-
-.cortex-menu-card nav {
-  display: flex;
-  flex-direction: column;
-}
-
-.cortex-menu-card nav a {
-  display: flex;
-  min-height: 54px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  color: var(--cortex-ink);
-  font-size: 21px;
-  font-weight: 680;
-  letter-spacing: -0.045em;
-  line-height: 1.2;
-}
-
-.cortex-menu-card nav a svg {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
-  stroke-width: 1.8;
-}
-
-.cortex-menu-card__actions {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 20px;
-}
-
-.cortex-menu-card__actions .cortex-pill {
-  width: 100%;
-  min-height: 42px;
-  font-size: 14px;
-}
-
-.cortex-pricing-card {
-  margin-top: 40px;
-  overflow: hidden;
-}
-
-.cortex-pricing-card__body {
-  padding: 27px 15px 40px;
-}
-
-.cortex-pricing-card__body h2 {
-  font-size: 31px;
-  line-height: 1.26;
-}
-
-.cortex-pricing-card__body > p {
-  margin-top: 16px;
-}
-
-.cortex-segmented {
-  display: grid;
-  min-height: 48px;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
-  margin-top: 25px;
-  padding: 3px;
-  border-radius: 999px;
-  background: #e8ebff;
-  color: var(--cortex-ink);
-  font-size: 14px;
-  font-weight: 560;
-  text-align: center;
-}
-
-.cortex-segmented button {
-  display: grid;
-  min-height: 42px;
-  place-items: center;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-}
-
-.cortex-segmented button:focus-visible {
-  outline: 2px solid var(--cortex-blue);
-  outline-offset: 2px;
-}
-
-.cortex-segmented__active {
-  background: var(--cortex-blue) !important;
-  color: #ffffff;
-}
-
-.cortex-plan {
-  margin-top: 27px;
-  padding: 27px 15px 24px;
-  border: 1px solid #dfe1e6;
-  border-radius: 19px;
-  background: #ffffff;
-}
-
-.cortex-plan h3 {
-  font-size: 21px;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-}
-
-.cortex-plan > p {
-  margin-top: 10px;
-  color: #4f5159;
-  font-size: 14px;
-  line-height: 1.52;
-}
-
-.cortex-plan hr {
-  margin: 25px 0 23px;
-  border: 0;
-  border-top: 1px solid #e6e7eb;
-}
-
-.cortex-plan h4 {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.06em;
-}
-
-.cortex-plan ul {
-  display: flex;
-  padding: 0;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 22px;
-  list-style: none;
-}
-
-.cortex-plan li {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  color: var(--cortex-ink);
-  font-size: 14px;
-  line-height: 1.38;
-}
-
-.cortex-plan li svg {
-  width: 14px;
-  height: 14px;
-  flex: 0 0 auto;
-  margin-top: 1px;
-  color: var(--cortex-blue);
-  stroke-width: 2.4;
-}
-
-.cortex-reference__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 0 clamp(20px, 3.45vw, 56px) 26px;
-  color: rgba(20, 25, 33, 0.48);
-  font-size: 11px;
-  letter-spacing: -0.01em;
-}
-
-@media (max-width: 1180px) {
-  .cortex-reference__stage {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding-inline: 28px;
+@media (max-width: 900px) {
+  .cortex-reference__system {
+    grid-column: 1 / -1;
   }
 
-  .cortex-column--intro,
-  .cortex-column--metrics {
-    margin-top: 30px;
-  }
-
-  .cortex-column--showcase,
-  .cortex-column--utility {
+  .cortex-reference__brief {
+    grid-column: 1 / span 5;
     margin-top: 0;
   }
 
-  .cortex-column--showcase {
+  .cortex-reference__result {
+    grid-column: 6 / -1;
+  }
+
+  .cortex-reference__closing {
+    grid-column: 1 / span 7;
+  }
+
+  .cortex-reference .cortex-system-map {
     min-height: 0;
   }
 
-  .cortex-panel-header__brand {
-    font-size: 18px;
+  .cortex-reference .cortex-system-map__layout {
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    row-gap: 28px;
+    padding: 24px 10px 30px;
+  }
+
+  .cortex-reference .cortex-system-map__stage--human,
+  .cortex-reference .cortex-system-map__stage--cortex,
+  .cortex-reference .cortex-system-map__stage--hermes,
+  .cortex-reference .cortex-system-map__stage--models,
+  .cortex-reference .cortex-system-map__stage--agents,
+  .cortex-reference .cortex-system-map__stage--return,
+  .cortex-reference .cortex-system-map__stage--result {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .cortex-reference .cortex-system-map__field {
+    padding: 22px 18px;
+  }
+
+  .cortex-reference .cortex-system-map__model-list {
+    gap: 18px 24px;
+  }
+
+  .cortex-reference .cortex-system-map__role-list {
+    gap: 18px 26px;
   }
 }
 
-@media (max-width: 720px) {
-  html:has(.cortex-reference),
-  body:has(.cortex-reference),
-  body:has(.cortex-reference) #root {
-    background-color: #ffffff;
+@media (max-width: 760px) {
+  .cortex-reference__story {
+    padding: 96px 18px 88px;
   }
 
-  .cortex-reference {
-    background: #ffffff;
+  .cortex-reference__intro {
+    margin-bottom: 64px;
   }
 
-  .cortex-reference__stage {
-    display: block;
-    padding: 0 0 52px;
+  .cortex-reference__intro h2 {
+    font-size: clamp(38px, 10.5vw, 52px);
   }
 
-  .cortex-column--intro,
-  .cortex-column--metrics,
-  .cortex-column--showcase,
-  .cortex-column--utility {
-    width: 100%;
-    margin-top: 16px;
+  .cortex-reference__intro p {
+    margin-top: 24px;
+    font-size: 16px;
   }
 
-  .cortex-column--intro {
-    margin-top: 0;
-    min-height: 100svh;
-    min-height: 100dvh;
-    background: #ffffff;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
+  .cortex-reference__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 48px;
   }
 
-  .cortex-column--metrics {
-    overflow: visible;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
+  .cortex-reference__system,
+  .cortex-reference__brief,
+  .cortex-reference__result,
+  .cortex-reference__closing {
+    grid-column: 1;
   }
 
-  .cortex-column--intro::before {
-    right: -290px;
-    bottom: -200px;
-    width: 480px;
-    height: 480px;
-    opacity: 0.66;
-  }
-
-  .cortex-column--intro::after {
-    right: 42px;
-    bottom: 118px;
-  }
-
-  .cortex-column--intro .cortex-panel-header {
-    min-height: calc(68px + env(safe-area-inset-top));
-    padding-top: env(safe-area-inset-top);
-  }
-
-  .cortex-column--intro .cortex-column__body {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    justify-content: center;
-    padding: 32px 28px max(42px, env(safe-area-inset-bottom));
-  }
-
-  .cortex-column--metrics .cortex-column__body {
-    padding: 22px 20px 34px;
-  }
-
-  .cortex-column--showcase {
+  .cortex-reference__system {
     min-height: 0;
-    border-radius: 22px;
-  }
-
-  .cortex-panel-header {
-    min-height: 68px;
-    padding-inline: 13px;
-  }
-
-  .cortex-panel-header__brand {
-    font-size: 18px;
-  }
-
-  .cortex-panel-header__brand .cortex-logo {
-    width: 28px;
-    height: 31px;
-  }
-
-  .cortex-panel-header__cta {
-    width: 108px;
-    min-height: 40px;
-    font-size: 13px;
-  }
-
-  .cortex-menu-button {
-    width: 40px;
-    height: 40px;
-  }
-
-  .cortex-intro {
-    padding-top: 30px;
-  }
-
-  .cortex-intro h1,
-  .cortex-showcase__body h2,
-  .cortex-pricing-card__body h2 {
-    font-size: clamp(38px, 10.4vw, 48px);
-    line-height: 0.98;
-  }
-
-  .cortex-intro h1 {
-    max-width: 340px;
-  }
-
-  .cortex-intro p {
-    max-width: 320px;
-    margin-top: 20px;
-  }
-
-  .cortex-intro__cta {
-    width: auto;
-    min-width: 184px;
-    min-height: 52px;
-    margin-top: 27px;
-  }
-
-  .cortex-media--sessions {
-    width: calc(100% + 40px);
-    height: 720px;
-    margin-inline: -20px;
-  }
-
-  .cortex-system-lede {
-    padding: 0 0 22px;
-  }
-
-  .cortex-system-lede h2 {
-    max-width: 320px;
-    font-size: 30px;
-    line-height: 1.02;
-  }
-
-  .cortex-system-lede p {
-    max-width: 330px;
-    margin-top: 12px;
-    font-size: 14px;
-    line-height: 1.5;
-  }
-
-  .cortex-ai-panel {
-    padding: 20px 18px 16px;
+    padding: 16px 10px 24px;
     border-radius: 26px;
-    box-shadow: 0 22px 42px rgba(35, 40, 51, 0.12), inset 0 0 0 1px rgba(20, 25, 33, 0.025);
   }
 
-  .cortex-ai-panel__header {
-    min-height: 42px;
-    gap: 14px;
+  .cortex-reference__brief {
+    min-height: 220px;
+    padding: 28px;
   }
 
-  .cortex-ai-panel__header small {
-    font-size: 9px;
+  .cortex-reference__brief p {
+    font-size: 24px;
   }
 
-  .cortex-ai-panel__header strong {
-    margin-top: 5px;
-    font-size: 18px;
+  .cortex-reference__result {
+    min-height: 300px;
+    padding: 30px 28px;
   }
 
-  .cortex-ai-panel__status {
-    font-size: 9px;
+  .cortex-reference__result h3,
+  .cortex-reference__closing h3 {
+    font-size: clamp(32px, 9vw, 44px);
   }
 
-  .cortex-ai-system-map {
-    --cortex-core-offset: 10%;
-    --cortex-core-width: 80%;
-    padding: 12px 0 8px;
-    gap: 0;
+  .cortex-reference__closing {
+    margin-top: 0;
+    padding-top: 16px;
   }
 
-  .cortex-ai-system-map__thread {
-    display: none;
+  .cortex-reference .cortex-system-map__model-list {
+    gap: 18px 22px;
   }
 
-  .cortex-ai-link {
-    min-height: 24px;
-    margin-left: var(--cortex-core-offset);
-    flex-basis: 24px;
-  }
-
-  .cortex-ai-zone {
-    padding: 9px 10px 11px 14px;
-    border-radius: 15px;
-  }
-
-  .cortex-ai-zone::before {
-    display: none;
-  }
-
-  .cortex-ai-zone--orchestration::before {
-    display: none;
-  }
-
-  .cortex-ai-zone__header {
-    margin-bottom: 7px;
-    font-size: 8.2px;
-  }
-
-  .cortex-ai-zone__header > span {
-    gap: 6px;
-  }
-
-  .cortex-ai-zone__header > span em {
-    font-size: 7px;
-  }
-
-  .cortex-ai-zone__header small {
-    font-size: 7.4px;
-  }
-
-  .cortex-ai-system-node {
-    min-height: 44px;
-    gap: 10px;
-    padding: 7px 9px;
-    border-radius: 11px;
-  }
-
-  .cortex-ai-system-node + .cortex-ai-system-node {
-    margin-top: 6px;
-  }
-
-  .cortex-ai-system-node__mark {
-    width: 32px;
-    height: 32px;
-    flex-basis: 32px;
-    border-radius: 9px;
-  }
-
-  .cortex-ai-system-node__mark svg {
-    width: 17px;
-    height: 17px;
-  }
-
-  .cortex-ai-system-node__mark .cortex-logo {
-    width: 18px;
-    height: 21px;
-  }
-
-  .cortex-ai-system-node--human .cortex-ai-system-node__mark {
-    width: 26px;
-    height: 26px;
-    flex-basis: 26px;
-  }
-
-  .cortex-ai-system-node--human .cortex-ai-system-node__mark svg {
-    width: 15px;
-    height: 15px;
-  }
-
-  .cortex-ai-system-node--hermes .cortex-ai-system-node__mark {
-    width: 38px;
-    height: 38px;
-    flex-basis: 38px;
-    border-radius: 9px;
-  }
-
-  .cortex-ai-system-node--hermes .cortex-ai-system-node__mark img {
-    border-radius: 8px;
-  }
-
-  .cortex-ai-system-node--result .cortex-ai-system-node__mark {
-    width: 28px;
-    height: 28px;
-    flex-basis: 28px;
-  }
-
-  .cortex-ai-system-node--result .cortex-ai-system-node__mark svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .cortex-ai-system-node strong {
-    font-size: 13px;
-  }
-
-  .cortex-ai-system-node small,
-  .cortex-ai-system-node__context {
-    font-size: 8px;
-  }
-
-  .cortex-ai-branch-field {
-    padding: 4px 0 2px 12px;
-    gap: 9px;
-  }
-
-  .cortex-ai-branch-field::before {
-    top: 22px;
-    bottom: 22px;
-    left: 5px;
-  }
-
-  .cortex-ai-branch {
-    margin-left: 17px;
-    padding: 10px 10px 11px;
-    border-radius: 13px;
-  }
-
-  .cortex-ai-branch::before {
-    top: 30px;
-    left: -17px;
-    width: 17px;
-  }
-
-  .cortex-ai-branch::after {
-    top: 27px;
-    left: -21px;
-    width: 7px;
-    height: 7px;
-  }
-
-  .cortex-ai-branch--agents {
-    margin-left: 34px;
-  }
-
-  .cortex-ai-branch__header {
-    gap: 7px;
-    margin-bottom: 8px;
-  }
-
-  .cortex-ai-branch__header span:not(.cortex-ai-branch__signal) {
-    font-size: 10px;
-  }
-
-  .cortex-ai-branch__header small {
-    font-size: 7.3px;
-  }
-
-  .cortex-ai-branch__signal {
-    width: 7px;
-    height: 7px;
-    flex-basis: 7px;
-  }
-
-  .cortex-ai-panel__providers {
-    gap: 6px;
-    margin-top: 2px;
-  }
-
-  .cortex-ai-provider {
-    gap: 4px;
-    font-size: 7.4px;
-  }
-
-  .cortex-ai-provider__mark {
-    width: 30px;
-    height: 30px;
-    border-radius: 9px;
-  }
-
-  .cortex-ai-provider__mark svg {
-    width: 15px;
-    height: 15px;
-  }
-
-  .cortex-grok-mark {
-    font-size: 15px;
-  }
-
-  .cortex-ai-panel__roles {
-    gap: 5px;
-    margin-top: 2px;
-  }
-
-  .cortex-ai-role {
-    min-height: 50px;
-    padding: 6px 5px 5px;
-    border-radius: 9px;
-  }
-
-  .cortex-ai-role svg {
-    width: 14px;
-    height: 14px;
-  }
-
-  .cortex-ai-role span {
-    margin-top: 4px;
-    font-size: 8px;
-  }
-
-  .cortex-ai-role small {
-    margin-top: 3px;
-    font-size: 6.5px;
-  }
-
-  .cortex-command-rail {
-    height: clamp(304px, 40vh, 360px);
-    margin-top: clamp(38px, 5vh, 52px);
-    margin-bottom: -28px;
-    padding: 14px 14px 0;
-  }
-
-  .cortex-command-rail__chat-space {
-    border-radius: 21px 21px 0 0;
-  }
-
-  .cortex-command-rail__empty-state {
-    padding-bottom: 92px;
-  }
-
-  .cortex-command-rail__chat-mark {
-    width: 50px;
-    height: 50px;
-  }
-
-  .cortex-command-rail__chat-mark .cortex-logo {
-    width: 26px;
-    height: 30px;
-  }
-
-  .cortex-command-rail__messages {
-    padding: 70px 12px 16px;
-  }
-
-  .cortex-command-rail__composer {
-    min-height: 110px;
-    padding: 15px 14px 12px 17px;
-    border-radius: 22px;
-  }
-
-  .cortex-command-rail__phrases {
-    font-size: 14px;
-    line-height: 1.4;
-  }
-
-  .cortex-command-rail__sent-mark {
-    width: 28px;
-    height: 28px;
-    flex-basis: 28px;
-  }
-
-  .cortex-command-rail__sent-mark svg {
-    width: 14px;
-    height: 14px;
-  }
-
-  .cortex-testimonial {
-    min-height: 540px;
-    margin-inline: 13px;
-    padding: 38px 18px 28px;
-  }
-
-  .cortex-testimonial blockquote {
-    font-size: 21px;
-  }
-
-  .cortex-showcase__body {
-    padding: 36px 14px 45px;
-  }
-
-  .cortex-menu-card {
-    min-height: 418px;
-    border-radius: 22px;
-  }
-
-  .cortex-pricing-card {
-    margin-top: 16px;
-  }
-
-  .cortex-reference__footer {
-    flex-direction: column;
-    align-items: flex-start;
-    padding-inline: 16px;
-    font-size: 10px;
+  .cortex-reference .cortex-system-map__role-list {
+    gap: 18px 24px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cortex-reference *,
-  .cortex-reference *::before,
-  .cortex-reference *::after {
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-  }
-
-  .cortex-column--intro::before,
-  .cortex-column--intro::after {
-    animation: none;
-  }
-
-  .cortex-command-rail__caret {
-    animation: none;
-  }
-
-}
-
-@media (max-width: 760px) {
-  .cortex-reference .cortex-ai-provider {
-    font-size: 7.4px;
-    line-height: 1;
-  }
-
-  .cortex-reference .cortex-ai-role {
-    font-size: 8px;
-    line-height: 1;
-  }
-
-  .cortex-ai-panel__header strong {
-    font-size: 16px;
-  }
-
-  .cortex-ai-system-node__detail {
-    font-size: 8.4px;
-    line-height: 1.28;
-  }
-
-  .cortex-ai-selection {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 2px;
-    margin-top: 9px;
-    padding: 8px 8px 2px;
-  }
-
-  .cortex-ai-selection strong {
-    font-size: 8.5px;
-  }
-
-  .cortex-ai-selection p {
-    font-size: 7.4px;
-    line-height: 1.3;
+  .cortex-reference__closing a {
+    transition: none;
   }
 }
