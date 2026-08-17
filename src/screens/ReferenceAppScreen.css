@@ -91,17 +91,14 @@
 .cortex-reference__system {
   grid-column: 1 / span 8;
   grid-row: 1 / span 2;
-  min-height: clamp(700px, 55vw, 780px);
-  padding: clamp(20px, 3vw, 44px) clamp(16px, 2.4vw, 34px);
+  align-self: start;
+  min-height: 0;
+  padding: clamp(20px, 3vw, 44px) clamp(16px, 2.4vw, 34px) clamp(40px, 3.6vw, 58px);
   overflow: hidden;
   border: 1px solid rgba(57, 67, 105, 0.1);
   border-radius: 28px;
   background: var(--cortex-surface);
   box-shadow: 0 18px 44px rgba(44, 54, 93, 0.045);
-}
-
-.cortex-reference__system .cortex-system-map {
-  min-height: 100%;
 }
 
 .cortex-reference__brief {

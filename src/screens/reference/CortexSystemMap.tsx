@@ -278,55 +278,47 @@ function makeStackedPaths(boxes: Partial<Record<MeasureKey, MeasuredBox>>): Conn
 
   if (!human || !cortex || !hermes || !models || !agents || !returnNode || !result) return [];
 
-  const measuredBoxes = [human, cortex, hermes, models, agents, returnNode, result];
-  const contentLeft = Math.min(...measuredBoxes.map((box) => box.left));
-  const contentRight = Math.max(...measuredBoxes.map((box) => box.right));
-  const leftRail = Math.max(8, contentLeft - 14);
-  const rightRail = contentRight + 14;
-
-  const modelEntry = edgePoint(models, { x: rightRail, y: models.centerY });
-  const agentEntry = edgePoint(agents, { x: leftRail, y: agents.centerY });
-  const modelBranchRail = {
-    x: rightRail,
-    y: (hermes.centerY + models.centerY) / 2,
-  };
-  const agentBranchRail = {
-    x: leftRail,
-    y: (hermes.centerY + agents.centerY) / 2,
-  };
-  const recombine = {
-    x: returnNode.centerX,
-    y: returnNode.top - 14,
-  };
-  const modelExit = edgePoint(models, { x: rightRail, y: models.centerY });
-  const agentExit = edgePoint(agents, { x: leftRail, y: agents.centerY });
+  // Keep the two branches legible without tracing the outside of the fields. The
+  // collector stays near the right edge of the actual fields and is hidden under
+  // them, so only the useful links remain visible in the gaps between stages.
+  const sideX = Math.max(models.right, agents.right) - 22;
+  const modelEntry = { x: models.centerX, y: models.top };
+  const agentEntry = { x: agents.right - 24, y: agents.top };
+  const agentBranch = { x: sideX, y: agents.top - 18 };
+  const modelExit = { x: models.right - 24, y: models.bottom };
+  const agentExit = { x: agents.right - 24, y: agents.bottom };
+  const lowerCollector = { x: sideX, y: agents.bottom + 18 };
 
   return [
     { id: "human-cortex", d: connectBoxes(human, cortex), stage: 0 },
     { id: "cortex-hermes", d: connectBoxes(cortex, hermes), stage: 0 },
     {
       id: "hermes-models",
-      d: routeThrough({ x: hermes.right, y: hermes.centerY }, [modelBranchRail], modelEntry),
+      d: curveBetween({ x: hermes.centerX - 16, y: hermes.bottom }, modelEntry),
       stage: 1,
     },
     {
       id: "hermes-agents",
-      d: routeThrough({ x: hermes.left, y: hermes.centerY }, [agentBranchRail], agentEntry),
+      d: routeThrough(
+        { x: hermes.right - 20, y: hermes.bottom },
+        [{ x: sideX, y: hermes.bottom + 18 }, agentBranch],
+        agentEntry,
+      ),
       stage: 2,
     },
     {
       id: "models-recombine",
-      d: routeThrough(modelExit, [{ x: rightRail, y: recombine.y }], recombine),
+      d: routeThrough(modelExit, [{ x: sideX, y: models.bottom + 18 }], lowerCollector),
       stage: 3,
     },
     {
       id: "agents-recombine",
-      d: routeThrough(agentExit, [{ x: leftRail, y: recombine.y }], recombine),
+      d: curveBetween(agentExit, lowerCollector),
       stage: 3,
     },
     {
       id: "recombine-return",
-      d: connectFromPoint(recombine, returnNode),
+      d: connectFromPoint(lowerCollector, returnNode),
       stage: 3,
     },
     { id: "return-result", d: connectBoxes(returnNode, result), stage: 3 },
